@@ -8,11 +8,11 @@ User sites => { ... };
 Perlbrew sites => (
     install_cpanm => 1,
     install_perl  => '5.14.2',
-    switch_perl  => '5.14.2',
+    switch_perl   => '5.14.2',
 );
 
 File '/path/to/file.ext' => (
-    user => 'sites', # group implicitly 'sites'
+    user    => 'sites', # group taken from user
     content => Url('http://domain.tld/path/to/file.ext'),
 );
 
@@ -21,10 +21,10 @@ __END__
 
 # ----- general parameter syntax:
 
-Keyword;
+Keyword;                    # usually dies, name is required
 
 Keyword 'name';
-Keyword name => ( ... );   # maybe unclever
+Keyword name => ( ... );    # maybe unclever
 Keyword name => { ... };
 Keyword { ... };
 

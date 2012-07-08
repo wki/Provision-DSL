@@ -1,0 +1,20 @@
+TODO for provisioning
+---------------------
+
+1) DSL: depending on context (scalar/void)
+     * put an entity on a TODO list in source order (void)
+     * retrieve an entity from a cache-list (scalar)
+       ensure we evaluate late in order not to create an entity!!!
+
+2) Entity:
+     * add "listen" and "tell" --> rearrange order
+     * priority (= source order)
+       Sort-Key = priority
+     * execute_before (= affect ordering)
+       if exists: Sort-Key = (execute_before-1 . priority)
+
+3) Tests:
+     * isolate tests from DSL -- no Capital() constructors!
+     * testing with Resources is OK
+
+4) 
