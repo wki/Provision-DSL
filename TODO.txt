@@ -17,4 +17,14 @@ TODO for provisioning
      * isolate tests from DSL -- no Capital() constructors!
      * testing with Resources is OK
 
-4) 
+
+
+add modules:
+
+Provision::DSL::Execution
+    * maintain execution order
+
+Provision::DSL::Execution::Entity
+    * link to an Entity
+    * store priority, execute_before
+
