@@ -19,12 +19,13 @@ TODO for provisioning
 
 
 
-add modules:
+add functionality:
 
 Provision::DSL::Execution
     * maintain execution order
 
-Provision::DSL::Execution::Entity
+Provision::DSL::Execution::Step
     * link to an Entity
     * store priority, execute_before
+    * calculate sort_key
 
