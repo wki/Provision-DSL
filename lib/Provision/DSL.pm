@@ -39,6 +39,8 @@ use Moose::Util::TypeConstraints qw(class_type coerce
 
 our @EXPORT = qw(Done done OS Os os);
 
+our $app;
+
 sub import {
     my $package = caller;
 
@@ -46,9 +48,9 @@ sub import {
     strict->import();
     feature->import(':5.10');
 
-    my $app = _instantiate_app_class();
-    _create_and_export_entity_keywords($package, $app);
-    _create_and_export_source_keywords($package, $app);
+    $app = _instantiate_app_class();
+    _create_and_export_entity_keywords($package);
+    _create_and_export_source_keywords($package);
     _export_symbols($package);
 }
 
@@ -61,7 +63,7 @@ sub _instantiate_app_class {
 }
 
 sub _create_and_export_entity_keywords {
-    my ($package, $app) = @_;
+    my $package = shift;
 
     my $os = os();
     my %class_for;
@@ -105,7 +107,7 @@ sub _create_and_export_entity_keywords {
 }
 
 sub _create_and_export_source_keywords {
-    my ($package, $app) = @_;
+    my $package = shift;
 
     foreach my $source_class (__PACKAGE__->sources) {
         load $source_class;
@@ -142,6 +144,8 @@ sub os {
 sub Done { goto &done }
 sub done {
     say 'Done.';
+    
+    $app->execute;
 
     exit;
 }

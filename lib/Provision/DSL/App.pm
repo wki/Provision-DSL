@@ -2,6 +2,7 @@ package Provision::DSL::App;
 use Moose;
 use IPC::Open3 'open3';
 use Try::Tiny;
+use Provision::DSL::Execution;
 use namespace::autoclean;
 with 'MooseX::Getopt::Strict';
 
@@ -46,6 +47,22 @@ sub entity {
         or die "no class for entity '$entity' found";
     
     return $class->new(\%args);
+}
+
+has _execution => (
+    is => 'ro',
+    isa => 'Provision::DSL::Execution',
+    required => 1,
+    lazy_build => 1,
+);
+
+sub _build__execution { Provision::DSL::Execution->new() }
+
+sub execute {
+    my $self = shift;
+    
+    $self->_execution->calc_execution_order;
+    $self->_execution->execute;
 }
 
 sub log {
