@@ -17,9 +17,16 @@ TODO for provisioning
      * isolate tests from DSL -- no Capital() constructors!
      * testing with Resources is OK
 
+4) Execute:
+     * cwd attribute
 
 
-add functionality:
+Idea. 'listen' attribute. 
+    if a previously defined entity has changed, the listening entity
+    is changed also
+     
+
+Idea. add functionality: -- bad.
 
 Provision::DSL::Execution
     * maintain execution order

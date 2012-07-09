@@ -39,7 +39,7 @@ has wanted => (
     default => 1
 );
 
-has updated => (
+has changed => (
     is => 'rw',
     isa => 'Bool',
     default => 0,
@@ -47,7 +47,7 @@ has updated => (
 
 # these conditions have precedence over methods is_present, is_current
 # testing order is as follows:
-# for is_present: only_if, not_if, 
+# for is_present: only_if, not_if,
 # for is_current: update_if, keep_if
 has only_if   => (is => 'ro', isa => 'CodeRef', predicate => 'has_only_if');
 has not_if    => (is => 'ro', isa => 'CodeRef', predicate => 'has_not_if');
@@ -79,6 +79,8 @@ sub process {
 
     return if $self->is_ok($wanted);
 
+    $self->changed(1);
+
     ### TODO: handle callbacks ???
     if (!$wanted) {
         $self->remove();
@@ -93,7 +95,7 @@ sub process {
 
 sub execute {
     my $self = shift;
-    
+
     $self->process($self->wanted);
 }
 
@@ -116,7 +118,7 @@ sub is_current {
 # returns a coderef which when called forces change
 sub reload {
     my $self = shift;
-    
+
     return sub {
         $self->state('outdated');
         $self->execute;
@@ -131,8 +133,8 @@ sub reload {
 
 #
 # may be overloaded in first level child class
-# should not get overloaded any further, 
-#    instead 'before' and 'after' modifiers should get used. 
+# should not get overloaded any further,
+#    instead 'before' and 'after' modifiers should get used.
 #    see t/0-calling_order.t to understand why
 #
 sub create {}

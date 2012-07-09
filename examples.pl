@@ -18,32 +18,64 @@ File '/path/to/file.ext' => {
 
 Dir '/path/to/website' => {
     user => 'sites',
+    content => Resource('website'), # has a MyApp directory
+    
+    # MyApp must be missing in the mkdir array!
     mkdir => [qw(
         logs
         pid
-    )];
-};
-
-Dir '/path/to/website/MyApp' => {
-    user => 'sites',
-    content => Resource('website'),
-    mkdir => [qw(
         MyApp/local
         MyApp/root/cache
         MyApp/root/files
         MyApp/root/static/_css
         MyApp/root/static/_js
-    )],
+    )];
 };
 
-Execute install_MyApp_modules => {
+Execute install_cpan_modules => {
     path => Perlbrew('sites')->cpanm,
+    cwd => '/path/to/website/MyApp',
     arguments => [
-        '-L'            => '/path/to/website/MyApp/local',
-        '--installdeps' => '/path/to/website/MyApp',
+        '-L'            => 'local',
+        '--installdeps' => '.',
     ],
-    listen => Dir('/path/to/website/MyApp'),
+    
+    # too dangerous because a deletion in local is not discovered.
+    # listen => Dir('/path/to/website/MyApp'),
 };
+
+File '/path/to/website/MyApp/static/_css/site.css' => {
+    content => Execute(...),
+    only_if => FileNewer('/path/to/website/MyApp/static/css/*.css'),
+    
+},
+
+Execute db_migration => {
+    path => '/path/to/website/MyApp/script/db_migration.pl',
+};
+
+Service plack_server => {
+    user => 'sites',
+    runlevel => [2,3],
+    copy => Resource('...'),
+    listen => [
+        '/path/to/website',
+        'install_cpanm_modules',
+        'db_migration',
+    ],
+};
+
+Service thumbnail_hotfolder => {
+    user => 'sites',
+    runlevel => [2,3],
+    copy => Resource('...'),
+    listen => [
+        '/path/to/website',
+        'install_cpanm_modules',
+        'db_migration',
+    ],
+};
+
 
 __END__
 
