@@ -18,25 +18,28 @@ foreach my $os (qw(OSX Ubuntu)) {
     isa_ok $app, "Provision::DSL::App::$os";
     isa_ok $app, "Provision::DSL::App";
 
-    is_deeply $app->_entity_class_for, {}, 'no entity classes defined';
+    # save $app in class's our variable, like import() also does
+    $Provision::DSL::app = $app;
 
-    lives_ok { Provision::DSL::_create_and_export_entity_keywords('main', $app) }
-             'create_and_export_entity_keywords lives';
-    
+    is_deeply $app->_entity_class_for, {}, "$os: no entity classes defined";
+
+    lives_ok { Provision::DSL::_create_and_export_entity_keywords('main') }
+             "$os: create_and_export_entity_keywords lives";
+
     ok scalar keys %{$app->_entity_class_for} > 5,
-       'more than 5 entity classes found';
+       "$os: more than 5 entity classes found";
 
     while (my ($entity_name, $entity_class) = each %{$app->_entity_class_for}) {
-        like $entity_name, qr{\A [A-Z][A-Za-z0-9_]+ \z}xms, 
-             "Entity '$entity_name' has a valid name";
-        like $entity_class, qr{\A Provision::DSL::Entity:: (?: _ $os ::)? [A-Z][A-Za-z0-9_:]+ \z}xms, 
-             "Class '$entity_class' has valid namespace";
-        
+        like $entity_name, qr{\A [A-Z][A-Za-z0-9_]+ \z}xms,
+             "$os: Entity '$entity_name' has a valid name";
+        like $entity_class, qr{\A Provision::DSL::Entity:: (?: _ $os ::)? [A-Z][A-Za-z0-9_:]+ \z}xms,
+             "$os: Class '$entity_class' has valid namespace";
+
         can_ok 'main', $entity_name;
     }
 }
 
-lives_ok { Provision::DSL::_create_and_export_source_keywords('main', $app) }
+lives_ok { Provision::DSL::_create_and_export_source_keywords('main') }
          'create_and_export_source_keywords lives';
 
 foreach my $source (qw(resource url)) {

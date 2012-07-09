@@ -35,7 +35,14 @@ has state  => (
 
 has wanted => (
     is => 'ro',
+    isa => 'Bool',
     default => 1
+);
+
+has updated => (
+    is => 'rw',
+    isa => 'Bool',
+    default => 0,
 );
 
 # these conditions have precedence over methods is_present, is_current

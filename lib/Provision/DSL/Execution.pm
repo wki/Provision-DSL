@@ -6,7 +6,7 @@ use namespace::autoclean;
 has steps => (
     is => 'ro',
     isa => 'ArrayRef',
-    default => [],
+    default => sub { [] },
     required => 1,
 );
 
@@ -25,6 +25,8 @@ sub add_step {
 sub calculate_execution_order {
     my $self = shift;
     
+    # A tell B      ==> B reloads after A has changed
+    # A listen B    ==> A reloads after B has changed
 }
 
 sub execute {
