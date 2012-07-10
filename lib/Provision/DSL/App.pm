@@ -2,6 +2,7 @@ package Provision::DSL::App;
 use Moose;
 use IPC::Open3 'open3';
 use Try::Tiny;
+use Carp;
 use Provision::DSL::Execution;
 use namespace::autoclean;
 with 'MooseX::Getopt::Strict';
@@ -29,41 +30,81 @@ has dryrun => (
     cmd_aliases => 'n',
 );
 
-has _entity_class_for => (
+# Entity => Provision::DSL::Entity::Xxx
+has _entity_package_for => (
     is => 'rw',
     isa => 'HashRef',
     default => sub { {} },
 );
 
-sub entity {
+# Entity => { name => $object }
+has _entity_cache => (
+    is => 'rw',
+    isa => 'HashRef',
+    default => sub { {} },
+);
+
+has _channel_changed => (
+    is => 'rw',
+    isa => 'HashRef',
+    default => sub { {} },
+);
+
+####################################### Entity handling
+
+sub create_entity {
     my $self   = shift;
     my $entity = shift;
-    
+
     my %args = (app => $self);
     $args{name} = shift if !ref $_[0];
     %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
-    
-    my $class = $self->_entity_class_for->{$entity}
-        or die "no class for entity '$entity' found";
-    
-    return $class->new(\%args);
+
+    my $class = $self->_entity_package_for->{$entity}
+        or croak "no class for entity '$entity' found";
+
+    croak "cannot re-creae entity '$entity' ($args{name})"
+        if exists $self->_entity_cache->{$entity}
+           && exists $self->_entity_cache->{$entity}->{$args{name}};
+
+    return $self->_entity_cache->{$entity}->{$args{name}} = $class->new(\%args);
 }
 
-has _execution => (
-    is => 'ro',
-    isa => 'Provision::DSL::Execution',
-    required => 1,
-    lazy_build => 1,
-);
-
-sub _build__execution { Provision::DSL::Execution->new() }
-
-sub execute {
+sub get_cached_entity {
     my $self = shift;
-    
-    $self->_execution->calc_execution_order;
-    $self->_execution->execute;
+    my $entity = shift;
+    my $name = shift;  # optional if only 1 entity exists
+
+    croak "no entity '$entity' cached"
+        if !exists $self->_entity_cache->{$entity};
+
+    my $cache = $self->_entity_cache->{$entity};
+    if ($name) {
+        croak "entity '$entity' named '$name' not found"
+            if !exists $cache->{$name};
+        return $cache->{$name};
+    } elsif (scalar keys %$cache == 1) {
+        return (values $cache->{$name})[0];
+    } else {
+        croak "entity '$entity' is ambiguous, name required";
+    }
 }
+
+####################################### Channel Handling
+
+sub set_changed {
+    my ($self, $channel) = @_;
+    
+    $self->_channel_changed->{$channel} = 1;
+}
+
+sub has_changed {
+    my ($self, $channel) = @_;
+    
+    return exists $self->_channel_changed->{$channel};
+}
+
+####################################### logging
 
 sub log {
     my $self = shift;
@@ -89,16 +130,18 @@ sub _log_if {
     return $condition;
 }
 
+####################################### Command execution
+
 sub command_succeeds {
     my $self = shift;
     my @args = @_;
-    
+
     my $result;
     try {
         $self->pipe_into_command('', @args);
         $result = 1;
     };
-    
+
     return $result;
 }
 
@@ -124,7 +167,7 @@ sub pipe_into_command {
     waitpid $pid, 0;
 
     my $status = $? >> 8;
-    die "command '@system_args' failed. status: $status" if $status;
+    croak "command '@system_args' failed. status: $status" if $status;
 
     return $text;
 }

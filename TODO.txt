@@ -2,16 +2,11 @@ TODO for provisioning
 ---------------------
 
 1) DSL: depending on context (scalar/void)
-     * put an entity on a TODO list in source order (void)
-     * retrieve an entity from a cache-list (scalar)
-       ensure we evaluate late in order not to create an entity!!!
+     * void: create and ->execute() entity
+     * scalar: retrieve an entity from a cache-list or die
 
 2) Entity:
-     * add "listen" and "tell" --> rearrange order
-     * priority (= source order)
-       Sort-Key = priority
-     * execute_before (= affect ordering)
-       if exists: Sort-Key = (execute_before-1 . priority)
+     * add "tell" and "listen" --> channels
 
 3) Tests:
      * isolate tests from DSL -- no Capital() constructors!
@@ -20,19 +15,27 @@ TODO for provisioning
 4) Execute:
      * cwd attribute
 
+5) App:
+     * store created classes (Package, name)
+     * list of channels
 
-Idea. 'listen' attribute. 
-    if a previously defined entity has changed, the listening entity
-    is changed also
-     
 
-Idea. add functionality: -- bad.
-
-Provision::DSL::Execution
-    * maintain execution order
-
-Provision::DSL::Execution::Step
-    * link to an Entity
-    * store priority, execute_before
-    * calculate sort_key
-
+Idea: use Moo instead of Moose.
+  * no types like now
+  * multiple roles do not work well with before/after modifiers
+    --> no roles at all, composition instead
+  * enable packing everything from
+    Moo
+    Class::Method::Modifiers
+    strictures
+    Module::Runtime
+    Role::Tiny
+  * structure to copy to target server:
+      local/
+        lib/
+          perl5/
+        bin/
+      resources/
+      provision.pl
+    
+  

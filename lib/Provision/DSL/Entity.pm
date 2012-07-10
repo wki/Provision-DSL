@@ -1,6 +1,7 @@
 package Provision::DSL::Entity;
 use Moose;
 use Provision::DSL::Types;
+use List::MoreUtils 'any',
 use namespace::autoclean;
 
 has name => (
@@ -16,7 +17,8 @@ has app => (
     handles => [qw(verbose dryrun
                    log log_dryrun log_debug
                    entity
-                   system_command pipe_into_command command_succeeds)],
+                   system_command pipe_into_command command_succeeds
+                   set_changed has_changed)],
 );
 
 has parent => (
@@ -45,6 +47,18 @@ has changed => (
     default => 0,
 );
 
+has listen => (
+    is => 'ro',
+    isa => 'Channels',
+    default => sub { [] },
+);
+
+has talk => (
+    is => 'ro',
+    isa => 'Channels',
+    default => sub { [] },
+);
+
 # these conditions have precedence over methods is_present, is_current
 # testing order is as follows:
 # for is_present: only_if, not_if,
@@ -68,21 +82,22 @@ sub _build_user { scalar getpwuid $< }
 sub _build_group { scalar getgrgid $( }
 
 sub is_ok {
-    my ($self, $wanted) = @_;
+    my $self = shift;
 
-    return (!$wanted && $self->state eq 'missing')
-        || ( $wanted && $self->state eq 'current');
+    return (!$self->wanted && $self->state eq 'missing')
+        || ( $self->wanted && $self->state eq 'current');
 }
 
-sub process {
-    my ($self, $wanted) = @_;
+sub execute {
+    my $self = shift;
 
-    return if $self->is_ok($wanted);
+    return if $self->is_ok;
 
     $self->changed(1);
 
-    ### TODO: handle callbacks ???
-    if (!$wanted) {
+    $self->set_changed($_) for @{$self->talk};
+
+    if (!$self->wanted) {
         $self->remove();
     } elsif ($self->state eq 'missing') {
         $self->create();
@@ -93,11 +108,6 @@ sub process {
     $self->clear_state;
 }
 
-sub execute {
-    my $self = shift;
-
-    $self->process($self->wanted);
-}
 
 sub is_present {
     my $self = shift;
@@ -110,8 +120,9 @@ sub is_present {
 sub is_current {
     my $self = shift;
 
-    return $self->has_update_if ? !$self->update_if->()
-         : $self->has_keep_if   ? $self->keep_if->()
+    return $self->has_update_if    ? !$self->update_if->()
+         : $self->has_keep_if      ? $self->keep_if->()
+         : scalar @{$self->listen} ? any { $self->has_changed($_) } @{$self->listen}
          : 1;
 }
 
@@ -124,12 +135,6 @@ sub reload {
         $self->execute;
     };
 }
-
-### TODO: tell/listen (Kanäle)
-#
-# tell   => 'site_changed',    # eg in Dir/Rsync
-# listen => 'site_changed',    # eg in Service('plack')
-#
 
 #
 # may be overloaded in first level child class

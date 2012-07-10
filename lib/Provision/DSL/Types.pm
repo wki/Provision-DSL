@@ -100,6 +100,11 @@ coerce 'DirList',
         via { [ map { ref $_ ? $_ : { path => $_ } } @$_ ] };
 
 
+subtype 'Channels',
+    as 'ArrayRef',
+coerce 'Channels',
+    from 'Str',
+        via { [ $_ ] };
 
 
 no Moose::Util::TypeConstraints;

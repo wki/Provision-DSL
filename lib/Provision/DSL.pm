@@ -48,59 +48,57 @@ sub import {
     strict->import();
     feature->import(':5.10');
 
-    $app = _instantiate_app_class();
+    $app = _instantiate_app();
     _create_and_export_entity_keywords($package);
     _create_and_export_source_keywords($package);
     _export_symbols($package);
 }
 
-sub _instantiate_app_class {
+sub _instantiate_app {
     my $os = os();
-    my $app_class = "Provision::DSL::App::$os";
-    load $app_class;
+    my $app_package = "Provision::DSL::App::$os";
+    load $app_package;
 
-    return $app_class->new_with_options;
+    return $app_package->new_with_options;
 }
 
 sub _create_and_export_entity_keywords {
     my $package = shift;
 
     my $os = os();
-    my %class_for;
-    foreach my $entity_class (__PACKAGE__->entities) {
-        my $entity_name = $entity_class;
+    my %package_for;
+    foreach my $entity_package (__PACKAGE__->entities) {
+        my $entity_name = $entity_package;
         $entity_name =~ s{\A Provision::DSL::Entity::(?:_(\w+)\::)?}{}xms;
         next if $1 && $1 ne $os;
 
         $entity_name =~ s{::}{_}xmsg;
 
-        next if exists $class_for{$entity_name}
-             && length $class_for{$entity_name} > length $entity_class;
-        $class_for{$entity_name} = $entity_class;
+        next if exists $package_for{$entity_name}
+             && length $package_for{$entity_name} > length $entity_package;
+        $package_for{$entity_name} = $entity_package;
         
         # create class-types and coercions before loading entity modules
         if (!find_type_constraint($entity_name)) {
             class_type $entity_name,
-                { class => $entity_class };
+                { class => $entity_package };
             coerce $entity_name,
                 from 'Str',
-                via { $entity_class->new({app => $app, name => $_}) };
+                via { $entity_package->new({app => $app, name => $_}) };
         }
     }
-    $app->_entity_class_for(\%class_for);
+    $app->_entity_package_for(\%package_for);
 
-    while (my ($entity_name, $entity_class) = each %class_for) {
-        load $entity_class;
+    while (my ($entity_name, $entity_package) = each %package_for) {
+        load $entity_package;
 
         no strict 'refs';
         no warnings 'redefine';
         *{"${package}::${entity_name}"} = sub {
-            my $entity = $app->entity($entity_name, @_);
-
             if (defined wantarray) {
-                return $entity
+                return $app->get_cached_entity($entity_name, @_);
             } else {
-                $entity->execute;
+                $app->create_entity($entity_name, @_)->execute;
             }
         };
     }
@@ -109,15 +107,15 @@ sub _create_and_export_entity_keywords {
 sub _create_and_export_source_keywords {
     my $package = shift;
 
-    foreach my $source_class (__PACKAGE__->sources) {
-        load $source_class;
+    foreach my $source_package (__PACKAGE__->sources) {
+        load $source_package;
         
-        my $source_name = $source_class;
+        my $source_name = $source_package;
         $source_name =~ s{\A Provision::DSL::Source::}{}xms;
         
         no strict 'refs';
         no warnings 'redefine'; # occurs during test
-        *{"${package}::${source_name}"}   = sub { $source_class->new(@_) };
+        *{"${package}::${source_name}"}   = sub { $source_package->new(@_) };
         *{"${package}::\l${source_name}"} = *{"${package}::${source_name}"};
     }
 }
@@ -145,8 +143,6 @@ sub Done { goto &done }
 sub done {
     say 'Done.';
     
-    $app->execute;
-
     exit;
 }
 
