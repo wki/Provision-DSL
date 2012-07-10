@@ -30,6 +30,8 @@ Dir '/path/to/website' => {
         MyApp/root/static/_css
         MyApp/root/static/_js
     )];
+    
+    tell => 'source_changed',
 };
 
 Execute install_cpan_modules => {
@@ -58,22 +60,14 @@ Service plack_server => {
     user => 'sites',
     runlevel => [2,3],
     copy => Resource('...'),
-    listen => [
-        '/path/to/website',
-        'install_cpanm_modules',
-        'db_migration',
-    ],
+    listen => 'source_changed',
 };
 
 Service thumbnail_hotfolder => {
     user => 'sites',
     runlevel => [2,3],
     copy => Resource('...'),
-    listen => [
-        '/path/to/website',
-        'install_cpanm_modules',
-        'db_migration',
-    ],
+    listen => 'source_changed',
 };
 
 
