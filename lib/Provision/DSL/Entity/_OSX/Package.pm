@@ -1,6 +1,5 @@
 package Provision::DSL::Entity::_OSX::Package;
-use Moose;
-use namespace::autoclean;
+use Moo;
 
 extends 'Provision::DSL::Entity::Package';
 
@@ -44,5 +43,4 @@ sub _latest_version {
     return $latest_version;
 }
 
-__PACKAGE__->meta->make_immutable;
 1;

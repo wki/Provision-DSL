@@ -1,3 +1,5 @@
+use strict;
+use warnings;
 use Test::More;
 use Provision::DSL::App;
 
@@ -5,20 +7,20 @@ use ok 'Provision::DSL::Entity';
 
 {
     package E1;
-    use Moose;
+    use Moo;
     extends 'Provision::DSL::Entity';
 
     has _diagnostics => (
         is => 'rw',
-        isa => 'ArrayRef',
+        # isa => 'ArrayRef',
         default => sub { [] },
     );
 
     sub is_ok0  { $_[0]->is_ok(0) }
     sub is_ok1  { $_[0]->is_ok(1) }
 
-    sub process0 { $_[0]->process(0) }
-    sub process1 { $_[0]->process(1) }
+    sub execute0 { $_[0]->execute(0) }
+    sub execute1 { $_[0]->execute(1) }
 
     sub create { push @{$_[0]->_diagnostics}, 'create' }
     sub change { push @{$_[0]->_diagnostics}, 'change' }
@@ -89,41 +91,43 @@ my @testcases = (
     },
 
     {
-        name => 'process_1 current',
+        name => 'execute_1 current',
         attributes => {state => 'current'},
-        execute => 'process1',
+        execute => 'execute1',
         expect => {_diagnostics => []},
     },
     {
-        name => 'process_0 current',
+        name => 'execute_0 current',
         attributes => {state => 'current'},
-        execute => 'process0',
+        execute => 'execute0',
         expect => {_diagnostics => ['remove']},
     },
     {
-        name => 'process_1 outdated',
+        name => 'execute_1 outdated',
         attributes => {state => 'outdated'},
-        execute => 'process1',
+        execute => 'execute1',
         expect => {_diagnostics => ['change']},
     },
     {
-        name => 'process_0 outdated',
+        name => 'execute_0 outdated',
         attributes => {state => 'outdated'},
-        execute => 'process0',
+        execute => 'execute0',
         expect => {_diagnostics => ['remove']},
     },
     {
-        name => 'process_1 missing',
+        name => 'execute_1 missing',
         attributes => {state => 'missing'},
-        execute => 'process1',
+        execute => 'execute1',
         expect => {_diagnostics => ['create']},
     },
     {
-        name => 'process_0 missing',
+        name => 'execute_0 missing',
         attributes => {state => 'missing'},
-        execute => 'process0',
+        execute => 'execute0',
         expect => {_diagnostics => []},
     },
+    
+    ### TODO: add "listen" test cases
 );
 
 my $app = Provision::DSL::App->new();

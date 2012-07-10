@@ -1,7 +1,6 @@
 package Provision::DSL::Entity::User;
-use Moose;
+use Moo;
 use Provision::DSL::Types;
-use namespace::autoclean;
 
 extends 'Provision::DSL::Entity';
 # with 'Provision::Role::Group';
@@ -78,5 +77,4 @@ before create => sub {
     # chown $self->uid, $self->group->gid, $self->home_directory;
 };
 
-__PACKAGE__->meta->make_immutable;
 1;

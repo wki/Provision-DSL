@@ -1,6 +1,5 @@
 package Provision::DSL::Entity::_Ubuntu::Package;
-use Moose;
-use namespace::autoclean;
+use Moo;
 
 extends 'Provision::DSL::Entity::Package';
 
@@ -34,5 +33,4 @@ sub _latest_version {
     ...
 }
 
-__PACKAGE__->meta->make_immutable;
 1;

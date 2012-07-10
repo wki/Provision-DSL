@@ -1,8 +1,37 @@
 package Provision::DSL::Types;
-use Moose::Util::TypeConstraints;
-use Path::Class;
+# use Path::Class;
+use Carp;
+use base 'Exporter';
 
+our @EXPORT = qw(
+    Str Bool
+    CodeRef
+);
 
+sub Str {
+    return sub {
+        defined $_[0] && !ref $_[0]
+            or croak "not a Str: $_[0]";
+    };
+}
+
+sub Bool {
+    return sub {
+        !defined $_[0] || !ref $_[0]
+            or croak "not a Bool: $_[0]";
+    }
+}
+
+sub CodeRef {
+    return sub {
+        ref $_[0] eq 'CODE'
+            or croak "not a CodeRef: $_[0]";
+    }
+}
+
+1;
+
+__END__
 class_type 'Entity',
     { class => 'Provision::DSL::Entity' };
 

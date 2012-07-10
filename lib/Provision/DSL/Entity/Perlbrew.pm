@@ -1,7 +1,6 @@
 package Provision::DSL::Entity::Perlbrew;
-use Moose;
+use Moo;
 use LWP::Simple;
-use namespace::autoclean;
 
 extends 'Provision::DSL::Entity::Compound';
 # with 'Provision::Role::User';
@@ -55,5 +54,4 @@ sub _build_children {
 #                              '/usr/bin/su', $self->user->name);
 # }
 
-__PACKAGE__->meta->make_immutable;
 1;

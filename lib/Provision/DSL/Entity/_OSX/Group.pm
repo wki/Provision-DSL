@@ -1,6 +1,6 @@
 package Provision::DSL::Entity::_OSX::Group;
-use Moose;
-use namespace::autoclean;
+use Moo;
+
 extends 'Provision::DSL::Entity::Group';
 
 our $DSCL = '/usr/bin/dscl';
@@ -30,5 +30,4 @@ after remove => sub {
     $self->app->system_command($DSCL, '.', -delete => "/Groups/${\$self->name}");
 };
 
-__PACKAGE__->meta->make_immutable;
 1;

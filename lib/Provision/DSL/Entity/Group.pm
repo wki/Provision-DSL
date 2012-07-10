@@ -1,6 +1,6 @@
 package Provision::DSL::Entity::Group;
-use Moose;
-# use Provision::DSL::Types;
+use Moo;
+use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity';
 
@@ -9,9 +9,9 @@ our $MAX_ID    = 2000;
 
 has gid => (
     is => 'ro',
-    isa => 'Int',
-    required => 1,
-    lazy_build => 1,
+    # isa => 'Int',
+    # required => 1,
+    # lazy_build => 1,
 );
 
 sub _build_gid {
@@ -37,5 +37,4 @@ around is_present => sub {
     return defined getgrnam($self->name) && $self->$orig();
 };
 
-__PACKAGE__->meta->make_immutable;
 1;

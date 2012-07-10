@@ -1,6 +1,5 @@
 package Provision::DSL::Entity::_OSX::Service;
-use Moose;
-use namespace::autoclean;
+use Moo;
 
 extends 'Provision::DSL::Entity::Service';
 
@@ -40,5 +39,4 @@ before remove => sub {
     $self->system_command($LAUNCHCTL, unload => '-w' => $self->path);
 };
 
-__PACKAGE__->meta->make_immutable;
 1;

@@ -1,3 +1,5 @@
+use strict;
+use warnings;
 use Test::More;
 use Provision::DSL::App;
 
@@ -5,13 +7,17 @@ use ok 'Provision::DSL::Entity::Compound';
 
 {
     package E;
-    use Moose;
+    use Moo;
     extends 'Provision::DSL::Entity';
     
-    has [qw(is_present is_current)] => (
-        is => 'ro',
-        isa => 'Bool',
-        default => 1,
+    has is_present  => (
+        is => 'rw',
+        default => sub { 1 },
+    );
+    
+    has is_current  => (
+        is => 'rw',
+        default => sub { 1 },
     );
     
     sub create { push @{$_[0]->parent->_diagnostics}, "${\$_[0]->name}:create" }
@@ -21,12 +27,12 @@ use ok 'Provision::DSL::Entity::Compound';
 
 {
     package C;
-    use Moose;
+    use Moo;
     extends 'Provision::DSL::Entity::Compound';
     
     has _diagnostics => (
         is => 'rw',
-        isa => 'ArrayRef',
+        # isa => 'ArrayRef',
         default => sub { [] },
     );
     
@@ -40,7 +46,7 @@ my @testcases = (
     {
         name => 'empty',
         child_states => [],
-        process_arg => 1,
+        execute_arg => 1,
         expect => {state => 'current', is_present => 1, is_current => 1},
         diagnostics => [],
     },
@@ -49,42 +55,42 @@ my @testcases = (
     {
         name => 'missing->1',
         child_states => [ {is_present => 0, is_current => 1} ],
-        process_arg => 1,
+        execute_arg => 1,
         expect => {state => 'missing', is_present => 0, is_current => 1},
         diagnostics => ['create', 'child_1:create'],
     },
     {
         name => 'missing->0',
         child_states => [ {is_present => 0, is_current => 1} ],
-        process_arg => 0,
+        execute_arg => 0,
         expect => {state => 'missing', is_present => 0, is_current => 1},
         diagnostics => [],
     },
     {
         name => 'outdated->1',
         child_states => [ {is_present => 1, is_current => 0} ],
-        process_arg => 1,
+        execute_arg => 1,
         expect => {state => 'outdated', is_present => 1, is_current => 0},
         diagnostics => ['change', 'child_1:change'],
     },
     {
         name => 'outdated->0',
         child_states => [ {is_present => 1, is_current => 0} ],
-        process_arg => 0,
+        execute_arg => 0,
         expect => {state => 'outdated', is_present => 1, is_current => 0},
         diagnostics => ['child_1:remove', 'remove'],
     },
     {
         name => 'current->1',
         child_states => [ {is_present => 1, is_current => 1} ],
-        process_arg => 1,
+        execute_arg => 1,
         expect => {state => 'current', is_present => 1, is_current => 1},
         diagnostics => [],
     },
     {
         name => 'current->0',
         child_states => [ {is_present => 1, is_current => 1} ],
-        process_arg => 0,
+        execute_arg => 0,
         expect => {state => 'current', is_present => 1, is_current => 1},
         diagnostics => ['child_1:remove', 'remove'],
     },
@@ -93,14 +99,14 @@ my @testcases = (
     {
         name => 'missing,outdated->1',
         child_states => [ {is_present => 0, is_current => 1}, {is_present => 1, is_current => 0} ],
-        process_arg => 1,
+        execute_arg => 1,
         expect => {state => 'outdated', is_present => 1, is_current => 0},
         diagnostics => ['change', 'child_1:create', 'child_2:change'],
     },
     {
         name => 'missing,outdated->0',
         child_states => [ {is_present => 0, is_current => 1}, {is_present => 1, is_current => 0} ],
-        process_arg => 0,
+        execute_arg => 0,
         expect => {state => 'outdated', is_present => 1, is_current => 0},
         diagnostics => ['child_2:remove', 'remove'],
     },
@@ -110,7 +116,7 @@ foreach my $testcase (@testcases) {
     my $app = Provision::DSL::App->new();
     
     my $c = C->new({app => $app, name => $testcase->{name}});
-    $i = 1;
+    my $i = 1;
     for my $state (@{$testcase->{child_states}}) {
         $c->add_child(E->new({app => $app, name => "child_${\$i++}", parent => $c, %$state}));
     }
@@ -133,7 +139,7 @@ foreach my $testcase (@testcases) {
         }
     }
     
-    $c->process($testcase->{process_arg});
+    $c->execute($testcase->{execute_arg});
     
     is_deeply $c->_diagnostics, $testcase->{diagnostics},
               "$testcase->{name}: diagnostics OK";

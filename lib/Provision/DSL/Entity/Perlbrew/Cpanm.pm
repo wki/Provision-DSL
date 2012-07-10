@@ -1,8 +1,6 @@
 package Provision::DSL::Entity::Perlbrew::Cpanm;
-use Moose;
-use namespace::autoclean;
+use Moo;
 
 extends 'Provision::DSL::Entity';
 
-__PACKAGE__->meta->make_immutable;
 1;

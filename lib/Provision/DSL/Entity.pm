@@ -1,18 +1,17 @@
 package Provision::DSL::Entity;
-use Moose;
+use Moo;
 use Provision::DSL::Types;
 use List::MoreUtils 'any',
-use namespace::autoclean;
 
 has name => (
     is => 'ro',
-    isa => 'Str',
+    isa => Str,
     required => 1,
 );
 
 has app => (
     is => 'ro',
-    isa => 'Provision::DSL::App',
+    # isa => 'Provision::DSL::App',
     required => 1,
     handles => [qw(verbose dryrun
                    log log_dryrun log_debug
@@ -23,39 +22,37 @@ has app => (
 
 has parent => (
     is => 'ro',
-    isa => 'Entity',
+    # isa => 'Entity',
     predicate => 'has_parent',
 );
 
 has state  => (
-    is => 'rw',
-    isa => 'Str',
-    required => 1,
-    lazy_build => 1,
+    is => 'lazy',
+    isa => Str,
     clearer => 'clear_state',
 );
 
 has wanted => (
     is => 'ro',
-    isa => 'Bool',
-    default => 1
+    isa => Bool,
+    default => sub { 1 },
 );
 
 has changed => (
     is => 'rw',
-    isa => 'Bool',
-    default => 0,
+    isa => Bool,
+    default => sub { 0 },
 );
 
 has listen => (
     is => 'ro',
-    isa => 'Channels',
+    # isa => 'Channels',
     default => sub { [] },
 );
 
 has talk => (
     is => 'ro',
-    isa => 'Channels',
+    # isa => 'Channels',
     default => sub { [] },
 );
 
@@ -63,10 +60,10 @@ has talk => (
 # testing order is as follows:
 # for is_present: only_if, not_if,
 # for is_current: update_if, keep_if
-has only_if   => (is => 'ro', isa => 'CodeRef', predicate => 'has_only_if');
-has not_if    => (is => 'ro', isa => 'CodeRef', predicate => 'has_not_if');
-has update_if => (is => 'ro', isa => 'CodeRef', predicate => 'has_update_if');
-has keep_if   => (is => 'ro', isa => 'CodeRef', predicate => 'has_keep_if');
+has only_if   => (is => 'ro', isa => CodeRef, predicate => 'has_only_if');
+has not_if    => (is => 'ro', isa => CodeRef, predicate => 'has_not_if');
+has update_if => (is => 'ro', isa => CodeRef, predicate => 'has_update_if');
+has keep_if   => (is => 'ro', isa => CodeRef, predicate => 'has_keep_if');
 
 
 sub _build_state {
@@ -83,21 +80,23 @@ sub _build_group { scalar getgrgid $( }
 
 sub is_ok {
     my $self = shift;
+    my $wanted = shift // $self->wanted;
 
-    return (!$self->wanted && $self->state eq 'missing')
-        || ( $self->wanted && $self->state eq 'current');
+    return (!$wanted && $self->state eq 'missing')
+        || ( $wanted && $self->state eq 'current');
 }
 
 sub execute {
     my $self = shift;
+    my $wanted = shift // $self->wanted;
 
-    return if $self->is_ok;
+    return if $self->is_ok($wanted);
 
     $self->changed(1);
 
     $self->set_changed($_) for @{$self->talk};
 
-    if (!$self->wanted) {
+    if (!$wanted) {
         $self->remove();
     } elsif ($self->state eq 'missing') {
         $self->create();
@@ -146,5 +145,4 @@ sub create {}
 sub change {}
 sub remove {}
 
-__PACKAGE__->meta->make_immutable;
 1;

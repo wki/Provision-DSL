@@ -1,8 +1,9 @@
 package Provision::DSL;
 use strict;
 use warnings;
-use feature ':5.10';
-use FindBin;
+use Module::Pluggable search_path => 'Provision::DSL::Entity', sub_name => 'entities';
+use Module::Pluggable search_path => 'Provision::DSL::Source', sub_name => 'sources';
+use Module::Load;
 
 =head1 NAME
 
@@ -17,25 +18,6 @@ TODO
 TODO
 
 =cut
-
-#
-# up to this point, nothing bad happens.
-# Provision::Prepare will ensure that everything requested to continue
-# is there or dies otherwise.
-#
-# use Provision::DSL::Prepare;
-
-#
-# starting here, we are in good shape and can use everything we need.
-#
-use Path::Class;
-use Module::Pluggable search_path => 'Provision::DSL::Entity', sub_name => 'entities';
-use Module::Pluggable search_path => 'Provision::DSL::Source', sub_name => 'sources';
-use Module::Load;
-use Moose;
-use Moose::Util::TypeConstraints qw(class_type coerce
-                                    from via
-                                    find_type_constraint);
 
 our @EXPORT = qw(Done done OS Os os);
 
@@ -59,7 +41,7 @@ sub _instantiate_app {
     my $app_package = "Provision::DSL::App::$os";
     load $app_package;
 
-    return $app_package->new_with_options;
+    return $app_package->new; ### new_with_options would be nice!
 }
 
 sub _create_and_export_entity_keywords {
@@ -79,13 +61,13 @@ sub _create_and_export_entity_keywords {
         $package_for{$entity_name} = $entity_package;
         
         # create class-types and coercions before loading entity modules
-        if (!find_type_constraint($entity_name)) {
-            class_type $entity_name,
-                { class => $entity_package };
-            coerce $entity_name,
-                from 'Str',
-                via { $entity_package->new({app => $app, name => $_}) };
-        }
+        # if (!find_type_constraint($entity_name)) {
+        #     class_type $entity_name,
+        #         { class => $entity_package };
+        #     coerce $entity_name,
+        #         from 'Str',
+        #         via { $entity_package->new({app => $app, name => $_}) };
+        # }
     }
     $app->_entity_package_for(\%package_for);
 
@@ -141,7 +123,7 @@ sub os {
 
 sub Done { goto &done }
 sub done {
-    say 'Done.';
+    print "Done.\n";
     
     exit;
 }

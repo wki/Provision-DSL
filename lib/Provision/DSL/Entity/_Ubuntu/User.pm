@@ -1,6 +1,5 @@
 package Provision::DSL::Entity::_Ubuntu::User;
-use Moose;
-use namespace::autoclean;
+use Moo;
 
 extends 'Provision::DSL::Entity::User';
 
@@ -21,6 +20,4 @@ after create => sub {
     ...
 };
 
-
-__PACKAGE__->meta->make_immutable;
 1;

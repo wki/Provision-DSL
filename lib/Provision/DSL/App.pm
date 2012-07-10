@@ -1,52 +1,48 @@
 package Provision::DSL::App;
-use Moose;
+use feature ':5.10';
+use Moo;
 use IPC::Open3 'open3';
 use Try::Tiny;
 use Carp;
-use Provision::DSL::Execution;
-use namespace::autoclean;
-with 'MooseX::Getopt::Strict';
+use Provision::DSL::Types;
 
 has verbose => (
-    traits => ['Getopt'],
     is => 'ro',
-    isa => 'Bool',
+    isa => Bool,
     default => 0,
-    cmd_aliases => 'v',
+    # cmd_aliases => 'v',
 );
 
 has debug => (
-    traits => ['Getopt'],
     is => 'ro',
-    isa => 'Bool',
+    isa => Bool,
     default => 0,
 );
 
 has dryrun => (
-    traits => ['Getopt'],
     is => 'ro',
-    isa => 'Bool',
+    isa => Bool,
     default => 0,
-    cmd_aliases => 'n',
+    # cmd_aliases => 'n',
 );
 
 # Entity => Provision::DSL::Entity::Xxx
 has _entity_package_for => (
     is => 'rw',
-    isa => 'HashRef',
+    # isa => 'HashRef',
     default => sub { {} },
 );
 
 # Entity => { name => $object }
 has _entity_cache => (
     is => 'rw',
-    isa => 'HashRef',
+    # isa => 'HashRef',
     default => sub { {} },
 );
 
 has _channel_changed => (
     is => 'rw',
-    isa => 'HashRef',
+    # isa => 'HashRef',
     default => sub { {} },
 );
 
@@ -172,5 +168,4 @@ sub pipe_into_command {
     return $text;
 }
 
-__PACKAGE__->meta->make_immutable;
 1;

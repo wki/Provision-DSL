@@ -1,6 +1,5 @@
 package Provision::DSL::Entity::_OSX::User;
-use Moose;
-use namespace::autoclean;
+use Moo;
 
 extends 'Provision::DSL::Entity::User';
 
@@ -45,5 +44,4 @@ after remove => sub {
     $self->app->system_command($DSCL, '.', -delete => "/Users/${\$self->name}");
 };
 
-__PACKAGE__->meta->make_immutable;
 1;

@@ -1,15 +1,48 @@
+use strict;
+use warnings;
 use Test::More;
 use Test::Exception;
 
 {
     package C;
-    use Moose;
+    use Moo;
     use Provision::DSL::Types;
     
-    has p => (is => 'rw', isa => 'Permission');
+    has str  => (is => 'rw', isa => Str);
+    has bool => (is => 'rw', isa => Bool);
+    has code => (is => 'rw', isa => CodeRef);
 }
 
-my $c = C->new;
+my $c = C->new();
+
+# Str
+{
+    dies_ok  { $c->str(undef) }     'undef is not a string'; 
+    dies_ok  { $c->str({}) }        'hashref is not a string';
+    lives_ok { $c->str('') }        'empty string is a string';
+    lives_ok { $c->str('foo') }     '"foo" is a string';
+    lives_ok { $c->str(42) }        '42 is a string';
+}
+
+# Bool
+{
+    dies_ok  { $c->bool({}) }       'hashref is not a bool';
+    lives_ok { $c->bool(undef) }    'undef is a bool';
+    lives_ok { $c->bool('') }       'empty string is a bool';
+    lives_ok { $c->bool('foo') }    '"foo" is a bool';
+    lives_ok { $c->bool(42) }       '42 is a bool';
+}
+
+# CodeRef
+{
+    dies_ok  { $c->code(undef) }    'undef is not a coderef'; 
+    dies_ok  { $c->code({}) }       'hashref is not a bool';
+    lives_ok { $c->code(sub {}) }   'a sub is a coderef';
+}
+
+done_testing;
+
+__END__
 
 # permission
 {
