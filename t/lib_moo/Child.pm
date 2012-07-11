@@ -3,7 +3,8 @@ use Moo;
 use namespace::autoclean;
 
 extends 'Parent';
-with 'ChildRole1', 'ChildRole2';
+with 'ChildRole1';
+with 'ChildRole2';
 
 before method => sub { $_[0]->show('before C::m') };
 after  method => sub { $_[0]->show('after C::m') };

@@ -1,7 +1,8 @@
 package Parent;
 use Moo;
 
-with 'ParentRole1', 'ParentRole2';
+with 'ParentRole1';
+with 'ParentRole2';
 
 has message => (
     is => 'rw',
