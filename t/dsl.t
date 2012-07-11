@@ -16,26 +16,26 @@ foreach my $os (qw(OSX Ubuntu)) {
     is Os(), $os, "Os is $os";
     is OS(), $os, "OS is $os";
 
-    my $app = Provision::DSL::_instantiate_app_class();
+    my $app = Provision::DSL::_instantiate_app();
     isa_ok $app, "Provision::DSL::App::$os";
     isa_ok $app, "Provision::DSL::App";
 
     # save $app in class's our variable, like import() also does
     $Provision::DSL::app = $app;
 
-    is_deeply $app->_entity_class_for, {}, "$os: no entity classes defined";
+    is_deeply $app->_entity_package_for, {}, "$os: no entity packages defined";
 
     lives_ok { Provision::DSL::_create_and_export_entity_keywords('main') }
              "$os: create_and_export_entity_keywords lives";
 
-    ok scalar keys %{$app->_entity_class_for} > 5,
-       "$os: more than 5 entity classes found";
+    ok scalar keys %{$app->_entity_package_for} > 5,
+       "$os: more than 5 entity packages found";
 
-    while (my ($entity_name, $entity_class) = each %{$app->_entity_class_for}) {
+    while (my ($entity_name, $entity_package) = each %{$app->_entity_package_for}) {
         like $entity_name, qr{\A [A-Z][A-Za-z0-9_]+ \z}xms,
              "$os: Entity '$entity_name' has a valid name";
-        like $entity_class, qr{\A Provision::DSL::Entity:: (?: _ $os ::)? [A-Z][A-Za-z0-9_:]+ \z}xms,
-             "$os: Class '$entity_class' has valid namespace";
+        like $entity_package, qr{\A Provision::DSL::Entity:: (?: _ $os ::)? [A-Z][A-Za-z0-9_:]+ \z}xms,
+             "$os: Class '$entity_package' has valid namespace";
 
         can_ok 'main', $entity_name;
     }

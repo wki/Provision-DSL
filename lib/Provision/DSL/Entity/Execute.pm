@@ -20,6 +20,12 @@ has arguments => (
     default => sub { [] },
 );
 
+has environment => (
+    is => 'ro',
+    # isa => 'HashRef',
+    default => sub { {} },
+);
+
 after create => sub { 
     my $self = shift;
     

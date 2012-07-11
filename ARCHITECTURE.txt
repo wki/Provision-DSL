@@ -1,0 +1,112 @@
+Grundideen zur Architektur.
+---------------------------
+
+not intended for publishing, therefore language is german, sorry.
+nicht zum Weitergeben gedacht, daher in deutsch.
+
+
+
+Bestandteile:
+
+ - script                       enthält DSL Befehle
+ - DSL                          pro DSL Befehl eine sub
+ - App                          zentrale Ablaufsteuerung
+    ----[ logging ]
+    ----[ entity caching ]
+    ----[ talked words ]
+    ----[ command execution ]
+ - Entity                       Basisklasse von Entities
+    * Compound
+      * Dir                     Kinder: Dir, Rsync
+        Rollen: permission, owner
+      * Perlbrew                Kinder: install, cpanm, perl, switch
+      * User                    Kinder: Dir (=home), Group
+    * File
+      Rollen: permission, owner
+    * Rsync
+    * Service
+    * Group
+    * Package
+    * Execute
+ - Source                       Basisklasse von Datenquellen
+ [- Condition]
+
+
+
+Entity Funktionsweise:
+
+   P::DSL::Entity
+     ----[ identifikation, Wunsch ]
+     + name                     Pflicht, wird evtl. nach ??? kopiert
+     + app                      ->P::DSL::App
+     + parent                   ->P::DSL::Entity, wenn compound
+     + wanted                   bool oder Version [1]
+     + talk                     auszusprechende Worte falls Änderung
+     + ...                      weitere Angaben bei Kind-Klassen
+
+     ----[ Bestimmen des Status ]
+     + only_if / not_if         <-> is_present, vorrangig
+     + update_if / keep_if      <-> is_current, vorrangig
+     + listen                   zu lauschende Worte
+     - is_present()             von Kindern zu erweitern
+     - is_current()             von Kindern zu erweitern
+     - is_ok()
+
+     ----[ Berechnete Werte ]
+     + changed                  wird gesetzt, wenn Veränderung erfolgte
+     + state                    status [missing/outdated/current]
+
+     ----[ Steuerung ]
+     - execute()                auf Zustand "wanted" bringen
+     - create()                 von Kindern zu erweitern
+     - change()                 von Kindern zu erweitern
+     - remove()                 von Kindern zu erweitern
+
+
+
+Entity Erweiterung:
+  - über Rolle(n) oder Kind-Klassen
+     * Entscheidung: (before|around|after) (is_present|is_current)
+     * Steuerung:    (before|after) (create|change|remove)
+  - Aufruf-Reihenfolge:
+     * Kind-Klassen, dann Kind-Rollen reverse (before, around)
+     * Klasse, dann Rollen reverse (before, around)
+     * Methode
+     * Rollen, dann Klasse (around, after)
+     * Kind-Rollen, dann Kind-Klasse (around, after)
+
+
+
+Datenstruktur zum Deployment (gepackt als .tar.gz):
+
+/
+  apply.pl                  -- standard provision Datei
+  bin/                      -- evtl. ein paar vorbereitete Binärdateien
+    cpanm
+    perlbrew
+  etc/                      -- evtl. Konfigurations-Dateien
+  lib/
+    perl5/                  -- alle benötigten Bibliotheken
+  resources/                -- Resource-Dateien
+
+
+
+Vorbereitung eines Provision Vorganges:
+
+ - auf dem Entwicklungs-Rechner
+    * leeres Temp-Verzeichnis anlegen ($DIR)
+    * via cpanm: Provision::DSL und Abhängigkeiten installieren
+      dürfen nur Pure-Perl Module sein!
+      --> derzeit ca. 50 pm-Dateien zuzüglich Provision::DSL
+    * evtl. Konfigurations-Datei(en) nach $DIR/etc kopieren
+    * Resourcen kopieren
+    * .tar.gz erstellen
+    
+ - auf Ziel-Server kopieren
+ 
+ - auf dem Ziel Server:
+    * .tar.gz nach /tmp/whatever entpacken
+    * cd /tmp/whatever
+    * perl apply.pl ausführen
+
+

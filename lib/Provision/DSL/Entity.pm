@@ -1,7 +1,6 @@
 package Provision::DSL::Entity;
 use Moo;
 use Provision::DSL::Types;
-use List::MoreUtils 'any',
 
 has name => (
     is => 'ro',
@@ -121,7 +120,7 @@ sub is_current {
 
     return $self->has_update_if    ? !$self->update_if->()
          : $self->has_keep_if      ? $self->keep_if->()
-         : scalar @{$self->listen} ? any { $self->has_changed($_) } @{$self->listen}
+         : scalar @{$self->listen} ? grep { $self->has_changed($_) } @{$self->listen}
          : 1;
 }
 

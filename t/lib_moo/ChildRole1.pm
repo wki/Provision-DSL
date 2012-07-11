@@ -9,7 +9,7 @@ around method => sub {
     $self->show('after CR1::m');
 };
 
-# before method => sub { $_[0]->show('before CR1::m') };
-# after  method => sub { $_[0]->show('after CR1::m') };
+before method => sub { $_[0]->show('b CR1::m') };
+after  method => sub { $_[0]->show('a CR1::m') };
 
 1;
