@@ -1,17 +1,16 @@
 package Provision::DSL::Source;
-use Moose;
-use namespace::autoclean;
+use Moo;
+use Provision::DSL::Types;
 
 has name => (
     is => 'ro',
-    isa => 'Str',
+    isa => Str,
     required => 1,
 );
 
 has content => (
-    is => 'ro',
-    isa => 'Str',
-    lazy_build => 1,
+    is => 'lazy',
+    isa => Str,
 );
 
 # builder must be created in child class if content wanted
@@ -27,5 +26,4 @@ around BUILDARGS => sub {
     return $class->$orig(%args);
 };
 
-__PACKAGE__->meta->make_immutable;
 1;

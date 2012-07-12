@@ -16,22 +16,23 @@ foreach my $os (qw(OSX Ubuntu)) {
     is Os(), $os, "Os is $os";
     is OS(), $os, "OS is $os";
 
-    my $app = Provision::DSL::_instantiate_app();
+    Provision::DSL::instantiate_app();
+    my $app = $Provision::DSL::app;
     isa_ok $app, "Provision::DSL::App::$os";
     isa_ok $app, "Provision::DSL::App";
 
     # save $app in class's our variable, like import() also does
     $Provision::DSL::app = $app;
 
-    is_deeply $app->_entity_package_for, {}, "$os: no entity packages defined";
+    is_deeply $app->entity_package_for, {}, "$os: no entity packages defined";
 
-    lives_ok { Provision::DSL::_create_and_export_entity_keywords('main') }
+    lives_ok { Provision::DSL::create_and_export_entity_keywords('main') }
              "$os: create_and_export_entity_keywords lives";
 
-    ok scalar keys %{$app->_entity_package_for} > 5,
+    ok scalar keys %{$app->entity_package_for} > 5,
        "$os: more than 5 entity packages found";
 
-    while (my ($entity_name, $entity_package) = each %{$app->_entity_package_for}) {
+    while (my ($entity_name, $entity_package) = each %{$app->entity_package_for}) {
         like $entity_name, qr{\A [A-Z][A-Za-z0-9_]+ \z}xms,
              "$os: Entity '$entity_name' has a valid name";
         like $entity_package, qr{\A Provision::DSL::Entity:: (?: _ $os ::)? [A-Z][A-Za-z0-9_:]+ \z}xms,
@@ -41,7 +42,7 @@ foreach my $os (qw(OSX Ubuntu)) {
     }
 }
 
-lives_ok { Provision::DSL::_create_and_export_source_keywords('main') }
+lives_ok { Provision::DSL::create_and_export_source_keywords('main') }
          'create_and_export_source_keywords lives';
 
 foreach my $source (qw(resource url)) {

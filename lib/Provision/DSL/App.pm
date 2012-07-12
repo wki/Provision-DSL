@@ -9,25 +9,23 @@ use Provision::DSL::Types;
 has verbose => (
     is => 'ro',
     isa => Bool,
-    default => 0,
-    # cmd_aliases => 'v',
+    default => sub { 0 },
 );
 
 has debug => (
     is => 'ro',
     isa => Bool,
-    default => 0,
+    default => sub { 0 },
 );
 
 has dryrun => (
     is => 'ro',
     isa => Bool,
-    default => 0,
-    # cmd_aliases => 'n',
+    default => sub { 0 },
 );
 
 # Entity => Provision::DSL::Entity::Xxx
-has _entity_package_for => (
+has entity_package_for => (
     is => 'rw',
     # isa => 'HashRef',
     default => sub { {} },
@@ -48,18 +46,22 @@ has _channel_changed => (
 
 ####################################### Entity handling
 
+
 sub create_entity {
     my $self   = shift;
     my $entity = shift;
+    
+    die "create entity: $entity";
 
     my %args = (app => $self);
     $args{name} = shift if !ref $_[0];
     %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
 
-    my $class = $self->_entity_package_for->{$entity}
+    my $class = $self->entity_package_for->{$entity}
         or croak "no class for entity '$entity' found";
 
-    croak "cannot re-creae entity '$entity' ($args{name})"
+    ### FIXME: does "re-create" error make sense?
+    croak "cannot re-create entity '$entity' ($args{name})"
         if exists $self->_entity_cache->{$entity}
            && exists $self->_entity_cache->{$entity}->{$args{name}};
 

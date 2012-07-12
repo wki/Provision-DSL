@@ -1,40 +1,70 @@
 package Provision::DSL::Types;
-# use Path::Class;
+use Path::Class;
+use Scalar::Util 'blessed';
 use Carp;
 use base 'Exporter';
 
 our @EXPORT = qw(
     Str Bool
     CodeRef
+    ExistingDir
+    
+    to_Channels 
+    to_Dir to_ExistingDir
+    to_Uid to_Gid
 );
 
 sub Str {
     return sub {
-        defined $_[0] && !ref $_[0]
-            or croak "not a Str: $_[0]";
+        defined $_[1] && !ref $_[1]
+            or croak "not a Str: $_[1]";
     };
 }
 
 sub Bool {
     return sub {
-        !defined $_[0] || !ref $_[0]
-            or croak "not a Bool: $_[0]";
+        !defined $_[1] || !ref $_[1]
+            or croak "not a Bool: $_[1]";
     };
 }
 
 sub CodeRef {
     return sub {
-        ref $_[0] eq 'CODE'
-            or croak "not a CodeRef: $_[0]";
+        ref $_[1] eq 'CODE'
+            or croak "not a CodeRef: $_[1]";
     }
 }
 
+sub ExistingDir {
+    return sub { -d $_[1] or croak "dir '$_[1]' does not exist" }
+}
+
 sub to_Channels {
-    return sub {
-        ref $_[0] eq 'ARRAY' 
-            ? $_[0]
-            : [ $_[0] ]
-    };
+    return sub { ref $_[1] eq 'ARRAY' ? $_[1] : [ $_[1] ] }
+}
+
+sub to_Dir {
+    return sub { warn "to_dir $_[1]"; dir($_[1])->absolute->cleanup }
+}
+
+sub to_ExistingDir {
+    return sub { warn "exists? $_[1]"; dir($_[1])->absolute->resolve }
+}
+
+sub to_Uid {
+    return sub { 
+        blessed $_[1] && $_[1]->can('uid')
+            ? $_[1]->uid
+            : $_[1]
+    }
+}
+
+sub to_Gid {
+    return sub { 
+        blessed $_[1] && $_[1]->can('gid')
+            ? $_[1]->gid
+            : $_[1]
+    }
 }
 
 1;

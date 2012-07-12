@@ -21,8 +21,6 @@ TODO
 
 our @EXPORT = qw(Done done OS Os os);
 
-our $app;
-
 sub import {
     my $package = caller;
 
@@ -30,21 +28,22 @@ sub import {
     strict->import();
     feature->import(':5.10');
 
-    $app = _instantiate_app();
-    _create_and_export_entity_keywords($package);
-    _create_and_export_source_keywords($package);
-    _export_symbols($package);
+    instantiate_app();
+    create_and_export_entity_keywords($package);
+    create_and_export_source_keywords($package);
+    export_symbols($package);
 }
 
-sub _instantiate_app {
+our $app;
+sub instantiate_app {
     my $os = os();
     my $app_package = "Provision::DSL::App::$os";
     load $app_package;
 
-    return $app_package->new; ### new_with_options would be nice!
+    $app = $app_package->new; ### new_with_options would be nice!
 }
 
-sub _create_and_export_entity_keywords {
+sub create_and_export_entity_keywords {
     my $package = shift;
 
     my $os = os();
@@ -69,7 +68,7 @@ sub _create_and_export_entity_keywords {
         #         via { $entity_package->new({app => $app, name => $_}) };
         # }
     }
-    $app->_entity_package_for(\%package_for);
+    $app->entity_package_for(\%package_for);
 
     while (my ($entity_name, $entity_package) = each %package_for) {
         load $entity_package;
@@ -86,7 +85,7 @@ sub _create_and_export_entity_keywords {
     }
 }
 
-sub _create_and_export_source_keywords {
+sub create_and_export_source_keywords {
     my $package = shift;
 
     foreach my $source_package (__PACKAGE__->sources) {
@@ -102,7 +101,7 @@ sub _create_and_export_source_keywords {
     }
 }
 
-sub _export_symbols {
+sub export_symbols {
     my $package = shift;
 
     foreach my $symbol (@EXPORT) {

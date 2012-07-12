@@ -5,6 +5,9 @@ use ok 'ParentX';
 use ok 'Child';
 use ok 'ModifyingChild';
 
+# we need: Role-Tiny 1.001003, Moo 0.091011
+# versions before bahave differently
+
 #
 # without inheritance,
 # method, class-modifiers and role-mofifiers are called

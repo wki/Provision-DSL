@@ -1,40 +1,36 @@
 package Provision::DSL::Role::PathOwner;
-use Moose::Role;
+use Moo::Role;
 use Provision::DSL::Types;
 
-requires 'path', 'is_current', 'create', 'change';
-
-has user => (
-    is => 'ro', 
-    isa => 'User',
-    lazy_build => 1,
-    coerce => 1,
+has uid => (
+    is => 'lazy', 
+    coerce => to_Uid,
 );
 
-has group => (
-    is => 'ro', 
-    isa => 'Group',
-    lazy_build => 1,
-    coerce => 1,
+has gid => (
+    is => 'lazy', 
+    coerce => to_Gid,
 );
 
 around is_current => sub {
     my ($orig, $self) = @_;
     
     return -e $self->path 
-        && ($self->path->stat->uid == $self->user->uid)
-        && ($self->path->stat->gid == $self->group->gid)
+        && ($self->path->stat->uid == $self->uid)
+        && ($self->path->stat->gid == $self->gid)
         && $self->$orig();
 };
 
-after ['create', 'change'] => sub {
+my $after_create_or_change = sub {
     my $self = shift;
     
-    $self->log_dryrun("would chown ${\$self->user}:${\$self->group}, ${\$self->path}")
+    $self->log_dryrun("would chown ${\$self->uid}:${\$self->gid}, ${\$self->path}")
         and return;
     
-    chown $self->user->uid, $self->group->gid, $self->path;
+    chown $self->uid, $self->gid, $self->path;
 };
 
-no Moose::Role;
+after create => $after_create_or_change;
+after change => $after_create_or_change;
+
 1;

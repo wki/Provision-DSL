@@ -9,6 +9,7 @@ system "/bin/rm -rf '$x_dir'";
 $x_dir->mkpath;
 
 use ok 'Provision::DSL';
+my %app = (app => $Provision::DSL::app);
 
 can_ok 'main', 'Dir';
 
@@ -16,33 +17,31 @@ my $d;
 
 # erroneous parameters
 undef $d;
-dies_ok { $d = Dir() }
+dies_ok { $d = Provision::DSL::Entity::Dir->new() }
         'creating an unnamed dir entity dies';
-
 
 # creating and removing a directory
 undef $d;
-lives_ok { $d = Dir("$FindBin::Bin/x/y") }
+lives_ok { $d = Provision::DSL::Entity::Dir->new(name => "$FindBin::Bin/x/y", %app) }
          'creating a named but unknown dir entity lives';
-isa_ok $d, 'Provision::DSL::Entity::Dir';
+
 ok !-d $d->path, 'an unknown dir does not exist';
 ok !$d->is_present, 'an unknown dir is not present';
 
-lives_ok { $d->process(1) } 'creating a former unknown dir lives';
+lives_ok { $d->execute(1) } 'creating a former unknown dir lives';
 ok -d $d->path, 'a former unknown dir exists';
 ok $d->is_present, 'a former unknown dir is present';
 ok $d->is_current, 'a former unknown dir is current';
 
-lives_ok { $d->process(0) } 'removing a dir lives';
+lives_ok { $d->execute(0) } 'removing a dir lives';
 ok !-d $d->path, 'a removed dir does not exist';
 ok !$d->is_present, 'a removed dir is not present';
 
 
 # checking of an existing directory
 undef $d;
-lives_ok { $d = Dir("$FindBin::Bin/x") }
+lives_ok { $d = Provision::DSL::Entity::Dir->new(name => "$FindBin::Bin/x", %app) }
          'creating a named and known dir entity lives';
-isa_ok $d, 'Provision::DSL::Entity::Dir';
 ok -d $d->path, 'a known dir exists';
 ok $d->is_present, 'a known dir is present';
 ok $d->is_current, 'a known dir is current';
@@ -52,10 +51,12 @@ ok $d->is_current, 'a known dir is current';
 system "/bin/rm -rf '$x_dir'";
 $x_dir->mkpath;
 undef $d;
-$d = Dir("$FindBin::Bin/x/foo",{
-        mkdir => [qw(abc def ghi/jkl)],
-        content => Resource('dir1'),
-    });
+$d = Provision::DSL::Entity::Dir->new(
+    name => "$FindBin::Bin/x/foo",
+    %app,
+    mkdir => [qw(abc def ghi/jkl)],
+    content => Resource('dir1'),
+);
 ok !$d->is_present, 'dir with structure is not present';
 ok !$d->is_current, 'dir with structure is not current';
 

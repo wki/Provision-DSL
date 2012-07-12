@@ -1,13 +1,11 @@
 package Provision::DSL::Source::Template;
-use Moose;
+use Moo;
 use Template;
-use namespace::autoclean;
 
 extends 'Provision::DSL::Source::Resource';
 
 has vars => (
     is => 'ro',
-    isa => 'HashRef',
     default => sub { {} },
 );
 
@@ -31,5 +29,4 @@ sub _build_content {
     return $output;
 }
 
-__PACKAGE__->meta->make_immutable;
 1;

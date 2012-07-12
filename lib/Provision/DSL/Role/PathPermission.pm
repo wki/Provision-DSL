@@ -1,14 +1,11 @@
 package Provision::DSL::Role::PathPermission;
-use Moose::Role;
+use Moo::Role;
 use Provision::DSL::Types;
 
-requires 'path', 'is_current', 'create', 'change';
-
 has permission => (
-    is => 'ro', 
-    isa => 'Permission', 
-    required => 1, 
-    lazy_build => 1,
+    is => 'lazy', 
+    # coerce => to_Permission,
+    # required => 1, 
 );
 
 around is_current => sub {
@@ -18,7 +15,7 @@ around is_current => sub {
         && $self->$orig();
 };
 
-after ['create', 'change'] => sub {
+my $after_create_or_change = sub {
     my $self = shift;
     
     $self->log_dryrun("would chmod ${\oct($self->permission)}, ${\$self->path}")
@@ -27,5 +24,7 @@ after ['create', 'change'] => sub {
     chmod oct($self->permission), $self->path;
 };
 
-no Moose::Role;
+after create => $after_create_or_change;
+after change => $after_create_or_change;
+
 1;
