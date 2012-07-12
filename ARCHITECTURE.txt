@@ -61,6 +61,7 @@ Entity Funktionsweise:
      - create()                 von Kindern zu erweitern
      - change()                 von Kindern zu erweitern
      - remove()                 von Kindern zu erweitern
+     - reloader()               -> coderef zum Reload
 
 
 

@@ -19,7 +19,7 @@ sub Bool {
     return sub {
         !defined $_[0] || !ref $_[0]
             or croak "not a Bool: $_[0]";
-    }
+    };
 }
 
 sub CodeRef {
@@ -27,6 +27,14 @@ sub CodeRef {
         ref $_[0] eq 'CODE'
             or croak "not a CodeRef: $_[0]";
     }
+}
+
+sub to_Channels {
+    return sub {
+        ref $_[0] eq 'ARRAY' 
+            ? $_[0]
+            : [ $_[0] ]
+    };
 }
 
 1;

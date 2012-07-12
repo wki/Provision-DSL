@@ -10,7 +10,6 @@ has name => (
 
 has app => (
     is => 'ro',
-    # isa => 'Provision::DSL::App',
     required => 1,
     handles => [qw(verbose dryrun
                    log log_dryrun log_debug
@@ -19,41 +18,15 @@ has app => (
                    set_changed has_changed)],
 );
 
-has parent => (
-    is => 'ro',
-    # isa => 'Entity',
-    predicate => 'has_parent',
-);
+has parent  => (is => 'ro', predicate => 'has_parent');
 
-has state  => (
-    is => 'lazy',
-    isa => Str,
-    clearer => 'clear_state',
-);
+has state   => (is => 'lazy', isa => Str, clearer => 'clear_state');
 
-has wanted => (
-    is => 'ro',
-    isa => Bool,
-    default => sub { 1 },
-);
+has wanted  => (is => 'ro', isa => Bool, default => sub { 1 });
+has changed => (is => 'rw', isa => Bool, default => sub { 0 });
 
-has changed => (
-    is => 'rw',
-    isa => Bool,
-    default => sub { 0 },
-);
-
-has listen => (
-    is => 'ro',
-    # isa => 'Channels',
-    default => sub { [] },
-);
-
-has talk => (
-    is => 'ro',
-    # isa => 'Channels',
-    default => sub { [] },
-);
+has listen  => (is => 'ro', coerce => to_Channels, default => sub { [] });
+has talk    => (is => 'ro', coerce => to_Channels, default => sub { [] });
 
 # these conditions have precedence over methods is_present, is_current
 # testing order is as follows:
@@ -125,7 +98,7 @@ sub is_current {
 }
 
 # returns a coderef which when called forces change
-sub reload {
+sub reloader {
     my $self = shift;
 
     return sub {
