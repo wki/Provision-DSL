@@ -2,9 +2,7 @@ package Provision::DSL::Entity;
 use Moo;
 use Provision::DSL::Types;
 
-has name => ( is => 'ro', isa => Str, required => 1,
-
- );
+has name => ( is => 'ro', isa => Str, required => 1);
 
 has app => (
     is       => 'ro',

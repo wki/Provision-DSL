@@ -1,6 +1,6 @@
 package Provision::DSL::Source::Template;
 use Moo;
-use Template;
+use Template::Simple;
 
 extends 'Provision::DSL::Source::Resource';
 
@@ -16,11 +16,8 @@ sub _build_content {
     die 'template file does not exist' if !-f $self->path;
     
     my $output = '';
-    my $renderer = Template->new(
-        INCLUDE_PATH => $self->path->dir,
-        INTERPOLATE  => 0,
-        POST_CHOMP   => 0,
-        EVAL_PERL    => 1,
+    my $renderer = Template->simple->new(
+        search_dirs => [ $self->path->dir ],
     );
     
     $renderer->process($self->path->basename, $self->vars, \$output)

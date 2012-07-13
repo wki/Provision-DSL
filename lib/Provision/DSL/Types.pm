@@ -9,8 +9,9 @@ our @EXPORT = qw(
     CodeRef
     ExistingDir
     
+    to_Str
     to_Channels 
-    to_Dir to_ExistingDir
+    to_Dir to_ExistingDir to_File
     to_Uid to_Gid
 );
 
@@ -39,16 +40,30 @@ sub ExistingDir {
     return sub { -d $_[0] or croak "dir '$_[0]' does not exist" }
 }
 
+sub to_Str {
+    return sub {
+        blessed $_[0] && $_[0]->can('content')
+            ? $_[0]->content
+        : ref $_[0] eq 'Path::Class::File'
+            ? scalar $_[0]->slurp
+        : "$_[0]"
+    }
+}
+
 sub to_Channels {
     return sub { ref $_[0] eq 'ARRAY' ? $_[0] : [ $_[0] ] }
 }
 
 sub to_Dir {
-    return sub { warn "to_dir $_[0]"; dir($_[0])->absolute->cleanup }
+    return sub { dir($_[0])->absolute->cleanup }
 }
 
 sub to_ExistingDir {
-    return sub { warn "exists? $_[0]"; dir($_[0])->absolute->resolve }
+    return sub { dir($_[0])->absolute->resolve }
+}
+
+sub to_File {
+    return sub { file($_[0])->absolute->cleanup }
 }
 
 sub to_Uid {

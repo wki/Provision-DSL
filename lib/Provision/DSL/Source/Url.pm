@@ -1,6 +1,6 @@
 package Provision::DSL::Source::Url;
 use Moose;
-use LWP::Simple;
+use HTTP::Lite;
 use namespace::autoclean;
 
 extends 'Provision::DSL::Source';
@@ -14,7 +14,14 @@ has url => (
 
 sub _build_url { $_[0]->name }
 
-sub _build_content { get($_[0]->url) }
+sub _build_content {
+    my $self = shift;
+    
+    my $http = HTTP::Lite->new;
+    my $req = $http->request($self->url)
+        or die "Unable to get '${\$self->url}': $!";
+    return $http->body;
+}
 
 __PACKAGE__->meta->make_immutable;
 1;

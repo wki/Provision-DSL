@@ -19,9 +19,13 @@ Bestandteile:
     * Compound
       * Dir                     Kinder: Dir, Rsync
         Rollen: permission, owner
+          + path
+          + content (Dir)
       * Perlbrew                Kinder: install, cpanm, perl, switch
       * User                    Kinder: Dir (=home), Group
     * File
+        + path
+        + content (Str <- Path, Url)
       Rollen: permission, owner
     * Rsync
     * Service

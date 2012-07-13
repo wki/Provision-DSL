@@ -57,14 +57,9 @@ sub _exclude_list {
     my $self = shift;
 
     my @exclude_list;
-    foreach my $exclude (@{$self->exclude}) {
-        my $path = $exclude->{path};
+    foreach my $path (@{$self->exclude}) {
         $path =~ s{\A / | / \z}{}xmsg;
         push @exclude_list, '--exclude', "/$path/";
-
-        # my @parts = split '/', $path;
-        # push @exclude_list, '--exclude', join('/', @parts[0..$_])
-        #     for (0..$#parts);
     }
 
     return @exclude_list;

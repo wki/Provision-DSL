@@ -51,7 +51,7 @@ sub create_entity {
     my $self   = shift;
     my $entity = shift;
     
-    die "create entity: $entity";
+    # die "create entity: $entity";
 
     my %args = (app => $self);
     $args{name} = shift if !ref $_[0];

@@ -5,7 +5,7 @@ use Provision::DSL::Types;
 extends 'Provision::DSL::Entity';
 
 sub path;       # must forward-declare
-# sub content;  # must forward-declare
+sub content;    # must forward-declare
 
 # with 'Provision::DSL::Role::CheckFileExistence',
 #      'Provision::DSL::Role::CheckFileContent',
@@ -13,19 +13,18 @@ sub path;       # must forward-declare
 #      'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0644' }
-     
+
 has path => (
-    is => 'lazy', 
-    # isa => 'PathClassFile', 
-    # lazy_build => 1,
-    # coerce => 1, 
+    is => 'lazy',
+    coerce => to_File,
 );
+
 sub _build_path { $_[0]->name }
 
 has content => (
-    is => 'ro', 
-    # isa => 'SourceContent', 
-    # coerce => 1, 
+    is => 'ro',
+    isa => Str,
+    coerce => to_Str,
     required => 1,
 );
 

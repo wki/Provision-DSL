@@ -5,12 +5,14 @@ use ok 'Provision::DSL::Source';
 
 {
     package S;
-    use Moose;
+    use Moo;
+    use Provision::DSL::Types;
+    
     extends 'Provision::DSL::Source';
     
     has a1 => (
         is => 'ro',
-        isa => 'Str',
+        isa => Str,
         predicate => 'has_a1',
     );
 }

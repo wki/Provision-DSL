@@ -8,6 +8,9 @@ my $current_group = getgrgid($();
 
 can_ok 'main', 'Group';
 
+### FIXME: test os specific variant directly!!!
+
+
 # basic behavior
 {
     my $g;

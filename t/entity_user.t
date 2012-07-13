@@ -8,10 +8,11 @@ my $current_user = getpwuid($<);
 
 can_ok 'main', 'User';
 
+### FIXME: must test with os-specific entities
+
 # basic behavior
 {
     my $u;
-    
     
     undef $u;
     dies_ok { $u = User() }

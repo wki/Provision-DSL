@@ -5,9 +5,15 @@ use FindBin;
 use Provision::DSL::App;
 
 use ok 'Provision::DSL::Entity::Dir';
+use ok 'Provision::DSL::Entity::Rsync';
 
 my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
-my $app = Provision::DSL::App->new();
+my $app = Provision::DSL::App->new(
+    entity_package_for => {
+        Dir   => 'Provision::DSL::Entity::Dir',
+        Rsync => 'Provision::DSL::Entity::Rsync',
+    },
+);
 
 # creating and removing a non-existing directory
 {
@@ -62,7 +68,7 @@ my $app = Provision::DSL::App->new();
     lives_ok {
         $d = Provision::DSL::Entity::Dir->new(
             name => "$FindBin::Bin/x/foo",
-            %app,
+            app => $app,
             mkdir => [qw(abc def ghi/jkl)],
             rmdir => [qw(zz)],
             content => "$FindBin::Bin/resources/dir1",
@@ -73,7 +79,7 @@ my $app = Provision::DSL::App->new();
     ok !$d->is_present, 'dir with structure is not present';
     ok !$d->is_current, 'dir with structure is not current';
     
-    $d->process(1);
+    $d->execute(1);
     
     ok $d->is_present, 'dir with structure is present after process';
     ok $d->is_current, 'dir with structure is current after process';

@@ -19,7 +19,7 @@ around BUILDARGS => sub {
     my $orig = shift;
     my $class = shift;
     
-    my %args = ();
+    my %args;
     $args{name} = shift if !ref $_[0];
     %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
     

@@ -1,41 +1,34 @@
 TODO for provisioning
 ---------------------
 
-1) DSL: depending on context (scalar/void)
-     * void: create and ->execute() entity
-     * scalar: retrieve an entity from a cache-list or die
-
-2) Entity:
-     * add "tell" and "listen" --> channels
-
-3) Tests:
-     * isolate tests from DSL -- no Capital() constructors!
-     * testing with Resources is OK
-
-4) Execute:
-     * cwd attribute
-
-5) App:
-     * store created classes (Package, name)
-     * list of channels
+Tests:
+    * isolate tests from DSL -- no Capital() constructors!
+    * testing with Resources is OK
 
 
-Idea: use Moo instead of Moose.
-  * no types like now
-  * multiple roles do not work well with before/after modifiers
-    --> no roles at all, composition instead
+
+Execute:
+    * cwd attribute
+
+
+
+Idea:
+  * How to handle dir lists?
+      - { path, permission, user, group }
+      - Object ???
+
   * enable packing everything from
-    Moo
-    Class::Method::Modifiers
-    strictures
-    Module::Runtime
-    Role::Tiny
+        Moo
+        Class::Method::Modifiers
+        strictures
+        Module::Runtime
+        Role::Tiny
+
   * structure to copy to target server:
-      local/
-        lib/
-          perl5/
-        bin/
-      resources/
-      provision.pl
-    
-  
+        local/
+            lib/
+                perl5/
+            bin/
+        resources/
+        provision.pl
+
