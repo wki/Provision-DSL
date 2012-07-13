@@ -188,6 +188,4 @@ coerce 'Channels',
     from 'Str',
         via { [ $_ ] };
 
-
-no Moose::Util::TypeConstraints;
 1;

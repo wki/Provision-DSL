@@ -19,7 +19,8 @@ after remove => sub {
 
 sub _remove_recursive {
     my ($child, $cont) = @_;
-            
+    
+    warn "remove recursive: $child";
     $cont->() if -d $child;
     $child->remove;
 }

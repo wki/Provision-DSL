@@ -10,6 +10,7 @@ can_ok 'main', qw(OS Os os Done done);
 foreach my $os (qw(OSX Ubuntu)) {
     # simulate $os
     no strict 'refs';
+    no warnings 'redefine';
     local *{'Provision::DSL::os'} = sub { $os };
 
     is os(), $os, "os is $os";
