@@ -8,14 +8,14 @@ nicht zum Weitergeben gedacht, daher in deutsch.
 
 Bestandteile:
 
- - script                       enthält DSL Befehle
- - DSL                          pro DSL Befehl eine sub
- - App                          zentrale Ablaufsteuerung
+ * script                       enthält DSL Befehle
+ * DSL                          pro DSL Befehl eine sub
+ * App                          zentrale Ablaufsteuerung
     ----[ logging ]
     ----[ entity caching ]
     ----[ talked words ]
     ----[ command execution ]
- - Entity                       Basisklasse von Entities
+ * Entity                       Basisklasse von Entities
     * Compound
       * Dir                     Kinder: Dir, Rsync
         Rollen: permission, owner
@@ -28,14 +28,17 @@ Bestandteile:
     * Group
     * Package
     * Execute
- - Source                       Basisklasse von Datenquellen
- [- Condition]
+ * Source                       Basisklasse von Datenquellen
+    * Resource
+      * Template
+    * Url
+[* Condition]
 
 
 
 Entity Funktionsweise:
 
-   P::DSL::Entity
+   * P::DSL::Entity
      ----[ identifikation, Wunsch ]
      + name                     Pflicht, wird evtl. nach ??? kopiert
      + app                      ->P::DSL::App
