@@ -15,7 +15,8 @@ has install_cpanm => (
 
 has install_perl => (
     is  => 'ro',
-    isa => Str required => 1,
+    isa => Str,
+    required => 1,
 );
 
 has switch_to_perl => (

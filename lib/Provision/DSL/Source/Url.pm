@@ -1,7 +1,6 @@
 package Provision::DSL::Source::Url;
-use Moose;
+use Moo;
 use HTTP::Lite;
-use namespace::autoclean;
 
 extends 'Provision::DSL::Source';
 
@@ -23,5 +22,4 @@ sub _build_content {
     return $http->body;
 }
 
-__PACKAGE__->meta->make_immutable;
 1;

@@ -1,7 +1,5 @@
 package Provision::DSL::Role::CheckDirExistence;
-use Moose::Role;
-
-requires 'path', 'is_present', 'remove';
+use Moo::Role;
 
 around is_present => sub {
     my ($orig, $self) = @_;
@@ -9,7 +7,9 @@ around is_present => sub {
     return -d $self->path && $self->$orig();
 };
 
-after ['create', 'change'] => sub { $_[0]->path->mkpath };
+after create => sub { $_[0]->path->mkpath };
+
+after change => sub { $_[0]->path->mkpath };
 
 after remove => sub {
     my $self = shift;
@@ -24,5 +24,4 @@ sub _remove_recursive {
     $child->remove;
 }
 
-no Moose::Role;
 1;

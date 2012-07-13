@@ -1,8 +1,6 @@
 package Provision::DSL::Role::CheckFileContent;
-use Moose::Role;
+use Moo::Role;
 use autodie ':all';
-
-requires 'path', 'content', 'is_current', 'create', 'change';
 
 around is_current => sub {
     my ($orig, $self) = @_;
@@ -18,5 +16,4 @@ after ['create', 'change'] => sub {
     $fh->close;
 };
 
-no Moose::Role;
 1;

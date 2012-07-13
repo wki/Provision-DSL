@@ -7,6 +7,7 @@ nicht zum Weitergeben gedacht, daher in deutsch.
 
 
 Bestandteile:
+ (+: attribut, -: methode, *: Klasse, !: Rolle)
 
  * script                       enthält DSL Befehle
  * DSL                          pro DSL Befehl eine sub
@@ -17,25 +18,53 @@ Bestandteile:
     ----[ command execution ]
  * Entity                       Basisklasse von Entities
     * Compound
+        + children: Entity[]
+        - add_child
+        - nr_children
+        - all_children
+        - has_no_children
       * Dir                     Kinder: Dir, Rsync
-        Rollen: permission, owner
-          + path
-          + content (Dir)
+          ! PathPermission
+          ! PathOwner
+          ! CheckDirExistence   --> evtl. in Klasse nehmen
+          + path: Dir
+          + mkdir: DirList
+          + rmdir: DirList
+          + content: ExistingDir
       * Perlbrew                Kinder: install, cpanm, perl, switch
-      * User                    Kinder: Dir (=home), Group
+          + install_cpanm: Bool
+          + install_perl: Str
+          + switch_to_perl: Str
+      * _XXX::User              Kinder: Dir (=home), Group
+          + uid: Int
+          + home: Dir
+          + group: Group
+    * Execute
+        + path: ExecutableFile
+        + arguments: Str[]
+        + environment: HashRef
     * File
         + path
         + content (Str <- Path, Url)
       Rollen: permission, owner
+    * _XXX::Group
+        + gid
+    * _XXX::Package
     * Rsync
-    * Service
-    * Group
-    * Package
-    * Execute
+        + path: Dir
+        + content: ExistingDir
+        + exclude: DirList
+    * _XXX::Service
  * Source                       Basisklasse von Datenquellen
+      + name: Str
+      + content: Str
     * Resource
+        + root_dir: ExistingDir
+        + path: File | Dir
       * Template
+          + vars: HashRef
     * Url
+        + url
 [* Condition]
 
 
@@ -93,8 +122,7 @@ Datenstruktur zum Deployment (gepackt als .tar.gz):
     cpanm
     perlbrew
   etc/                      -- evtl. Konfigurations-Dateien
-  lib/
-    perl5/                  -- alle benötigten Bibliotheken
+  lib/                      -- alle benötigten Bibliotheken
   resources/                -- Resource-Dateien
 
 
