@@ -4,6 +4,8 @@ use Moo;
 use IPC::Open3 'open3';
 use Try::Tiny;
 use Carp;
+use Scalar::Util 'blessed';
+use Getopt::Long 'GetOptionsFromArray';
 use Provision::DSL::Types;
 
 has verbose => (
@@ -44,13 +46,49 @@ has _channel_changed => (
     default => sub { {} },
 );
 
-####################################### Entity handling
+####################################### Option processing
 
+sub new_with_options {
+    my $class = shift;
+    my @argv = @_;
+
+    my %options;
+    Getopt::Long::Configure('bundling');
+    GetOptionsFromArray(
+        \@argv => \%options,
+
+        'verbose|v',    'dryrun|n',
+        'debug',        'help|h|?',
+    );
+    usage() if $options{help};
+
+    return $class->new(\%options);
+}
+
+sub usage {
+    say <<EOF;
+$0 [options]
+
+  --dryrun -n    just simulate
+  --verbose -v   print progress messages
+  --debug        print debug info
+
+  --help         this help
+EOF
+    exit 1
+}
+
+sub DEMOLISH {
+    my $self = shift;
+
+    $self->log_debug('End of Program');
+}
+####################################### Entity handling
 
 sub create_entity {
     my $self   = shift;
     my $entity = shift;
-    
+
     # die "create entity: $entity";
 
     my %args = (app => $self);
@@ -65,6 +103,7 @@ sub create_entity {
         if exists $self->_entity_cache->{$entity}
            && exists $self->_entity_cache->{$entity}->{$args{name}};
 
+    $self->log_debug("create_entity $entity($args{name}) from", \%args);
     return $self->_entity_cache->{$entity}->{$args{name}} = $class->new(\%args);
 }
 
@@ -92,13 +131,13 @@ sub get_cached_entity {
 
 sub set_changed {
     my ($self, $channel) = @_;
-    
+
     $self->_channel_changed->{$channel} = 1;
 }
 
 sub has_changed {
     my ($self, $channel) = @_;
-    
+
     return exists $self->_channel_changed->{$channel};
 }
 
@@ -123,9 +162,34 @@ sub _log_if {
     my $self = shift;
     my $condition = shift;
 
-    say STDERR join(' ', @_) if $condition;
+    say STDERR join(' ', map { _to_string($_) } @_) if $condition;
 
     return $condition;
+}
+
+sub _to_string {
+    my $thing = shift;
+
+    return
+        !defined $thing
+            ? '(undef)'
+    :   !ref $thing
+            ? "$thing"
+    :   ref $thing eq 'ARRAY'
+            ? '[ ' .
+              join(', ',
+                   map { _to_string($_) } @$thing) .
+              ' ]'
+    :   ref $thing eq 'HASH'
+            ? '{ ' .
+              join(', ',
+                   map { "$_: ". _to_string($thing->{$_})} keys %$thing) .
+              ' }'
+    :   ref($thing) =~ m{\A Provision::DSL::Entity \b .* :: ([^:]+) \z}xms
+            ? "$1(${\$thing->name})"
+    :   blessed $thing && $thing->can('stringify')
+            ? ref $thing . '(' . $thing->stringify . ')'
+    :   "$thing"
 }
 
 ####################################### Command execution

@@ -5,7 +5,7 @@ use Carp;
 use base 'Exporter';
 
 our @EXPORT = qw(
-    Str Bool
+    Str Int Bool
     CodeRef
     ExistingDir
     
@@ -19,6 +19,13 @@ sub Str {
     return sub {
         defined $_[0] && !ref $_[0]
             or croak "not a Str: $_[0]";
+    };
+}
+
+sub Int {
+    return sub {
+        defined $_[0] && !ref $_[0] && $_[0] =~ m{\A \d+ \z}xms
+            or croak "not an Int: $_[0]";
     };
 }
 

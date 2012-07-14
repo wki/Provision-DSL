@@ -1,9 +1,13 @@
 #!/usr/bin/env perl
+use FindBin;
+use lib "$FindBin::Bin/lib";
 use Provision::DSL;
 
-User 'sites';
-User sites => ( ... );
-User sites => { ... };
+User sites => {
+    uid => 513,
+};
+
+exit;
 
 Perlbrew sites => {
     install_cpanm => 1,
@@ -29,7 +33,7 @@ Dir '/path/to/website' => {
         MyApp/root/files
         MyApp/root/static/_css
         MyApp/root/static/_js
-    )];
+    )],
     
     tell => 'source_changed',
 };
@@ -47,9 +51,8 @@ Execute install_cpan_modules => {
 };
 
 File '/path/to/website/MyApp/static/_css/site.css' => {
-    content => Execute(...),
+    content => Execute('/path/to/binary'),
     only_if => FileNewer('/path/to/website/MyApp/static/css/*.css'),
-    
 },
 
 Execute db_migration => {

@@ -59,19 +59,25 @@ sub execute {
     my $self = shift;
     my $wanted = shift // $self->wanted;
 
-    return if $self->is_ok($wanted);
+    if ($self->is_ok($wanted)) {
+        $self->log($self, 'OK');
+        return;
+    }
 
     $self->changed(1);
 
     $self->set_changed($_) for @{ $self->talk };
 
     if ( !$wanted ) {
+        $self->log($self, "state: ${\$self->state}", 'remove');
         $self->remove();
     }
     elsif ( $self->state eq 'missing' ) {
+        $self->log($self, "state: ${\$self->state}", 'create');
         $self->create();
     }
     else {
+        $self->log($self, "state: ${\$self->state}", 'change');
         $self->change();
     }
 

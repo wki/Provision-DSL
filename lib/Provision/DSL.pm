@@ -20,6 +20,7 @@ TODO
 =cut
 
 our @EXPORT = qw(Done done OS Os os);
+our $app;
 
 sub import {
     my $package = caller;
@@ -28,19 +29,22 @@ sub import {
     strict->import();
     feature->import(':5.10');
 
-    instantiate_app();
+    instantiate_app(@ARGV);
     create_and_export_entity_keywords($package);
     create_and_export_source_keywords($package);
     export_symbols($package);
+    
+    $app->log_debug('init done');
 }
 
-our $app;
 sub instantiate_app {
+    my @argv = @_;
+    
     my $os = os();
     my $app_package = "Provision::DSL::App::$os";
     load $app_package;
 
-    $app = $app_package->new; ### new_with_options would be nice!
+    $app = $app_package->new_with_options(@argv);
 }
 
 sub create_and_export_entity_keywords {

@@ -11,26 +11,19 @@ our $START_UID = 1000;
 our $MAX_ID    = 2000;
 
 has uid => (
-    is => 'ro',
-    isa => 'Int',
-    required => 1,
-    lazy_build => 1,
+    is => 'lazy',
+    isa => Int,
 );
 
 has home_directory => (
-    is => 'ro',
-    isa => 'PathClassDir',
-    coerce => 1,
-    required => 1,
-    lazy_build => 1,
+    is => 'lazy',
+    coerce => to_Dir,
 );
 
-has group => (
-    is => 'ro',
-    isa => 'Group',
-    coerce => 1,
-    required => 1,
-    lazy_build => 1,
+has gid => (
+    is => 'lazy',
+    isa => Int,
+    coerce => to_Gid,
 );
 
 sub _build_uid {
@@ -50,14 +43,14 @@ sub _build_uid {
     die 'could not create a unique UID';
 }
 
-sub _build_group {
+sub _build_gid {
     my $self = shift;
     
     my $gid = (getpwnam($self->name))[3];
     if (defined $gid) {
-        return scalar getgrgid($gid);
+        return $gid;
     } else {
-        return $self->name;
+        ### FIXME : search for group return $self->name;
     }
 }
 
