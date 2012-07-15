@@ -51,8 +51,8 @@ sub is_ok {
     my $self = shift;
     my $wanted = shift // $self->wanted;
 
-    return ( !$wanted && $self->state eq 'missing' )
-      || ( $wanted && $self->state eq 'current' );
+    return (!$wanted && $self->state eq 'missing')
+        || ($wanted  && $self->state eq 'current');
 }
 
 sub execute {
@@ -60,27 +60,22 @@ sub execute {
     my $wanted = shift // $self->wanted;
 
     if ($self->is_ok($wanted)) {
-        $self->log($self, 'OK');
+        $self->log($self, '- OK');
         return;
     }
 
     $self->changed(1);
-
     $self->set_changed($_) for @{ $self->talk };
 
-    if ( !$wanted ) {
-        $self->log($self, "state: ${\$self->state}", 'remove');
-        $self->remove();
-    }
-    elsif ( $self->state eq 'missing' ) {
-        $self->log($self, "state: ${\$self->state}", 'create');
-        $self->create();
-    }
-    else {
-        $self->log($self, "state: ${\$self->state}", 'change');
-        $self->change();
-    }
+    my $action = 
+          !$wanted                  ? 'remove'
+        : $self->state eq 'missing' ? 'create'
+        :                             'change';
 
+    $self->log_dryrun($self, $self->state, "would $action") and return;
+    $self->log($self, $self->state, "--> $action");
+
+    $self->$action();
     $self->clear_state;
 }
 

@@ -145,16 +145,19 @@ sub has_changed {
 
 sub log {
     my $self = shift;
+    
     $self->_log_if($self->verbose || $self->debug, @_);
 }
 
 sub log_debug {
     my $self = shift;
+    
     $self->_log_if($self->debug, 'DEBUG:', @_);
 }
 
 sub log_dryrun {
     my $self = shift;
+    
     $self->_log_if($self->dryrun, @_);
 }
 
@@ -186,9 +189,10 @@ sub _to_string {
                    map { "$_: ". _to_string($thing->{$_})} keys %$thing) .
               ' }'
     :   ref($thing) =~ m{\A Provision::DSL::Entity \b .* :: ([^:]+) \z}xms
-            ? "$1(${\$thing->name})"
+            ? "$1('${\$thing->name}')"
     :   blessed $thing && $thing->can('stringify')
-            ? ref $thing . '(' . $thing->stringify . ')'
+            ? ref $thing . 
+              '<' . $thing->stringify . '>'
     :   "$thing"
 }
 

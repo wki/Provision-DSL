@@ -3,8 +3,16 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 use Provision::DSL;
 
+my $SITE_DIR = '/Users/wolfgang/tmp/site_dir';
+
 User sites => {
     uid => 513,
+};
+
+Dir $SITE_DIR;
+
+File "$SITE_DIR/testfile" => {
+    content => 'blabla',
 };
 
 exit;

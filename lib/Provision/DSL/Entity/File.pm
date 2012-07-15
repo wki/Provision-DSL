@@ -7,9 +7,7 @@ extends 'Provision::DSL::Entity';
 sub path;       # must forward-declare
 sub content;    # must forward-declare
 
-# with 'Provision::DSL::Role::CheckFileExistence',
-#      'Provision::DSL::Role::CheckFileContent',
-#      'Provision::DSL::Role::PathPermission',
+# with 'Provision::DSL::Role::PathPermission',
 #      'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0644' }
@@ -27,5 +25,24 @@ has content => (
     coerce => to_Str,
     required => 1,
 );
+
+sub is_present { -f $_[0]->path }
+
+sub is_current {
+    my $self = shift;
+    
+    return $self->is_present
+        && scalar $self->path->slurp eq $self->content;
+}
+
+after ['create', 'change'] => sub {
+    my $self = shift;
+    
+    my $fh = $self->path->openw;
+    print $fh $self->content;
+    $fh->close;
+};
+
+after remove => sub { $_[0]->path->remove };
 
 1;
