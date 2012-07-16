@@ -8,8 +8,15 @@ Tests:
 
 
 Execute:
-    * cwd attribute
+  * cwd attribute
 
+
+Perlbrew:
+  * beim Installieren: laufen lassen von local/bin/perlbrew self-install
+
+
+new Entities:
+  * cron (path, arguments, environment)
 
 
 Idea:
@@ -23,12 +30,30 @@ Idea:
         strictures
         Module::Runtime
         Role::Tiny
+        Template::Simple
 
-  * structure to copy to target server:
+  * structure to copy to target server (as .tar)
+     - packed with Archive::Tar (relative dir: provision/...)
+     - scp provision.tar user@host:/tmp/provision.tar
+     - ssh user@host "cd /tmp; tar xfz provision.tar; /usr/bin/perl /tmp/provision/dsl.pl"
         local/
             lib/
                 perl5/
             bin/
+                perlbrew < https://raw.github.com/gugod/App-perlbrew/master/perlbrew
+        dist/
+            Non-CPAN.tar.gz
+            NUREG-Foo-0.01.tar.gz
         resources/
-        provision.pl
+        dsl.pl
 
+
+  * simple script allowing to pack files into resources plus other things
+      Resources:
+        - target_dir: (from DSL?)
+        - soruce_dir: project or relative dir inside project
+        - exclude list (from DSL?)
+      Others:
+        - all modules required to run ->local/lib/perl5
+        - perlbrew -> local/bin
+        - non-CPAN distributions -> dist

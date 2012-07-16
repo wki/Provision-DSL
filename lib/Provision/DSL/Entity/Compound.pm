@@ -39,8 +39,8 @@ around is_current => sub {
         && scalar(grep { $_->is_current } $self->all_children) == $self->nr_children;
 };
 
-sub create { $_->execute(1) for $_[0]->all_children }
-sub change { $_->execute(1) for $_[0]->all_children }
-sub remove { $_->execute(0) for reverse $_[0]->all_children }
+# only remove() receives wanted=0, all others use their wanted attribute
+after ['create', 'change'] => sub { $_->execute() for $_[0]->all_children };
+after 'remove' => sub { $_->execute(0) for reverse $_[0]->all_children };
 
 1;

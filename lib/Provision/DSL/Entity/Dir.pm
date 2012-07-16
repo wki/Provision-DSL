@@ -44,7 +44,7 @@ after remove => sub {
 
 sub _remove_recursive {
     my ($child, $cont) = @_;
-    
+
     $cont->() if -d $child;
     $child->remove;
 }

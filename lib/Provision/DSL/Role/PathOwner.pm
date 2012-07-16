@@ -21,16 +21,10 @@ around is_current => sub {
         && $self->$orig();
 };
 
-my $after_create_or_change = sub {
+after ['create', 'change'] => sub {
     my $self = shift;
-    
-    $self->log_dryrun("would chown ${\$self->uid}:${\$self->gid}, ${\$self->path}")
-        and return;
     
     chown $self->uid, $self->gid, $self->path;
 };
-
-after create => $after_create_or_change;
-after change => $after_create_or_change;
 
 1;

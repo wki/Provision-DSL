@@ -62,7 +62,7 @@ my $app = Provision::DSL::App->new(
 # multiple dirs and copying from a resource
 {
     clear_directory_content($x_dir);
-    $x_dir->subdir('zz')->mkpath;
+    $x_dir->subdir('foo/zz')->mkpath;
     
     my $d;
     lives_ok {
@@ -84,7 +84,7 @@ my $app = Provision::DSL::App->new(
     ok $d->is_present, 'dir with structure is present after process';
     ok $d->is_current, 'dir with structure is current after process';
     
-    ok !-d $x_dir->subdir('zz'), 'unwanted directory removed';
+    ok !-d $x_dir->subdir('foo/zz'), 'unwanted directory removed';
     
     foreach my $dir (qw(abc def ghi ghi/jkl dir2)) {
         ok -d $d->path->subdir($dir), "subdir '$dir' present";
