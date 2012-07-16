@@ -5,8 +5,7 @@ use Provision::DSL::Types;
 extends 'Provision::DSL::Entity::Compound';
 
 sub path;    # must forward-declare
-with 'Provision::DSL::Role::CheckDirExistence',
-     'Provision::DSL::Role::PathPermission',
+with 'Provision::DSL::Role::PathPermission',
      'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0755' }
@@ -32,6 +31,23 @@ has content => (
     coerce    => to_ExistingDir,
     predicate => 'has_content',
 );
+
+sub is_present { -d $_[0]->path }
+
+after ['create', 'change'] => sub { $_[0]->path->mkpath };
+
+after remove => sub {
+    my $self = shift;
+
+    $self->path->traverse(\&_remove_recursive) if -d $self->path;
+};
+
+sub _remove_recursive {
+    my ($child, $cont) = @_;
+    
+    $cont->() if -d $child;
+    $child->remove;
+}
 
 sub _build_children {
     my $self = shift;
