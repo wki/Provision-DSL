@@ -15,15 +15,14 @@ sub _build_content {
     die 'a directory cannot act as a template' if -d $self->path;
     die 'template file does not exist' if !-f $self->path;
     
-    my $output = '';
-    my $renderer = Template->simple->new(
+    my $renderer = Template::Simple->new(
         search_dirs => [ $self->path->dir ],
     );
     
-    $renderer->process($self->path->basename, $self->vars, \$output)
+    my $output = $renderer->render(scalar $self->path->slurp, $self->vars)
         or die "Error: ${\$renderer->error}";
 
-    return $output;
+    return $$output;
 }
 
 1;
