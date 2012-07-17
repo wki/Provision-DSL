@@ -32,10 +32,11 @@ sub _build_uid { $< }
 sub _build_gid { $( }
 
 sub execute {
-    my $self = shift;
+    my $self   = shift;
     my $wanted = shift // $self->wanted;
+    my $state  = shift // $self->state;
 
-    if ($self->is_ok($wanted)) {
+    if ($self->is_ok($wanted, $state)) {
         $self->log($self, '- OK');
         return;
     }
@@ -44,11 +45,11 @@ sub execute {
     $self->set_changed($_) for @{ $self->talk };
 
     my $action = $wanted
-        ? ($self->state eq 'missing' ? 'create' : 'change')
+        ? ($state eq 'missing' ? 'create' : 'change')
         : 'remove';
 
     $self->log_dryrun($self, "would run $action") and return;
-    $self->log($self, "(${\$self->state})", $action);
+    $self->log($self, "$state => $action");
 
     $self->$action();
 }
@@ -57,11 +58,12 @@ sub execute {
 sub state { 'current' }
 
 sub is_ok {
-    my $self = shift;
+    my $self   = shift;
     my $wanted = shift // $self->wanted;
+    my $state  = shift // $self->state;
 
-    my $ok = ($wanted && $self->state eq 'current')
-        ||  (!$wanted && $self->state eq 'missing');
+    my $ok = ($wanted && $state eq 'current')
+        ||  (!$wanted && $state eq 'missing');
 
     ### FIXME: does not look very clever yet.
     my $modifier =
