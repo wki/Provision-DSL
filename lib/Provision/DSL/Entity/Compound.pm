@@ -22,16 +22,30 @@ sub all_children { @{$_[0]->children} }
 
 sub has_no_children { !scalar @{$_[0]->children} }
 
-around is_ok => sub {
-    my $orig = shift;
+# return a true value if compound has a state by itself
+sub compound_state { }
+
+sub state {
     my $self = shift;
 
-    return $self->$orig(@_)
-        && scalar(grep { $_->is_ok } $self->all_children) == $self->nr_children;
+    my $state = $self->compound_state;
+    return $state || $self->default_state if $self->has_no_children;
+    
+    my %seen_state =
+        ($state ? ($state => 1) : ()),
+        map { ($_->state => 1) }
+        $self->all_children;
+
+    return scalar keys %seen_state == 1
+        ? (keys %seen_state)[0]
+        : 'outdated';
 };
 
 # only remove() receives wanted=0, all others use their own wanted attribute
-after  create => sub { $_->execute()  for         $_[0]->all_children };
-before remove => sub { $_->execute(0) for reverse $_[0]->all_children };
+after ['create', 'change']
+    => sub { $_->execute()  for         $_[0]->all_children };
+
+before remove
+    => sub { $_->execute(0) for reverse $_[0]->all_children };
 
 1;

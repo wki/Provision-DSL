@@ -28,6 +28,9 @@ has talk   => ( is => 'ro', coerce => to_Channels, default => sub { [] } );
 has only_if   => ( is => 'ro', isa => CodeRef, predicate => 'has_only_if' );
 has not_if    => ( is => 'ro', isa => CodeRef, predicate => 'has_not_if' );
 
+has default_state => ( is => 'lazy' );
+sub _build_default_state { 'current' }
+
 sub _build_uid { $< }
 sub _build_gid { $( }
 
@@ -54,8 +57,7 @@ sub execute {
     $self->$action();
 }
 
-### FIXME: what is a reasonable default state?
-sub state { 'current' }
+sub state { $_[0]->default_state }
 
 sub is_ok {
     my $self   = shift;

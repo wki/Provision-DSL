@@ -13,14 +13,23 @@ use ok 'Provision::DSL::Entity::Compound';
     use Moo;
     extends 'Provision::DSL::Entity';
     
-    has fake_ok => (is => 'rw', default => sub {1} );
+    has fake_state => (is => 'rw', default => sub { 'current' });
+    sub state { $_[0]->fake_state }
+    # around state => sub {
+    #     my ($orig, $self) = @_;
+    #     
+    #     return $self->fake_state;
+    # };
 
-    around is_ok => sub {
-        my ($orig, $self) = @_;
-        $self->fake_ok && $self->$orig();
-    };
+    # has fake_ok => (is => 'rw', default => sub {1} );
+    # 
+    # around is_ok => sub {
+    #     my ($orig, $self) = @_;
+    #     $self->fake_ok && $self->$orig();
+    # };
     
     sub create { push @{$_[0]->parent->_diagnostics}, "${\$_[0]->name}:create" }
+    sub change { push @{$_[0]->parent->_diagnostics}, "${\$_[0]->name}:change" }
     sub remove { push @{$_[0]->parent->_diagnostics}, "${\$_[0]->name}:remove" }
 }
 
@@ -29,12 +38,27 @@ use ok 'Provision::DSL::Entity::Compound';
     use Moo;
     extends 'Provision::DSL::Entity::Compound';
     
-    has fake_ok => (is => 'rw', default => sub {1} );
+    has fake_state => (is => 'ro', default => sub { 'current' });
+    
+    sub compound_state { $_[0]->fake_state }
+    
+    # around state => sub {
+    #     my ($orig, $self) = @_;
+    #     
+    #     my $state = $self->fake_state;
+    #     return $state || 'current' if $self->has_no_children;
+    #     
+    #     return $self->$orig eq $state
+    #         ? $state
+    #         : 'outdated';
+    # };
 
-    around is_ok => sub {
-        my ($orig, $self) = @_;
-        $self->fake_ok && $self->$orig();
-    };
+    # has fake_ok => (is => 'rw', default => sub {1} );
+    # 
+    # around is_ok => sub {
+    #     my ($orig, $self) = @_;
+    #     $self->fake_ok && $self->$orig();
+    # };
     
     has _diagnostics => (
         is => 'rw',
@@ -43,6 +67,7 @@ use ok 'Provision::DSL::Entity::Compound';
     
     # times are reversed here to see time of firing
     before create => sub { push @{$_[0]->_diagnostics}, 'create' };
+    before change => sub { push @{$_[0]->_diagnostics}, 'change' };
     after  remove => sub { push @{$_[0]->_diagnostics}, 'remove' };
 }
 
@@ -50,42 +75,64 @@ my @testcases = (
     
     # no children
     {
-        name => 'empty',
+        name => 'no children, no state, wanted',
         attributes => {},
         child_states => [],
-        expect_before => {_diagnostics => []},
+        expect_before => {state => 'current', _diagnostics => []},
         expect_after  => {_diagnostics => []},
     },
     {
-        name => 'missing',
-        attributes => {fake_ok => 0},
+        name => 'no children, no state, not wanted',
+        attributes => {wanted => 0},
         child_states => [],
-        expect_before => {_diagnostics => []},
-        expect_after  => {_diagnostics => ['create']},
-    },
-    {
-        name => 'superfluous',
-        attributes => {fake_ok => 1, wanted => 0},
-        child_states => [],
-        expect_before => {_diagnostics => []},
+        expect_before => {state => 'current', _diagnostics => []},
         expect_after  => {_diagnostics => ['remove']},
     },
 
-    # 1 child
     {
-        name => 'missing child',
-        attributes => {},
-        child_states => [ {fake_ok => 0} ],
-        expect_before => {_diagnostics => []},
-        expect_after  => {_diagnostics => ['create', 'child_1:create']},
+        name => 'no children, empty state, wanted',
+        attributes => {default_state => 'current'},
+        child_states => [],
+        expect_before => {state => 'current', _diagnostics => []},
+        expect_after  => {_diagnostics => []},
     },
     {
-        name => 'superfluous child',
-        attributes => {wanted => 0},
-        child_states => [ {fake_ok => 1} ],
-        expect_before => {_diagnostics => []},
-        expect_after  => {_diagnostics => ['child_1:remove', 'remove']},
+        name => 'no children, empty state, wanted',
+        attributes => {default_state => 'current', wanted => 0},
+        child_states => [],
+        expect_before => {state => 'current', _diagnostics => []},
+        expect_after  => {_diagnostics => ['remove']},
     },
+    # {
+    #     name => 'missing',
+    #     attributes => {fake_ok => 0},
+    #     child_states => [],
+    #     expect_before => {_diagnostics => []},
+    #     expect_after  => {_diagnostics => ['create']},
+    # },
+    # {
+    #     name => 'superfluous',
+    #     attributes => {fake_ok => 1, wanted => 0},
+    #     child_states => [],
+    #     expect_before => {_diagnostics => []},
+    #     expect_after  => {_diagnostics => ['remove']},
+    # },
+    # 
+    # # 1 child
+    # {
+    #     name => 'missing child',
+    #     attributes => {},
+    #     child_states => [ {fake_ok => 0} ],
+    #     expect_before => {_diagnostics => []},
+    #     expect_after  => {_diagnostics => ['create', 'child_1:create']},
+    # },
+    # {
+    #     name => 'superfluous child',
+    #     attributes => {wanted => 0},
+    #     child_states => [ {fake_ok => 1} ],
+    #     expect_before => {_diagnostics => []},
+    #     expect_after  => {_diagnostics => ['child_1:remove', 'remove']},
+    # },
 );
 
 foreach my $testcase (@testcases) {
