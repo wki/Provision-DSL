@@ -3,13 +3,13 @@ use Moo;
 
 extends 'Provision::DSL::Entity::Package';
 
-around is_present => sub {
+around is_ok => sub {
     my ($orig, $self) = @_;
 
     return $self->_installed_version && $self->$orig();
 };
 
-after ['create', 'change'] => sub {
+before create => sub {
     my $self = shift;
 
     ...

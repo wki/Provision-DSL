@@ -29,14 +29,13 @@ has only_if   => ( is => 'ro', isa => CodeRef, predicate => 'has_only_if' );
 has not_if    => ( is => 'ro', isa => CodeRef, predicate => 'has_not_if' );
 
 sub _build_uid { $< }
-
 sub _build_gid { $( }
 
 sub execute {
     my $self = shift;
     my $wanted = shift // $self->wanted;
 
-    if (($self->is_ok && $wanted) || (!$self->is_ok && !$wanted)) {
+    if ($self->is_ok($wanted)) {
         $self->log($self, '- OK');
         return;
     }
@@ -44,22 +43,33 @@ sub execute {
     $self->changed(1);
     $self->set_changed($_) for @{ $self->talk };
 
-    my $action = $wanted ? 'create' : 'remove';
+    my $action = $wanted
+        ? ($self->state eq 'missing' ? 'create' : 'change')
+        : 'remove';
 
     $self->log_dryrun($self, "would run $action") and return;
-    $self->log($self, $action);
+    $self->log($self, "(${\$self->state})", $action);
 
     $self->$action();
 }
 
-# overloading via 'around' modifier
+### FIXME: what is a reasonable default state?
+sub state { 'current' }
+
 sub is_ok {
     my $self = shift;
+    my $wanted = shift // $self->wanted;
 
-    return
+    my $ok = ($wanted && $self->state eq 'current')
+        ||  (!$wanted && $self->state eq 'missing');
+
+    ### FIXME: does not look very clever yet.
+    my $modifier =
         $self->has_only_if ? !$self->only_if->()
       : $self->has_not_if  ? $self->not_if->()
       :                      1;
+
+    return $ok && $modifier;
 }
 
 # returns a coderef which when called forces change
@@ -70,8 +80,9 @@ sub reloader {
 }
 
 # 'before' and 'after' modifiers should get used for overloading
-#    see t/0-calling_order.t to understand which and why
+#    see t/1-calling_order_moo.t to understand which and why
 sub create { }
+sub change { }
 sub remove { }
 
 1;

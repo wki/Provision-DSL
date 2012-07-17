@@ -41,8 +41,9 @@ use ok 'Provision::DSL::Entity::Compound';
         default => sub { [] },
     );
     
-    after create => sub { push @{$_[0]->_diagnostics}, 'create' };
-    after remove => sub { push @{$_[0]->_diagnostics}, 'remove' };
+    # times are reversed here to see time of firing
+    before create => sub { push @{$_[0]->_diagnostics}, 'create' };
+    after  remove => sub { push @{$_[0]->_diagnostics}, 'remove' };
 }
 
 my @testcases = (
@@ -70,74 +71,21 @@ my @testcases = (
         expect_after  => {_diagnostics => ['remove']},
     },
 
-    # {
-    #     name => 'missing',
-    #     attributes => {fake_ok => 0},
-    #     child_states => [],
-    #     execute_arg => 1,
-    #     expect => {is_ok => 0},
-    #     diagnostics => ['create'],
-    # },
-    
-    # # 1 child
-    # {
-    #     name => 'missing->1',
-    #     child_states => [ {is_present => 0, is_current => 1} ],
-    #     execute_arg => 1,
-    #     expect => {state => 'missing', is_present => 0, is_current => 1},
-    #     diagnostics => ['create', 'child_1:create'],
-    # },
-    # {
-    #     name => 'missing->0',
-    #     child_states => [ {is_present => 0, is_current => 1} ],
-    #     execute_arg => 0,
-    #     expect => {state => 'missing', is_present => 0, is_current => 1},
-    #     diagnostics => [],
-    # },
-    # {
-    #     name => 'outdated->1',
-    #     child_states => [ {is_present => 1, is_current => 0} ],
-    #     execute_arg => 1,
-    #     expect => {state => 'outdated', is_present => 1, is_current => 0},
-    #     diagnostics => ['change', 'child_1:change'],
-    # },
-    # {
-    #     name => 'outdated->0',
-    #     child_states => [ {is_present => 1, is_current => 0} ],
-    #     execute_arg => 0,
-    #     expect => {state => 'outdated', is_present => 1, is_current => 0},
-    #     diagnostics => ['child_1:remove', 'remove'],
-    # },
-    # {
-    #     name => 'current->1',
-    #     child_states => [ {is_present => 1, is_current => 1} ],
-    #     execute_arg => 1,
-    #     expect => {state => 'current', is_present => 1, is_current => 1},
-    #     diagnostics => [],
-    # },
-    # {
-    #     name => 'current->0',
-    #     child_states => [ {is_present => 1, is_current => 1} ],
-    #     execute_arg => 0,
-    #     expect => {state => 'current', is_present => 1, is_current => 1},
-    #     diagnostics => ['child_1:remove', 'remove'],
-    # },
-    # 
-    # # 2 children
-    # {
-    #     name => 'missing,outdated->1',
-    #     child_states => [ {is_present => 0, is_current => 1}, {is_present => 1, is_current => 0} ],
-    #     execute_arg => 1,
-    #     expect => {state => 'outdated', is_present => 1, is_current => 0},
-    #     diagnostics => ['change', 'child_1:create', 'child_2:change'],
-    # },
-    # {
-    #     name => 'missing,outdated->0',
-    #     child_states => [ {is_present => 0, is_current => 1}, {is_present => 1, is_current => 0} ],
-    #     execute_arg => 0,
-    #     expect => {state => 'outdated', is_present => 1, is_current => 0},
-    #     diagnostics => ['child_2:remove', 'remove'],
-    # },
+    # 1 child
+    {
+        name => 'missing child',
+        attributes => {},
+        child_states => [ {fake_ok => 0} ],
+        expect_before => {_diagnostics => []},
+        expect_after  => {_diagnostics => ['create', 'child_1:create']},
+    },
+    {
+        name => 'superfluous child',
+        attributes => {wanted => 0},
+        child_states => [ {fake_ok => 1} ],
+        expect_before => {_diagnostics => []},
+        expect_after  => {_diagnostics => ['child_1:remove', 'remove']},
+    },
 );
 
 foreach my $testcase (@testcases) {

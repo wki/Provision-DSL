@@ -12,7 +12,7 @@ has gid => (
     coerce => to_Gid,
 );
 
-around is_current => sub {
+around is_ok => sub {
     my ($orig, $self) = @_;
     
     return -e $self->path 
@@ -21,7 +21,7 @@ around is_current => sub {
         && $self->$orig();
 };
 
-after ['create', 'change'] => sub {
+after create => sub {
     my $self = shift;
     
     chown $self->uid, $self->gid, $self->path;

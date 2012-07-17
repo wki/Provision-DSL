@@ -5,11 +5,8 @@ extends 'Provision::DSL::Entity::Group';
 
 our $DSCL = '/usr/bin/dscl';
 
-after create => sub {
+before create => sub {
     my $self = shift;
-
-    $self->log_dryrun("would create Group '${\$self->name}'")
-        and return;
 
     my $group = "/Groups/${\$self->name}";
 
@@ -23,9 +20,6 @@ after remove => sub {
     
     my $members = (getgrgid($self->gid))[3];
     die "Cannot remove group ${\$self->name}: in use by '$members'" if $members;
-    
-    $self->log_dryrun("would remove Group '${\$self->name}'")
-        and return;
     
     $self->app->system_command($DSCL, '.', -delete => "/Groups/${\$self->name}");
 };

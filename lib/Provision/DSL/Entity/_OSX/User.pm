@@ -11,11 +11,8 @@ sub _build_home_directory {
     return (getpwuid($self->uid))[7] // "/Users/${\$self->name}"; # /
 }
 
-after create => sub {
+before create => sub {
     my $self = shift;
-
-    $self->log_dryrun("would create User '${\$self->name}'")
-        and return;
 
     my $user  = "/Users/${\$self->name}";
     my $group = "/Groups/${\$self->group->name}";
@@ -37,9 +34,6 @@ after create => sub {
 
 after remove => sub {
     my $self = shift;
-    
-    $self->log_dryrun("would remove User '${\$self->name}'")
-        and return;
     
     $self->app->system_command($DSCL, '.', -delete => "/Users/${\$self->name}");
 };

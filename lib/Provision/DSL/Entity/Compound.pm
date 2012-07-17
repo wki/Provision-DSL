@@ -31,7 +31,7 @@ around is_ok => sub {
 };
 
 # only remove() receives wanted=0, all others use their own wanted attribute
-after create => sub { $_->execute()  for         $_[0]->all_children };
-after remove => sub { $_->execute(0) for reverse $_[0]->all_children };
+after  create => sub { $_->execute()  for         $_[0]->all_children };
+before remove => sub { $_->execute(0) for reverse $_[0]->all_children };
 
 1;

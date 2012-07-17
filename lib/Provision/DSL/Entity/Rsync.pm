@@ -27,7 +27,7 @@ has exclude => (
     # default => sub { [] },
 );
 
-sub is_current {
+sub is_ok {
     $_[0]->_rsync_command(
         '--dry-run',
         '--out-format' => 'copying %n',
@@ -65,6 +65,6 @@ sub _exclude_list {
     return @exclude_list;
 }
 
-after change => sub { $_[0]->_rsync_command };
+after create => sub { $_[0]->_rsync_command };
 
 1;

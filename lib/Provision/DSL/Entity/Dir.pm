@@ -32,9 +32,9 @@ has content => (
     predicate => 'has_content',
 );
 
-sub is_present { -d $_[0]->path }
+sub is_ok { -d $_[0]->path }
 
-after ['create', 'change'] => sub { $_[0]->path->mkpath };
+before create => sub { $_[0]->path->mkpath };
 
 after remove => sub {
     my $self = shift;

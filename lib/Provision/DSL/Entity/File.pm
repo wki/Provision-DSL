@@ -26,16 +26,9 @@ has content => (
     required => 1,
 );
 
-sub is_present { -f $_[0]->path }
+sub is_ok { -f $_[0]->path }
 
-sub is_current {
-    my $self = shift;
-    
-    return $self->is_present
-        && scalar $self->path->slurp eq $self->content;
-}
-
-after ['create', 'change'] => sub {
+before create => sub {
     my $self = shift;
     
     my $fh = $self->path->openw;

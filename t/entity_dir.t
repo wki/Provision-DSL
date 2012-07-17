@@ -29,16 +29,15 @@ my $app = Provision::DSL::App->new(
     'creating a named but unknown dir entity lives';
 
     ok !-d $d->path, 'an unknown dir does not exist';
-    ok !$d->is_present, 'an unknown dir is not present';
+    ok !$d->is_ok, 'an unknown dir is not ok';
     
     lives_ok { $d->execute(1) } 'creating a former unknown dir lives';
     ok -d $d->path, 'a former unknown dir exists';
-    ok $d->is_present, 'a former unknown dir is present';
-    ok $d->is_current, 'a former unknown dir is current';
+    ok $d->is_ok, 'a former unknown dir is ok';
     
     lives_ok { $d->execute(0) } 'removing a dir lives';
     ok !-d $d->path, 'a removed dir does not exist';
-    ok !$d->is_present, 'a removed dir is not present';
+    ok !$d->is_ok, 'a removed dir is not ok';
 }
 
 # creating an existing directory
@@ -55,8 +54,7 @@ my $app = Provision::DSL::App->new(
     'creating a named and existing dir entity lives';
 
     ok -d $d->path,    'a known dir exists';
-    ok $d->is_present, 'a known dir is present';
-    ok $d->is_current, 'a known dir is current';
+    ok $d->is_ok, 'a known dir is ok';
 }
 
 # multiple dirs and copying from a resource
@@ -76,18 +74,20 @@ my $app = Provision::DSL::App->new(
     }
     'creating a dir entity with structure lives';
 
-    ok !$d->is_present, 'dir with structure is not present';
-    ok !$d->is_current, 'dir with structure is not current';
+    ok !$d->is_ok, 'dir with structure is not ok';
     
     $d->execute(1);
     
-    ok $d->is_present, 'dir with structure is present after process';
-    ok $d->is_current, 'dir with structure is current after process';
+    ok $d->is_ok, 'dir with structure is ok after process';
+    
+    foreach my $child (@{$d->children}) {
+        ok $child->is_ok, "CHILD ${\ref $child} ${\$child->name} is OK";
+    }
     
     ok !-d $x_dir->subdir('foo/zz'), 'unwanted directory removed';
     
     foreach my $dir (qw(abc def ghi ghi/jkl dir2)) {
-        ok -d $d->path->subdir($dir), "subdir '$dir' present";
+        ok -d $d->path->subdir($dir), "subdir '$dir' ok";
     }
 }
 

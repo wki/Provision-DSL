@@ -8,7 +8,7 @@ our $START_GID = 1000;
 our $MAX_ID    = 2000;
 
 has gid => (
-    is => 'ro',
+    is => 'lazy',
     # isa => 'Int',
     # required => 1,
     # lazy_build => 1,
@@ -31,7 +31,7 @@ sub _build_gid {
     die 'could not create a unique GID';
 }
 
-around is_present => sub {
+around is_ok => sub {
     my ($orig, $self) = @_;
     
     return defined getgrnam($self->name) && $self->$orig();

@@ -14,23 +14,27 @@ sub _build_path {
     return "/Library/LaunchDaemons/${\$self->name}.plist";
 }
 
-around is_present => sub {
+around is_ok => sub {
     my ($orig, $self) = @_;
 
-    return $self->command_succeeds($LAUNCHCTL, list => $self->name)
+    return $self->_is_service_running
         && $self->$orig();
 };
 
-after create => sub {
+sub _is_service_running {
+    my $self = shift;
+    
+    $self->command_succeeds($LAUNCHCTL, list => $self->name)
+}
+
+before create => sub {
     my $self = shift;
 
-    $self->system_command($LAUNCHCTL, load => '-w' => $self->path);
-};
-
-after change => sub {
-    my $self = shift;
-
-    $self->system_command($LAUNCHCTL, stop => $self->name);
+    if ($self->_is_service_running) {
+        $self->system_command($LAUNCHCTL, stop => $self->name);
+    } else {
+        $self->system_command($LAUNCHCTL, load => '-w' => $self->path);
+    }
 };
 
 before remove => sub {

@@ -54,10 +54,11 @@ sub _build_gid {
     }
 }
 
-around is_present => sub {
+around is_ok => sub {
     my ($orig, $self) = @_;
     
-    return defined getpwnam($self->name) && $self->$orig();
+    return defined getpwnam($self->name) 
+        && $self->$orig();
 };
 
 before create => sub {

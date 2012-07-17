@@ -5,13 +5,14 @@ extends 'Provision::DSL::Entity::Package';
 
 my $PORT = '/opt/local/bin/port';
 
-around is_present => sub {
+around is_ok => sub {
     my ($orig, $self) = @_;
 
+    ### FIXME: compare against latest version
     return $self->_installed_version && $self->$orig();
 };
 
-after ['create', 'change'] => sub {
+before create => sub {
     my $self = shift;
 
     $self->system_command($PORT, install => $self->name);

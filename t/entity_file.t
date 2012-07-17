@@ -25,18 +25,16 @@ my $app = Provision::DSL::App->new();
     'creating an unknown file entity lives';
     
     ok !-f $f->path, 'an unknown file does not exist';
-    ok !$f->is_present, 'an unknown file is not present';
+    ok !$f->is_ok, 'an unknown file is not ok';
     
     lives_ok { $f->process(1) } 'creating a former unknown file lives';
     ok -f $f->path, 'a former unknown file exists';
-    ok $f->is_present, 'a former unknown file is present';
-    ok $f->is_current, 'a former unknown file is current';
+    ok $f->is_ok, 'a former unknown file is ok';
     is scalar $f->path->slurp, 'foo', 'content is "foo"';
     
     lives_ok { $f->process(0) } 'removing a file lives';
     ok !-f $f->path, 'a removed file does not exist';
-    ok !$f->is_present, 'a removed file is not present';
-    ok $f->is_current, 'a removed file is current';
+    ok !$f->is_ok, 'a removed file is not ok';
 }
 
 # known file

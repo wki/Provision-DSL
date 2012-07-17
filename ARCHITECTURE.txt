@@ -81,30 +81,28 @@ Entity Funktionsweise:
      + ...                      weitere Angaben bei Kind-Klassen
 
      ----[ Bestimmen des Status ]
-     + only_if / not_if         <-> is_present, vorrangig
-     + update_if / keep_if      <-> is_current, vorrangig
+     + only_if / not_if         <-> is_ok, vorrangig
      + listen                   zu lauschende Worte
-     - is_present()             von Kindern zu erweitern
-     - is_current()             von Kindern zu erweitern
-     - is_ok()
+     - state                    missing / outdated / current
+     - is_ok()                  wenn Endzustand "wanted" erreicht
+                                normalerweise abgeleitet aus state/wanted
 
      ----[ Berechnete Werte ]
      + changed                  wird gesetzt, wenn Veränderung erfolgte
-     + state                    status [missing/outdated/current]
 
      ----[ Steuerung ]
      - execute()                auf Zustand "wanted" bringen
-     - create()                 von Kindern zu erweitern
-     - change()                 von Kindern zu erweitern
-     - remove()                 von Kindern zu erweitern
+     - create()                 von Kindern zu erweitern, before!
+     - change()                 von Kindern zu erweitern, before!
+     - remove()                 von Kindern zu erweitern, after!
      - reloader()               -> coderef zum Reload
 
 
 
 Entity Erweiterung:
   - über Rolle(n) oder Kind-Klassen
-     * Entscheidung: (before|around|after) (is_present|is_current)
-     * Steuerung:    (before|after) (create|change|remove)
+     * Entscheidung: (before|around|after) (is_ok)
+     * Steuerung:    (before|after) (create|remove)
   - Aufruf-Reihenfolge:
      * Kind-Klassen, dann Kind-Rollen reverse (before, around)
      * Klasse, dann Rollen reverse (before, around)

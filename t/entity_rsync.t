@@ -21,9 +21,9 @@ my @files = qw(file1.txt file2.txt dir2/file3.txt);
 
 # syncing into a fresh directory
 {
-    ok !$r->is_current, 'not current before sync into an empty dir';
+    ok !$r->is_ok, 'not ok before sync into an empty dir';
     $r->execute;
-    ok $r->is_current, 'current after sync into an empty dir';
+    ok $r->is_ok, 'ok after sync into an empty dir';
     
     ok -f $x_dir->file($_), "$_ is present"
         for @files;
@@ -36,9 +36,9 @@ my @files = qw(file1.txt file2.txt dir2/file3.txt);
     print $fh 'updated file1';
     close $fh;
     
-    ok !$r->is_current, 'not current before sync into an empty dir';
+    ok !$r->is_ok, 'not ok before sync into an empty dir';
     $r->execute;
-    ok $r->is_current, 'current after sync into an empty dir';
+    ok $r->is_ok, 'ok after sync into an empty dir';
     
     is scalar $x_dir->file($files[0])->slurp,
        "FILE:file1\nline2",
@@ -53,9 +53,9 @@ my @files = qw(file1.txt file2.txt dir2/file3.txt);
     print $fh 'superfluous file1';
     close $fh;
     
-    ok !$r->is_current, 'not current before sync into an empty dir';
+    ok !$r->is_ok, 'not ok before sync into an empty dir';
     $r->execute;
-    ok $r->is_current, 'current after sync into an empty dir';
+    ok $r->is_ok, 'ok after sync into an empty dir';
     
     ok !-f $x_dir->file('file_xx.txt'),
        'superfluous file deleted';
