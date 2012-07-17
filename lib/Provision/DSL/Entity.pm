@@ -46,8 +46,8 @@ sub execute {
 
     my $action = $wanted ? 'create' : 'remove';
 
-    $self->log_dryrun($self, $self->state, "would $action") and return;
-    $self->log($self, $self->state, "--> $action");
+    $self->log_dryrun($self, "would run $action") and return;
+    $self->log($self, $action);
 
     $self->$action();
 }

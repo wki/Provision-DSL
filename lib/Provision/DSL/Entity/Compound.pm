@@ -22,25 +22,16 @@ sub all_children { @{$_[0]->children} }
 
 sub has_no_children { !scalar @{$_[0]->children} }
 
-around is_present => sub {
+around is_ok => sub {
     my $orig = shift;
     my $self = shift;
 
     return $self->$orig(@_)
-        && ($self->has_no_children
-            || grep { $_->is_present } $self->all_children);
+        && scalar(grep { $_->is_ok } $self->all_children) == $self->nr_children;
 };
 
-around is_current => sub {
-    my $orig = shift;
-    my $self = shift;
-
-    return $self->$orig(@_)
-        && scalar(grep { $_->is_current } $self->all_children) == $self->nr_children;
-};
-
-# only remove() receives wanted=0, all others use their wanted attribute
-after ['create', 'change'] => sub { $_->execute() for $_[0]->all_children };
-after 'remove' => sub { $_->execute(0) for reverse $_[0]->all_children };
+# only remove() receives wanted=0, all others use their own wanted attribute
+after create => sub { $_->execute()  for         $_[0]->all_children };
+after remove => sub { $_->execute(0) for reverse $_[0]->all_children };
 
 1;

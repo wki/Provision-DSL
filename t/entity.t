@@ -1,7 +1,10 @@
 use strict;
 use warnings;
+use FindBin;
 use Test::More;
 use Provision::DSL::App;
+
+do "$FindBin::Bin/inc/entity_expectation.pl";
 
 use ok 'Provision::DSL::Entity';
 
@@ -38,7 +41,17 @@ my @testcases = (
     },
     {
         name => 'not wanted',
-        attributes => { wanted => 0},
+        attributes => {wanted => 0},
+        expect => {is_ok => 1},
+    },
+    {
+        name => 'no attributes, fake_ok 0',
+        attributes => {fake_ok => 0},
+        expect => {is_ok => 0},
+    },
+    {
+        name => 'not wanted, fake_ok 0',
+        attributes => {wanted => 0},
         expect => {is_ok => 1},
     },
     {
@@ -51,69 +64,91 @@ my @testcases = (
         attributes => {only_if => sub{0}},
         expect => {is_ok => 1},
     },
-    # {
-    #     name => 'not_if (1)',
-    #     attributes => {not_if => sub{1}},
-    #     expect => {is_present => 1, is_current => 1, state => 'current' },
-    # },
-    # {
-    #     name => 'not_if (0)',
-    #     attributes => {not_if => sub{0}},
-    #     expect => {is_present => 0, is_current => 1, state => 'missing' },
-    # },
-    #
-    # {
-    #     name => 'is_ok missing',
-    #     attributes => {state => 'missing'},
-    #     expect => {is_ok0 => 1, is_ok1 => 0},
-    # },
-    # {
-    #     name => 'is_ok outdated',
-    #     attributes => {state => 'outdated'},
-    #     expect => {is_ok0 => 0, is_ok1 => 0},
-    # },
-    # {
-    #     name => 'is_ok current',
-    #     attributes => {state => 'current'},
-    #     expect => {is_ok0 => 0, is_ok1 => 1},
-    # },
-    #
-    # {
-    #     name => 'execute_1 current',
-    #     attributes => {state => 'current'},
-    #     execute => 'execute1',
-    #     expect => {_diagnostics => []},
-    # },
-    # {
-    #     name => 'execute_0 current',
-    #     attributes => {state => 'current'},
-    #     execute => 'execute0',
-    #     expect => {_diagnostics => ['remove']},
-    # },
-    # {
-    #     name => 'execute_1 outdated',
-    #     attributes => {state => 'outdated'},
-    #     execute => 'execute1',
-    #     expect => {_diagnostics => ['change']},
-    # },
-    # {
-    #     name => 'execute_0 outdated',
-    #     attributes => {state => 'outdated'},
-    #     execute => 'execute0',
-    #     expect => {_diagnostics => ['remove']},
-    # },
-    # {
-    #     name => 'execute_1 missing',
-    #     attributes => {state => 'missing'},
-    #     execute => 'execute1',
-    #     expect => {_diagnostics => ['create']},
-    # },
-    # {
-    #     name => 'execute_0 missing',
-    #     attributes => {state => 'missing'},
-    #     execute => 'execute0',
-    #     expect => {_diagnostics => []},
-    # },
+    {
+        name => 'not_if (1)',
+        attributes => {not_if => sub{1}},
+        expect => {is_ok => 1},
+    },
+    {
+        name => 'not_if (0)',
+        attributes => {not_if => sub{0}},
+        expect => {is_ok => 0},
+    },
+    
+    {
+        name => 'execute 0 -> wanted',
+        attributes => {fake_ok => 0, wanted => 1},
+        execute => 'execute',
+        expect => {_diagnostics => ['create']},
+    },
+    {
+        name => 'execute 1 -> wanted',
+        attributes => {fake_ok => 1, wanted => 1},
+        execute => 'execute',
+        expect => {_diagnostics => []},
+    },
+    {
+        name => 'execute 0 -> not wanted',
+        attributes => {fake_ok => 0, wanted => 0},
+        execute => 'execute',
+        expect => {_diagnostics => []},
+    },
+    {
+        name => 'execute 1 -> not wanted',
+        attributes => {fake_ok => 1, wanted => 0},
+        execute => 'execute',
+        expect => {_diagnostics => ['remove']},
+    },
+    
+    {
+        name => 'execute0 0 -> wanted',
+        attributes => {fake_ok => 0, wanted => 1},
+        execute => 'execute0',
+        expect => {_diagnostics => []},
+    },
+    {
+        name => 'execute0 1 -> wanted',
+        attributes => {fake_ok => 1, wanted => 1},
+        execute => 'execute0',
+        expect => {_diagnostics => ['remove']},
+    },
+    {
+        name => 'execute0 0 -> not wanted',
+        attributes => {fake_ok => 0, wanted => 0},
+        execute => 'execute0',
+        expect => {_diagnostics => []},
+    },
+    {
+        name => 'execute0 1 -> not wanted',
+        attributes => {fake_ok => 1, wanted => 0},
+        execute => 'execute0',
+        expect => {_diagnostics => ['remove']},
+    },
+
+    {
+        name => 'execute1 0 -> wanted',
+        attributes => {fake_ok => 0, wanted => 1},
+        execute => 'execute1',
+        expect => {_diagnostics => ['create']},
+    },
+    {
+        name => 'execute1 1 -> wanted',
+        attributes => {fake_ok => 1, wanted => 1},
+        execute => 'execute1',
+        expect => {_diagnostics => []},
+    },
+    {
+        name => 'execute1 0 -> not wanted',
+        attributes => {fake_ok => 0, wanted => 0},
+        execute => 'execute1',
+        expect => {_diagnostics => ['create']},
+    },
+    {
+        name => 'execute1 1 -> not wanted',
+        attributes => {fake_ok => 1, wanted => 0},
+        execute => 'execute1',
+        expect => {_diagnostics => []},
+    },
 
     ### TODO: add "listen" test cases
 );
@@ -131,24 +166,8 @@ foreach my $testcase (@testcases) {
         my $method = $testcase->{execute};
         $e->$method();
     }
-
-    foreach my $key (sort keys(%{$testcase->{expect}})) {
-        if ($testcase->{expect}->{$key} =~ m{\A [01] \z}xms) {
-            if ($testcase->{expect}->{$key}) {
-                ok $e->$key(),
-                   "$testcase->{name}: $key is TRUE";
-            } else {
-                ok !$e->$key(),
-                   "$testcase->{name}: $key is FALSE";
-            }
-        } elsif (ref $testcase->{expect}->{$key}) {
-            is_deeply $e->$key(), $testcase->{expect}->{$key},
-                      "$testcase->{name}: $key is as expected";
-        } else {
-            is $e->$key(), $testcase->{expect}->{$key},
-               "$testcase->{name}: $key is $testcase->{expect}->{$key}";
-        }
-    }
+    
+    test_expectation($e, $testcase);
 }
 
 done_testing;
