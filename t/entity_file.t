@@ -27,12 +27,12 @@ my $app = Provision::DSL::App->new();
     ok !-f $f->path, 'an unknown file does not exist';
     ok !$f->is_ok, 'an unknown file is not ok';
     
-    lives_ok { $f->process(1) } 'creating a former unknown file lives';
+    lives_ok { $f->execute(1) } 'creating a former unknown file lives';
     ok -f $f->path, 'a former unknown file exists';
     ok $f->is_ok, 'a former unknown file is ok';
     is scalar $f->path->slurp, 'foo', 'content is "foo"';
     
-    lives_ok { $f->process(0) } 'removing a file lives';
+    lives_ok { $f->execute(0) } 'removing a file lives';
     ok !-f $f->path, 'a removed file does not exist';
     ok !$f->is_ok, 'a removed file is not ok';
 }
@@ -49,7 +49,7 @@ my $app = Provision::DSL::App->new();
     }
     'creating a known file lives';
     
-    lives_ok { $f->process(1) } 'creating a file from a resource lives';
+    lives_ok { $f->execute(1) } 'creating a file from a resource lives';
     is scalar $f->path->slurp, 'foo',
        'file content matches requirement';
 
@@ -65,14 +65,15 @@ my $app = Provision::DSL::App->new();
         $f = Provision::DSL::Entity::File->new(
             app => $app,
             name => "$FindBin::Bin/x/file.ext", 
-            content => file("$FindBin::Bin/resources/dir1/dir2/file1.txt"),
+            content => file("$FindBin::Bin/resources/dir1/file1.txt"),
         )
     }
     'creating a file with a resource content lives';
-
+    
     ok scalar $f->path->slurp ne "FILE:file1\nline2",
        'file content is different from resource';
-    lives_ok { $f->process(1) } 'updating a file from a resource lives';
+    ok !$f->is_ok, 'file is reported as not ok';
+    lives_ok { $f->execute(1) } 'updating a file from a resource lives';
     is scalar $f->path->slurp, "FILE:file1\nline2",
        'file content matches resource file';
 }

@@ -8,18 +8,23 @@ has permission => (
     # required => 1, 
 );
 
-around is_ok => sub {
+around state => sub {
     my ($orig, $self) = @_;
     
-    return ($self->path->stat->mode & 511) == (oct($self->permission) & 511) 
-        && $self->$orig();
+    my $state = 
+        !-f $self->path 
+            ? 'missing'
+        : ($self->path->stat->mode & 511) == (oct($self->permission) & 511)
+            ? 'current'
+            : 'outdated';
+    
+    return $state eq $self->$orig
+        ? $state
+        : 'outdated';
 };
 
-after create => sub {
+before ['create', 'change'] => sub {
     my $self = shift;
-    
-    $self->log_dryrun("would chmod ${\oct($self->permission)}, ${\$self->path}")
-        and return;
     
     chmod oct($self->permission), $self->path;
 };

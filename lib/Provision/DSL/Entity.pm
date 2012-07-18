@@ -39,20 +39,24 @@ sub execute {
     my $wanted = shift // $self->wanted;
     my $state  = shift // $self->state;
 
-    if ($self->is_ok($wanted, $state)) {
-        $self->log($self, '- OK');
+    my @log = ($self, $state);
+    
+    if (my @changed = grep { $self->has_changed($_) } @{$self->listen}) {
+        push @log, 'heard: ' . join(', ', @changed);
+    } elsif ($self->is_ok($wanted, $state)) {
+        $self->log(@log, '- OK');
         return;
     }
 
     $self->changed(1);
-    $self->set_changed($_) for @{ $self->talk };
+    $self->set_changed($_) for @{$self->talk};
 
     my $action = $wanted
         ? ($state eq 'missing' ? 'create' : 'change')
         : 'remove';
 
-    $self->log_dryrun($self, "would run $action") and return;
-    $self->log($self, "$state => $action");
+    $self->log_dryrun(@log, "would run $action") and return;
+    $self->log(@log, "$state => $action");
 
     $self->$action();
 }

@@ -24,10 +24,12 @@ Provision::DSL::Manual - How to use Provision::DSL
     };
     
     # ensures a directory tree for your site is created and filled
+    # tell our listeners if things have changed
     Dir '/path/to/site' => {
         user => 'sites',
         mkdir => [ qw(logs pid) ],
         contents => Resource('website'),
+        tell => 'website_changed',
     };
     
     # create a customized config file for whatever daemon
@@ -35,8 +37,50 @@ Provision::DSL::Manual - How to use Provision::DSL
         user => 'root',
         contents => Template('etc/whatever.tt', { vars => { ... } }),
     };
+    
+    # maintain a service for running a http daemon
+    Service 'mysite_http_daemon' => {
+        ... params not yet defined, sorry
+        listen => 'website_changed',
+    };
 
 =head1 DESCRIPTION
+
+Provision::DSL is a simple domain specific language allowing to describe
+how a combination of packages, files, directories and services should
+look like. Every building block describes a simple entity of your
+provisioning. The blocks are evaluated in source order and usually there
+is no dependency between the blocks, except explicitly specified.
+
+Every entity checks its own state resulting in one of three states:
+
+=over
+
+=item missing
+
+The entity is entirely missing. If creating the entity is C<wanted>, a method
+named C<<< create() >>> will be called in order to create the entity from
+scratch. An unwanted entity is left as it is.
+
+=item outdated
+
+The entity is present but not in the final state. Depending on the C<wanted>
+flag, either the method C<<< change() >>> or C<<< remove() >>> is called to
+get it into the wanted state.
+
+=item current
+
+The entity is in a fully created state. Like outdated above, depending on
+the C<wanted> flag, either C<<< change() >>> or C<<< remove() >>> is called
+to get it into the wanted state.
+
+=back
+
+During processing entities in source-order, an entity may C<tell> a word,
+which other entites may C<listen> to. Should a word get spoken, a listening
+entity will get forced to C<outdated> state. ### FIXME: not yet implemented
+
+...
 
 =cut
 

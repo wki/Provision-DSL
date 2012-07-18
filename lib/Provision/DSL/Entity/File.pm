@@ -7,7 +7,7 @@ extends 'Provision::DSL::Entity';
 sub path;       # must forward-declare
 sub content;    # must forward-declare
 
-# with 'Provision::DSL::Role::PathPermission',
+with 'Provision::DSL::Role::PathPermission';
 #      'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0644' }
@@ -26,9 +26,17 @@ has content => (
     required => 1,
 );
 
-sub is_ok { -f $_[0]->path }
+sub state {
+    my $self = shift;
+    
+    !-f $self->path
+        ? 'missing'
+    : scalar $self->path->slurp eq $self->content
+        ? 'current'
+        : 'outdated';
+}
 
-before create => sub {
+before ['create', 'change'] => sub {
     my $self = shift;
     
     my $fh = $self->path->openw;
