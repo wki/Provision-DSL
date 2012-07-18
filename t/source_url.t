@@ -9,7 +9,7 @@ my $ip = gethostbyname('www.cpan.org')
         exit;
     };
 
-my $u = Provision::DSL::Source::Url->new('http://www.cpan.org');
+my $u = Provision::DSL::Source::Url->new('http://www.cpan.org/');
 like $u->content, qr{<title>.*Comprehensive.*</title>}xms,
      'html content looks good';
 

@@ -27,11 +27,17 @@ has exclude => (
     # default => sub { [] },
 );
 
-sub is_ok {
-    $_[0]->_rsync_command(
-        '--dry-run',
-        '--out-format' => 'copying %n',
-    ) !~ m{^(?:deleting|copying)\s}xms;
+sub state {
+    my $self = shift;
+    
+    return 'missing ' if !-d $self->path;
+    
+    return $self->_rsync_command(
+                '--dry-run',
+                '--out-format' => 'copying %n',
+           ) =~ m{^(?:deleting|copying)\s}xms
+        ? 'outdated'
+        : 'current';
 }
 
 sub _rsync_command {
@@ -59,12 +65,12 @@ sub _exclude_list {
     my @exclude_list;
     foreach my $path (@{$self->exclude}) {
         $path =~ s{\A / | / \z}{}xmsg;
-        push @exclude_list, '--exclude', "/$path/";
+        push @exclude_list, '--exclude', "/$path";
     }
 
     return @exclude_list;
 }
 
-after create => sub { $_[0]->_rsync_command };
+after ['create', 'change'] => sub { $_[0]->_rsync_command };
 
 1;

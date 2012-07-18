@@ -5,10 +5,7 @@ use HTTP::Lite;
 extends 'Provision::DSL::Source';
 
 has url => (
-    is => 'ro',
-    isa => 'Str',
-    required => 1,
-    lazy_build => 1,
+    is => 'lazy',
 );
 
 sub _build_url { $_[0]->name }
