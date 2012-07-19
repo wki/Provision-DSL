@@ -51,18 +51,16 @@ sub run {
 sub pack_requisites {
     my $self = shift;
     
-    $self->pack_resources;
+    $self->pack_resources_and_libs;
     $self->pack_provision_script(file('examples.pl'));
 }
 
-
-sub pack_resources {
+sub pack_resources_and_libs {
     my $self = shift;
 
     # tar file:
     #   - resources
     #   - perl libs
-    #   - provisioning script
 
     $self->_pack_dir(
         dir('/Users/wolfgang/proj/Provision-DSL/t/resources'),
@@ -70,11 +68,11 @@ sub pack_resources {
     );
 
     ### TODO: use cpanm to install requirements into local/
+    ### TODO: don't forget Provision::DSL
     $self->_pack_dir(
         dir('/Users/wolfgang/proj/Provision-DSL'),
         'local' => '',
     );
-
 }
 
 sub _pack_dir {
@@ -125,7 +123,6 @@ sub pack_provision_script {
         scalar $script->slurp,
         { type => FILE, mode => 0755 },
     );
-    
 }
 
 sub create_boot_script {

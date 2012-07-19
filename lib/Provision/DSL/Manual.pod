@@ -49,8 +49,8 @@ Provision::DSL::Manual - How to use Provision::DSL
 Provision::DSL is a simple domain specific language allowing to describe
 how a combination of packages, files, directories and services should
 look like. Every building block describes a simple entity of your
-provisioning. The blocks are evaluated in source order and usually there
-is no dependency between the blocks, except explicitly specified.
+provisioning. The entities are evaluated in source order and usually there
+is no dependency between them, except explicitly specified.
 
 Every entity checks its own state resulting in one of three states:
 
@@ -80,17 +80,69 @@ During processing entities in source-order, an entity may C<tell> a word,
 which other entites may C<listen> to. Should a word get spoken, a listening
 entity will get forced to C<outdated> state. ### FIXME: not yet implemented
 
+=head2 Types of entities
+
+Currently the following types of entites are defined:
+
+=over
+
+=item Dir
+
+=item Execute
+
+=item File
+
+=item Group
+
+=item Package
+
+=item Perlbrew
+
+=item Rsync
+
+=item User
+
+=item Service
+
+=back
+
+=head2 Parts of a Provision
+
+In order to bring (and keep) a target machine to a stable state, the following
+things are required:
+
+=over
+
+=item entity description
+
+A list of entites listed in install order.
+
+=item resources
+
+optionally, a directory tree may contain files and directories for copying
+to the destination machine. The files could contain configuration files,
+templates or an entire web site.
+
+=item config file
+
+A config file describes which files and directories to include and the
+destination machine to run the provision script on.
+
+=back
+
 =head2 Remote Execution
 
 Provision::DSL is depending on a few CPAN modules only. Each of these
-modules only have minimal dependencies, all modules are pure perl and
+modules only has minimal dependencies, all modules are pure perl and
 run starting from Perl 5.10.
 
-All required modules, resources and the provision script are packed into
-a tar file, the tar file is appended to a extraction script (into the
-__DATA__ section, to be precise) and the combination of both is pasted
-to the remote server's Perl interpreter where it is unpacked and executed.
-
+All required modules, resources and the provision script are packed into a tar
+file, the tar file is appended to a extraction script (base-64 encoded, into
+the __DATA__ section, to be precise) and the combination of both is pasted to
+the remote machine's Perl interpreter where it is unpacked into a temporary
+directory and executed. The entire process only requires a single ssh
+process to run. All other IO-Operations happen entirely on the target machine,
+the ssh connection will compress its payload.
 
 =cut
 
