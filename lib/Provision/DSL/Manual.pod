@@ -80,7 +80,17 @@ During processing entities in source-order, an entity may C<tell> a word,
 which other entites may C<listen> to. Should a word get spoken, a listening
 entity will get forced to C<outdated> state. ### FIXME: not yet implemented
 
-...
+=head2 Remote Execution
+
+Provision::DSL is depending on a few CPAN modules only. Each of these
+modules only have minimal dependencies, all modules are pure perl and
+run starting from Perl 5.10.
+
+All required modules, resources and the provision script are packed into
+a tar file, the tar file is appended to a extraction script (into the
+__DATA__ section, to be precise) and the combination of both is pasted
+to the remote server's Perl interpreter where it is unpacked and executed.
+
 
 =cut
 
