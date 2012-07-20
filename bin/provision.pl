@@ -1,4 +1,4 @@
 #!/usr/bin/env perl
-use Provision::DSL::Command::Provision;
+use Provision::DSL::Script::Provision;
 
-Provision::DSL::Command::Provision->new_with_options(@ARGV)->run();
+Provision::DSL::Script::Provision->new_with_options(@ARGV)->run();

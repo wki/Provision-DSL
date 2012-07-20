@@ -3,9 +3,9 @@
     provision => 'xxx.pl',
 
     ssh => {
-        user => 'worker',
-        host => 'testcomputer.mydomain.de',
-        key  => 'id_rsa_pass_wk.pub',
+        user          => 'worker',
+        hostname      => 'testcomputer.mydomain.de',
+        identity_file => 'id_rsa_pass_wk',
     },
     
     resources => {

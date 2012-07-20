@@ -5,8 +5,8 @@ use Carp;
 use Scalar::Util 'blessed';
 use Provision::DSL::Types;
 
-with 'Provision::DSL::Role::AppOptions',
-     'Provision::DSL::Role::Command';
+with 'Provision::DSL::Role::CommandlineOptions',
+     'Provision::DSL::Role::CommandExecution';
 
 # Entity => Provision::DSL::Entity::Xxx
 has entity_package_for => (

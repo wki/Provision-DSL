@@ -1,4 +1,4 @@
-package Provision::DSL::Role::AppOptions;
+package Provision::DSL::Role::CommandlineOptions;
 use feature ':5.10';
 use Moo::Role;
 use Getopt::Long 'GetOptionsFromArray';
@@ -27,6 +27,15 @@ has args => (
     default => sub { [] },
 );
 
+sub _default_options {
+    return (
+        'help|h      ; this help',
+        'verbose|v   ; verbose mode - show messages',
+        'dryrun|n    ; dryrun - do not execute',
+        'debug       ; show debut output',
+    );
+}
+
 sub new_with_options {
     my $class = shift;
     my @argv = @_;
@@ -35,68 +44,66 @@ sub new_with_options {
     Getopt::Long::Configure('bundling');
     GetOptionsFromArray(
         \@argv => \%options,
-
-        'verbose|v',    'dryrun|n',
-        'debug',        'help|h|?',
-        
-        ($class->can('extra_options') 
-            ? (map {s{;.*}{}; $_} $class->extra_options)
-            : ()),
+        map {s{\s*;\s*.*}{}; $_} $class->_collect_options
     );
-    
+
     usage($class) if $options{help};
 
     return $class->new( { %options, args => \@argv } );
 }
 
+sub _collect_options {
+    my $class = shift;
+
+    my @options = (
+        _default_options(),
+        
+        ($class->can('extra_options')
+            ? $class->extra_options
+            : ()),
+    );
+}
+
 sub usage {
     my $class = shift;
-    
+
     my $app = $0;
     $app =~ s{\A .* /}{}xms;
 
-    my $extra = '';
-    if ($class->can('extra_options')) {
-        foreach my $option ($class->extra_options) {
-            ### FIXME: must get cleaned up a bit
-            my ($name, $comment) = split ';', $option;
-            $name =~ s{=.*}{}xms;
-            $name =~ s{\b(\w{2,})}{--$1};
-            $name =~ s{\b(\w)\b}{-$1}xmsg;
-            $name =~ s{\|}{ }xmsg;
-            $extra .= sprintf("\n  %-20s%s", $name, $comment || '');
-        }
-        $extra .= "\n";
+    my $options = '';
+    foreach my $option ($class->_collect_options) {
+        ### FIXME: must get cleaned up a bit
+        my ($name, $comment) = split qr{\s*;\s*}xms, $option;
+        $name =~ s{[!+=:].*}{}xms;
+        $name =~ s{\b(\w{2,})}{--$1};
+        $name =~ s{\b(\w)\b}{-$1}xmsg;
+        $name =~ s{\|}{ }xmsg;
+        $options .= sprintf("\n  %-20s%s", $name, $comment || '');
     }
+    $options .= "\n";
 
     say <<EOF;
 $app [options]
-
-  --dryrun -n         just simulate
-  --verbose -v        print progress messages
-  --debug             print debug info
-
-  --help              this help
-$extra
+$options
 EOF
     exit 1
 }
 
 sub log {
     my $self = shift;
-    
+
     $self->_log_if($self->verbose || $self->debug, @_);
 }
 
 sub log_debug {
     my $self = shift;
-    
+
     $self->_log_if($self->debug, 'DEBUG:', @_);
 }
 
 sub log_dryrun {
     my $self = shift;
-    
+
     $self->_log_if($self->dryrun, @_);
 }
 
@@ -130,7 +137,7 @@ sub _to_string {
     :   ref($thing) =~ m{\A Provision::DSL::Entity \b .* :: ([^:]+) \z}xms
             ? "$1('${\$thing->name}')"
     :   blessed $thing && $thing->can('stringify')
-            ? ref $thing . 
+            ? ref $thing .
               '<' . $thing->stringify . '>'
     :   "$thing"
 }

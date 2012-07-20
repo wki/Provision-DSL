@@ -1,4 +1,4 @@
-package Provision::DSL::Command::Provision;
+package Provision::DSL::Script::Provision;
 use Moo;
 use feature ':5.10';
 use Archive::Tar;
@@ -9,8 +9,8 @@ use MIME::Base64;
 use Cwd;
 use Provision::DSL::Types;
 
-with 'Provision::DSL::Role::AppOptions',
-     'Provision::DSL::Role::Command';
+with 'Provision::DSL::Role::CommandlineOptions',
+     'Provision::DSL::Role::CommandExecution';
 
 has config => (
     is => 'ro',

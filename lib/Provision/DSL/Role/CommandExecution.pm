@@ -1,4 +1,4 @@
-package Provision::DSL::Role::Command;
+package Provision::DSL::Role::CommandExecution;
 use Moo::Role;
 use IPC::Open3 'open3';
 use Try::Tiny;
