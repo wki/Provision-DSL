@@ -72,7 +72,7 @@ sub get_cached_entity {
             if !exists $cache->{$name};
         return $cache->{$name};
     } elsif (scalar keys %$cache == 1) {
-        return (values $cache->{$name})[0];
+        return (values %$cache)[0];
     } else {
         croak "entity '$entity' is ambiguous, name required";
     }

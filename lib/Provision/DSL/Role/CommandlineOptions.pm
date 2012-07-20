@@ -27,12 +27,13 @@ has args => (
     default => sub { [] },
 );
 
-sub _default_options {
+# expand in class/children/roles via 'around' modifier
+sub options {
     return (
         'help|h      ; this help',
         'verbose|v   ; verbose mode - show messages',
         'dryrun|n    ; dryrun - do not execute',
-        'debug       ; show debut output',
+        'debug       ; show debug output',
     );
 }
 
@@ -40,28 +41,16 @@ sub new_with_options {
     my $class = shift;
     my @argv = @_;
 
-    my %options;
+    my %opt;
     Getopt::Long::Configure('bundling');
     GetOptionsFromArray(
-        \@argv => \%options,
-        map {s{\s*;\s*.*}{}; $_} $class->_collect_options
+        \@argv => \%opt,
+        map {s{\s*;\s*.*}{}; $_} $class->options
     );
 
-    usage($class) if $options{help};
+    usage($class) if $opt{help};
 
-    return $class->new( { %options, args => \@argv } );
-}
-
-sub _collect_options {
-    my $class = shift;
-
-    my @options = (
-        _default_options(),
-        
-        ($class->can('extra_options')
-            ? $class->extra_options
-            : ()),
-    );
+    return $class->new( { %opt, args => \@argv } );
 }
 
 sub usage {
@@ -71,7 +60,7 @@ sub usage {
     $app =~ s{\A .* /}{}xms;
 
     my $options = '';
-    foreach my $option ($class->_collect_options) {
+    foreach my $option ($class->options) {
         ### FIXME: must get cleaned up a bit
         my ($name, $comment) = split qr{\s*;\s*}xms, $option;
         $name =~ s{[!+=:].*}{}xms;

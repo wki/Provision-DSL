@@ -8,6 +8,7 @@ use IO::String;
 use MIME::Base64;
 use Cwd;
 use Provision::DSL::Types;
+use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
 with 'Provision::DSL::Role::CommandlineOptions',
      'Provision::DSL::Role::CommandExecution';
@@ -24,33 +25,45 @@ has tar => (
 
 sub _build_tar { Archive::Tar->new }
 
-sub extra_options {
-    return 'config|c=s;specify a config file (required)'
-}
+has script => (
+    is => 'lazy',
+);
+
+sub _build_script { $_[0]->_boot_script . $_[0]->_tar_content_base64_encoded }
+
+around options => sub {
+    my ($orig, $self) = @_;
+
+    return (
+        $self->$orig,
+        'config|c=s     ; specify a config file (required)',
+    );
+};
 
 sub run {
     my $self = shift;
 
     $self->log('Starting Provisioning');
 
+    $self->log_debug(Data::Dumper->Dump([$self->config], ['config']));
+
     $self->pack_requisites;
-    my $script = $self->create_boot_script;
-    
+
     if ($self->debug) {
         my $fh = file('/tmp/provision.pl')->openw;
-        print $fh $script;
+        print $fh $self->script;
         $fh->close;
     }
-    
-    # my $result = $self->remote_execute($script);
-    # $self->log($result);
+
+    my $result = $self->remote_execute;
+    $self->log('Script Result:', $result);
 
     $self->log('Finished Provisioning');
 }
 
 sub pack_requisites {
     my $self = shift;
-    
+
     $self->pack_resources_and_libs;
     $self->pack_provision_script(file('examples.pl'));
 }
@@ -102,7 +115,7 @@ sub _pack_dir {
         } else {
             $self->log_debug('adding FILE:', $dest_file);
             $self->tar->add_data(
-                $dest_file, 
+                $dest_file,
                 scalar $child->slurp,
                 { type => FILE, mode => 0644 },
             );
@@ -116,20 +129,13 @@ sub _pack_dir {
 
 sub pack_provision_script {
     my ($self, $script) = @_;
-    
+
     $self->log_debug('adding privision script');
     $self->tar->add_data(
-        'provision.pl', 
+        'provision.pl',
         scalar $script->slurp,
         { type => FILE, mode => 0755 },
     );
-}
-
-sub create_boot_script {
-    my $self = shift;
-
-    return $self->_boot_script
-        .  $self->_tar_content_base64_encoded;
 }
 
 sub _tar_content_base64_encoded {
@@ -138,7 +144,7 @@ sub _tar_content_base64_encoded {
     my $buffer;
     my $io = IO::String->new($buffer);
     $self->tar->write($io);
-    
+
     if ($self->debug) {
         $self->tar->write('/tmp/provision.tar');
     }
@@ -147,20 +153,22 @@ sub _tar_content_base64_encoded {
 }
 
 sub remote_execute {
-    my ($self, $script) = @_;
+    my $self = shift;
 
-    # $ cat this_script.pl | ssh -x -C <<host>> perl
+    my $ssh_config = $self->config->{ssh} // {};
+    my $identity_file = $ssh_config->{identity_file} || 'id_rsa';
+
     return $self->pipe_into_command(
-        $script,
+        $self->script,
         '/usr/bin/ssh',
-        # -i key_name
-        # -C
-        # user @ host
-        'perl'
+        '-i' => "$ENV{HOME}/.ssh/$identity_file",
+        '-C',
+        "$ssh_config->{user}\@$ssh_config->{hostname}",
+        'perl -'
+            . ($self->dryrun  ? ' -n' : '')
+            . ($self->verbose ? ' -v' : '')
     );
 }
-
-
 
 sub _boot_script {
     my $self = shift;
@@ -175,35 +183,36 @@ use Cwd;
 use Archive::Tar;
 use File::Temp 'tempdir';
 
-my $cwd      = getgwd;
+my $cwd      = getcwd;
 my $temp_dir = tempdir(CLEANUP => 1);
 
 chdir $temp_dir;
-binmode DATA, ':via(Base64)';
+binmode DATA, ':via(Base64Decode)';
 Archive::Tar->new(\*DATA)->extract;
 
 chdir $cwd;
-system "$temp_dir/provision.pl";
+$ENV{PERL5LIB} = "$temp_dir/local/lib/perl5";
+system "$temp_dir/provision.pl", @ARGV;
 
 {
-   package Base64;
-   use MIME::Base64;
+    package Base64Decode;
+    use MIME::Base64;
 
-   sub PUSHED {
-       my ($class, $mode, $fh) = @_;
+    sub PUSHED {
+        my ($class, $mode, $fh) = @_;
 
-       my $buf = '';
-       return bless \$buf, $class;
-   }
+        my $buf = '';
+        return bless \$buf, $class;
+    }
 
-   sub FILL {
-       my ($obj, $fh) = @_;
+    sub FILL {
+        my ($obj, $fh) = @_;
 
-       my $line = <$fh>;
-       return defined $line
-           ? decode_base64($line)
-           : undef;
-   }
+        my $line = <$fh>;
+        return defined $line
+            ? decode_base64($line)
+            : undef;
+    }
 }
 
 # data contains base-64 encoded tar file, compression via ssh -C

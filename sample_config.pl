@@ -3,8 +3,8 @@
     provision => 'xxx.pl',
 
     ssh => {
-        user          => 'worker',
-        hostname      => 'testcomputer.mydomain.de',
+        user          => 'wolfgang',
+        hostname      => 'localhost',
         identity_file => 'id_rsa_pass_wk',
     },
     

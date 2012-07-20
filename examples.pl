@@ -1,6 +1,4 @@
 #!/usr/bin/env perl
-use FindBin;
-use lib "$FindBin::Bin/lib";
 use Provision::DSL;
 
 my $SITE_DIR = '/Users/wolfgang/tmp/site_dir';
