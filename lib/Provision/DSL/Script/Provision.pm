@@ -7,11 +7,13 @@ use Path::Class;
 use IO::String;
 use MIME::Base64;
 use Cwd;
+use IPC::Run ();
 use Provision::DSL::Types;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
-with 'Provision::DSL::Role::CommandlineOptions',
-     'Provision::DSL::Role::CommandExecution';
+with 'Provision::DSL::Role::CommandlineOptions';
+     # 'Provision::DSL::Role::CommandExecution';
+     
 
 has config => (
     is => 'ro',
@@ -56,7 +58,6 @@ sub run {
     }
 
     my $result = $self->remote_execute;
-    $self->log('Script Result:', $result);
 
     $self->log('Finished Provisioning');
 }
@@ -156,18 +157,40 @@ sub remote_execute {
     my $self = shift;
 
     my $ssh_config = $self->config->{ssh} // {};
-    my $identity_file = $ssh_config->{identity_file} || 'id_rsa';
+    my $identity_file = exists $ssh_config->{identity_file}
+        ? "$ENV{HOME}/.ssh/$ssh_config->{identity_file}"
+        : undef;
+    my $user_prefix = exists $ssh_config->{user}
+        ? "$ssh_config->{user}\@"
+        : '';
 
-    return $self->pipe_into_command(
-        $self->script,
+    my @command_and_args = (
         '/usr/bin/ssh',
-        '-i' => "$ENV{HOME}/.ssh/$identity_file",
+        (defined $identity_file 
+            ? ('-i' => $identity_file)
+            : ()),
         '-C',
-        "$ssh_config->{user}\@$ssh_config->{hostname}",
+        ($ssh_config->{options} // ()),
+        "$user_prefix$ssh_config->{hostname}",
         'perl -'
             . ($self->dryrun  ? ' -n' : '')
             . ($self->verbose ? ' -v' : '')
     );
+    
+    $self->log_debug('Executing:', @command_and_args);
+    
+    IPC::Run::run \@command_and_args,
+                  \$self->script,
+                  \&_print_stdout_in_green,
+                  \&_print_stderr_in_red;
+}
+
+sub _print_stdout_in_green {
+    print "\e[32m$_[0]\e[m";
+}
+
+sub _print_stderr_in_red {
+    print "\e[31m$_[0]\e[m";
 }
 
 sub _boot_script {

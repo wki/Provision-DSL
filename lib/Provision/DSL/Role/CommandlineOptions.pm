@@ -101,7 +101,7 @@ sub _log_if {
     my $self = shift;
     my $condition = shift;
 
-    say STDERR join(' ', map { _to_string($_) } @_) if $condition;
+    say join(' ', map { _to_string($_) } @_) if $condition;
 
     return $condition;
 }

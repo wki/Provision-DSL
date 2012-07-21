@@ -55,7 +55,7 @@ sub execute {
         ? ($state eq 'missing' ? 'create' : 'change')
         : 'remove';
 
-    $self->log_dryrun(@log, "would run $action") and return;
+    $self->log_dryrun(@log, "would $action") and return;
     $self->log(@log, "$state => $action");
 
     $self->$action();

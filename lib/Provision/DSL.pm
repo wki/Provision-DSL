@@ -33,6 +33,7 @@ sub import {
     create_and_export_entity_keywords($package);
     create_and_export_source_keywords($package);
     export_symbols($package);
+    turn_on_autoflush($package);
     
     $app->log_debug('init done');
 }
@@ -112,6 +113,13 @@ sub export_symbols {
         no strict 'refs';
         *{"${package}::${symbol}"} = *{"Provision::DSL::$symbol"};
     }
+}
+
+sub turn_on_autoflush {
+    my $package = shift;
+
+    no strict 'refs';
+    ${"$package\::|"} = 1;
 }
 
 sub OS { goto &os }

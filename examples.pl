@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 use Provision::DSL;
-
 my $SITE_DIR = '/Users/wolfgang/tmp/site_dir';
 
 User sites => {

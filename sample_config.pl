@@ -2,10 +2,13 @@
     name => 'sample config',
     provision => 'xxx.pl',
 
+    # only hostname is mandatory, all others are optional
+    # options are added to the ssh commandline as-is
     ssh => {
-        user          => 'wolfgang',
         hostname      => 'localhost',
-        identity_file => 'id_rsa_pass_wk',
+        user          => 'wolfgang',
+        identity_file => 'id_rsa',
+        # options     => '--foo 42 --bar zzz',
     },
     
     resources => {
