@@ -1,6 +1,6 @@
 {
-    name => 'sample config',
-    provision => 'xxx.pl',
+    name           => 'sample config',
+    provision_file => 'examples.pl',
 
     # only hostname is mandatory, all others are optional
     # options are added to the ssh commandline as-is
@@ -11,8 +11,15 @@
         # options     => '--foo 42 --bar zzz',
     },
     
-    resources => {
-        include => [qw(abc def ghi)],
-        exclude => 'ddd',
-    },
+    resources => [
+        {
+            # copy everything inside t/resources 
+            #    to xxx inside resources directory in tar file
+            source      => 't/resources',       # root directory
+            destination => 'files',             # subdir inside resources
+            exclude     => 'dirx',              # globs allowed
+        },
+        
+        # ... more rules
+    ],
 }

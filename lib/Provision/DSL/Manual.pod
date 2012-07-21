@@ -6,6 +6,33 @@ Provision::DSL::Manual - How to use Provision::DSL
 
 =head1 SYNOPSIS
 
+fire a script
+
+    $ provision.pl -c path/to/configuration_file
+    
+where configuration file might look like
+
+    {
+        name => 'sample config',
+        provision => 'path/to/provisioning_script.pl',
+    
+        # only hostname is mandatory, all others are optional
+        # options are added to the ssh commandline as-is
+        ssh => {
+            hostname      => 'localhost',
+            user          => 'wolfgang',
+            identity_file => 'id_rsa',
+            options       => '-x',
+        },
+        
+        resources => {
+            include => [qw(abc def ghi)],
+            exclude => 'ddd',
+        },
+    }
+
+and your provisioning script could be
+
     #!/usr/bin/env perl
     use Provision::DSL;
         
@@ -151,7 +178,7 @@ the ssh connection will compress its payload.
 
 =head1 AUTHOR
 
-Wolfgang Kinkeldei
+Wolfgang Kinkeldei, E<lt>wolfgang@kinkeldei.deE<gt>
 
 =head1 LICENSE
 

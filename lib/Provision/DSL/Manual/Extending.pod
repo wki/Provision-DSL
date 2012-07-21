@@ -72,7 +72,7 @@ like this:
 
 =head1 AUTHOR
 
-Wolfgang Kinkeldei
+Wolfgang Kinkeldei, E<lt>wolfgang@kinkeldei.deE<gt>
 
 =head1 LICENSE
 

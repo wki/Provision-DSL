@@ -127,7 +127,7 @@ sub _to_string {
     :   ref($thing) =~ m{\A Provision::DSL::Entity \b .* :: ([^:]+) \z}xms
             ? "$1('${\$thing->name}')"
     :   blessed $thing && $thing->can('stringify')
-            ? ref $thing .
+            ? ref($thing) .
               '<' . $thing->stringify . '>'
     :   "$thing"
 }

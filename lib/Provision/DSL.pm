@@ -11,11 +11,11 @@ Provision::DSL - a simple provisioning toolkit
 
 =head1 SYNOPSIS
 
-TODO
+    $ provision.pl -c path/to/config_file
 
 =head1 DESCRIPTION
 
-TODO
+See L<Provision::DSL::Manual> for a comprehensive description
 
 =cut
 

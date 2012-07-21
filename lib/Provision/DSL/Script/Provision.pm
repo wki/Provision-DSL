@@ -8,18 +8,57 @@ use IO::String;
 use MIME::Base64;
 use Cwd;
 use IPC::Run ();
+use Config;
 use Provision::DSL::Types;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
-with 'Provision::DSL::Role::CommandlineOptions';
-     # 'Provision::DSL::Role::CommandExecution';
-     
+#
+# test with:
+# PERL_CPANM_OPT="--mirror /Users/wolfgang/minicpan --mirror-only" PERL5LIB=lib bin/provision.pl -c sample_config.pl -n -v --debug
+#
+
+with 'Provision::DSL::Role::CommandlineOptions',
+     'Provision::DSL::Role::CommandExecution';
 
 has config => (
     is => 'ro',
     required => 1,
     coerce => sub { do $_[0] },
 );
+
+has root_dir => (
+    is => 'lazy',
+    coerce => to_ExistingDir,
+);
+
+sub _build_root_dir {
+    my $self = shift;
+
+    my $dir = dir(getcwd);
+
+    while (scalar $dir->dir_list > 1) {
+        return $dir
+            if -f $dir->file('Makefile.PL') ||
+               -f $dir->file('dist.ini');
+        $dir = $dir->parent;
+    }
+
+    die 'cannot guess root_dir, stopping.';
+}
+
+has temp_lib_dir => (
+    is => 'lazy',
+    coerce => to_ExistingDir,
+);
+
+sub _build_temp_lib_dir {
+    my $self = shift;
+    
+    my $dir = $self->root_dir->subdir('.provision_lib');
+    $dir->mkpath if !-d $dir;
+    
+    return $dir;
+}
 
 has tar => (
     is => 'lazy',
@@ -39,6 +78,7 @@ around options => sub {
     return (
         $self->$orig,
         'config|c=s     ; specify a config file (required)',
+        'root_dir|r=s   ; root dir for locating files and resources',
     );
 };
 
@@ -47,6 +87,7 @@ sub run {
 
     $self->log('Starting Provisioning');
 
+    $self->log_debug('root_dir =', $self->root_dir);
     $self->log_debug(Data::Dumper->Dump([$self->config], ['config']));
 
     $self->pack_requisites;
@@ -65,48 +106,114 @@ sub run {
 sub pack_requisites {
     my $self = shift;
 
-    $self->pack_resources_and_libs;
-    $self->pack_provision_script(file('examples.pl'));
+    $self->pack_resources;
+    $self->pack_dependent_libs;
+    $self->pack_provision_libs;
+    $self->pack_provision_script;
 }
 
-sub pack_resources_and_libs {
+sub pack_resources {
     my $self = shift;
 
-    # tar file:
-    #   - resources
-    #   - perl libs
+    my $resources = $self->config->{resources}
+        or return;
 
+    if (ref $resources eq 'ARRAY') {
+        $self->pack_resource($_) for @$resources;
+    } else {
+        $self->pack_resource($resources);
+    }
+}
+
+sub pack_resource {
+    my ($self, $resource) = @_;
+
+    my $resource_subdir = $resource->{destination} // '';
+    
     $self->_pack_dir(
-        dir('/Users/wolfgang/proj/Provision-DSL/t/resources'),
-        'dir1' => 'resources',
+        $self->root_dir,
+        $resource->{source} => "resources/$resource_subdir",
+        $resource->{exclude}
     );
+}
 
-    ### TODO: use cpanm to install requirements into local/
-    ### TODO: don't forget Provision::DSL
+sub pack_dependent_libs {
+    my $self = shift;
+
+    my @install_libs = qw(
+        autodie Moo Role::Tiny Try::Tiny
+        HTTP::Lite Path::Class Template::Simple
+    );
+    
+    foreach my $lib (@install_libs) {
+        my $lib_filename = "lib/perl5/$lib.pm";
+        $lib_filename =~ s{::}{/}xmsg;
+        next if -f $self->temp_lib_dir->file($lib_filename);
+        
+        $self->system_command(
+            'cpanm',
+            -L => $self->temp_lib_dir,
+            -n => $lib
+        );
+    }
+
     $self->_pack_dir(
-        dir('/Users/wolfgang/proj/Provision-DSL'),
-        'local' => '',
+        $self->temp_lib_dir,
+        '.' => "local",
+        $Config{archname}
+    );
+}
+
+sub pack_provision_libs {
+    my $self = shift;
+
+    # Provision::DSL libs are collected manually for two reasons:
+    #   - we do not catch dependencies for the controlling machine
+    #   - if add-ons are present, we get them, too
+    my $this_file = file(__FILE__)->resolve->absolute;
+    my $provision_dsl_install_dir = $this_file->dir->parent->parent->parent;
+    
+    $self->_pack_dir(
+        $provision_dsl_install_dir,
+        'Provision' => 'local/lib/perl5',
     );
 }
 
 sub _pack_dir {
-    my ($self, $root_dir, $subdir_name, $prefix) = @_;
+    my $self = shift;
+    my $root_dir = shift;
+    my $source_subdir_name = shift;
+    my $target_subdir_name = shift;
+
+    my @exclude_regexes =
+        map {
+            s{\A /}{\\A}xms;    # leading / => begin of string
+            s{\*\*}{.*}xmsg;    # ** => anything including /
+            s{\*}{[^/]*}xmsg;   # * => anything but /
+            s{\?}{.}xmsg;       # ? => one char
+            s{\.}{\\.}xmsg;     # . => escaped .
+
+            qr{$_}xms;
+        }
+        ref $_[0] eq 'ARRAY' ? @{$_[0]} : @_;
 
     my $cwd = getcwd;
     chdir $root_dir;
 
-    my $subdir = $root_dir->subdir($subdir_name);
+    my $subdir = $root_dir->subdir($source_subdir_name);
     $subdir->traverse( sub {
         my ($child, $cont) = @_;
 
-        my $file = $child->relative($root_dir)->stringify;
-        my $dest_file = $prefix ? "$prefix/$file" : $file;
+        my $relative_file_name = $child->relative($root_dir)->stringify;
+        my $dest_file = $target_subdir_name
+            ? "$target_subdir_name/$relative_file_name"
+            : $relative_file_name;
 
-        ### TODO: ignore if exclude glob matches
-
-        if ($file eq '.') {
-           # ignore .
-        } elsif (-d $file) {
+        if ($relative_file_name eq '.') {
+            # ignore .
+        } elsif (grep { $relative_file_name =~ $_ } @exclude_regexes) {
+            $self->log_debug('ignoring:', $relative_file_name);
+        } elsif (-d $child) {
             $self->log_debug('adding DIR:', $dest_file);
             $self->tar->add_data(
                 $dest_file,
@@ -129,12 +236,16 @@ sub _pack_dir {
 }
 
 sub pack_provision_script {
-    my ($self, $script) = @_;
+    my $self = shift;
 
-    $self->log_debug('adding privision script');
+    my $provision_file_name = $self->config->{provision_file} // 'provision.pl';
+    my $provision_script = $self->root_dir->file($provision_file_name);
+
+    $self->log_debug("adding provision script '$provision_file_name'");
+
     $self->tar->add_data(
         'provision.pl',
-        scalar $script->slurp,
+        scalar $provision_script->slurp,
         { type => FILE, mode => 0755 },
     );
 }
@@ -166,7 +277,7 @@ sub remote_execute {
 
     my @command_and_args = (
         '/usr/bin/ssh',
-        (defined $identity_file 
+        (defined $identity_file
             ? ('-i' => $identity_file)
             : ()),
         '-C',
@@ -176,9 +287,9 @@ sub remote_execute {
             . ($self->dryrun  ? ' -n' : '')
             . ($self->verbose ? ' -v' : '')
     );
-    
+
     $self->log_debug('Executing:', @command_and_args);
-    
+
     IPC::Run::run \@command_and_args,
                   \$self->script,
                   \&_print_stdout_in_green,
