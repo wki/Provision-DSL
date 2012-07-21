@@ -53,7 +53,7 @@ my $app = Provision::DSL::App->new(
     }
     'creating a named and existing dir entity lives';
 
-    ok -d $d->path,    'a known dir exists';
+    ok -d $d->path, 'a known dir exists';
     ok $d->is_ok, 'a known dir is ok';
 }
 
@@ -76,7 +76,15 @@ my $app = Provision::DSL::App->new(
 
     ok !$d->is_ok, 'dir with structure is not ok';
     
+    # warn "BEFORE: ${\ref $_} ${\$_->name} : ${\$_->state}, OK: ${\($_->is_ok?'YES':'NO')}"
+    #     for $d->all_children;
+    
     $d->execute(1);
+    
+    # warn "AFTER: ${\ref $_} ${\$_->name} : ${\$_->state}, OK: ${\($_->is_ok?'YES':'NO')}"
+    #     for $d->all_children;
+
+    is $d->state, 'current', 'state is current after process';
     
     ok $d->is_ok, 'dir with structure is ok after process';
     

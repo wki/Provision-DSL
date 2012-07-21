@@ -7,8 +7,8 @@ extends 'Provision::DSL::Entity';
 sub path;       # must forward-declare
 sub content;    # must forward-declare
 
-with 'Provision::DSL::Role::PathPermission';
-#      'Provision::DSL::Role::PathOwner';
+with 'Provision::DSL::Role::PathPermission',
+     'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0644' }
 

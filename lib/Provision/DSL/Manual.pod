@@ -6,6 +6,7 @@ Provision::DSL::Manual - How to use Provision::DSL
 
 =head1 SYNOPSIS
 
+    #!/usr/bin/env perl
     use Provision::DSL;
         
     # install packages unless present
@@ -105,6 +106,8 @@ Currently the following types of entites are defined:
 =item Service
 
 =back
+
+For extending, please consult L<Provision::DSL::Manual::Extending>.
 
 =head2 Parts of a Provision
 

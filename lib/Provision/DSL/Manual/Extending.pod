@@ -1,0 +1,82 @@
+=head1 NAME
+
+Provision::DSL::Manual::Extending - how to extend Provision::DSL
+
+=head1 ENTITIES
+
+Creating new entities can be very simple. In order to maintain the whole
+system behind working you need to know a few things:
+
+=over
+
+=item state
+
+Every Entity must be able to report its state. The state is one of three
+words: C<missing>, C<outdated> or C<current>. Depending on a condition you
+must define your overloaded sub C<state> must return exactly one of these
+three values.
+
+=item name
+
+When using the dsl to define a provisioning, an entity is created or 
+referenced by a C<name> which is stored in the object's attribute "name".
+However, most entities behave more natural if they use correctly named
+attributes for their purposes. In order to still allow an easy creation of
+entities using clde like C<<< Entity some_name => { ... } >>>. To allow
+this mechanism to happen, you will need to define one attribute like this:
+
+    # assuming that 'foo' is the attribute you like
+    has foo => ( is => 'lazy' );
+    sub _build_foo { $_[0]->name }
+
+=item create, change, remove
+
+depending on the entity's state and the content of the C<wanted> flag,
+one of these 3 methods will get called. A typical implementation might look
+like this:
+
+    before create => sub { ... };
+    before change => sub { ... };
+    after  remove => sub { ... };
+
+=back
+
+=head2 Simple entities
+
+### inherit from Provision::DSL::Entity
+
+=head2 Entities with roles
+
+### add as many roles as you like
+### role may have attributes
+### role may expand state and merge role-state with object-state
+### after create/change, before remove
+
+=head2 Compound entities
+
+### inherit from Provision::DSL::Entity::Compound
+### dynamic list of children
+### state is determined automatically by accumulating childrens' states
+### state may be overloaded: around state
+### Roles may be used
+
+=head2 Different operating systems
+
+### create Provision::DSL::Entity::_XXX::YourEntity
+
+=head1 RESOURCES
+
+### inherit from Provision::DSL::Source
+### like entities, construct one attribute lazily from attribute 'name'
+### implement _build_content which may die if content does not make sense
+
+=head1 AUTHOR
+
+Wolfgang Kinkeldei
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

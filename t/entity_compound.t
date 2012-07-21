@@ -40,25 +40,7 @@ use ok 'Provision::DSL::Entity::Compound';
     
     has fake_state => (is => 'ro', default => sub { 'current' });
     
-    sub compound_state { $_[0]->fake_state }
-    
-    # around state => sub {
-    #     my ($orig, $self) = @_;
-    #     
-    #     my $state = $self->fake_state;
-    #     return $state || 'current' if $self->has_no_children;
-    #     
-    #     return $self->$orig eq $state
-    #         ? $state
-    #         : 'outdated';
-    # };
-
-    # has fake_ok => (is => 'rw', default => sub {1} );
-    # 
-    # around is_ok => sub {
-    #     my ($orig, $self) = @_;
-    #     $self->fake_ok && $self->$orig();
-    # };
+    around state => sub { my ($orig, $self) = @_; $self->fake_state };
     
     has _diagnostics => (
         is => 'rw',

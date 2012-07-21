@@ -52,20 +52,23 @@ sub _rsync_command {
         $self->_exclude_list,
         "${\$self->content}/" => "${\$self->path}/",
     );
-
+    
     return $self->system_command('/usr/bin/rsync', @args);
 }
 
 # rsync reports to delete a directory if its subdirectory is in exclusion
-# OLD: thus, we have to resolve every path to every of its parents
-# NEW: use paths like /dir/ to ensure rsync does a good job
+# thus, we have to resolve every path to every of its parents
 sub _exclude_list {
     my $self = shift;
 
     my @exclude_list;
     foreach my $path (@{$self->exclude}) {
         $path =~ s{\A / | / \z}{}xmsg;
-        push @exclude_list, '--exclude', "/$path";
+        my @parts = split qr{/+}, $path;
+        
+        push @exclude_list, 
+             '--exclude', join('/', '', @parts[0..$_],'')
+            for (0..$#parts);
     }
 
     return @exclude_list;

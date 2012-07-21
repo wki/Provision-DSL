@@ -22,23 +22,28 @@ sub all_children { @{$_[0]->children} }
 
 sub has_no_children { !scalar @{$_[0]->children} }
 
-# return a true value if compound has a state by itself
-sub compound_state { }
-
 sub state {
     my $self = shift;
-
-    my $state = $self->compound_state;
-    return $state || $self->default_state if $self->has_no_children;
     
-    my %seen_state =
-        ($state ? ($state => 1) : ()),
-        map { ($_->state => 1) }
-        $self->all_children;
-
-    return scalar keys %seen_state == 1
-        ? (keys %seen_state)[0]
+    return $self->default_state if $self->has_no_children;
+    
+    # count children being OK versus children reporting being not-ok
+    my $nr_children_ok = scalar grep { $_->is_ok } $self->all_children;
+    
+    return $nr_children_ok == $self->nr_children
+        ? 'current'
         : 'outdated';
+    
+    # WRONG:
+    # # only considering children states.
+    # # must use around state in child class to expand
+    # my %seen_state =
+    #     map { ($_->state => 1) }
+    #     $self->all_children;
+    # 
+    # return scalar keys %seen_state == 1
+    #     ? (keys %seen_state)[0]
+    #     : 'outdated';
 };
 
 # only remove() receives wanted=0, all others use their own wanted attribute

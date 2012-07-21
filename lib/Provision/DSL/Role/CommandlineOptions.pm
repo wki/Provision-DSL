@@ -2,6 +2,7 @@ package Provision::DSL::Role::CommandlineOptions;
 use feature ':5.10';
 use Moo::Role;
 use Getopt::Long 'GetOptionsFromArray';
+use Scalar::Util 'blessed';
 use Provision::DSL::Types;
 
 has verbose => (

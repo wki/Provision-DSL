@@ -32,7 +32,15 @@ has content => (
     predicate => 'has_content',
 );
 
-sub is_ok { -d $_[0]->path }
+around state => sub {
+    my ($orig, $self) = @_;
+    
+    !-d $self->path
+        ? 'missing'
+    : $self->$orig() eq 'current'
+        ? 'current'
+        : 'outdated';
+};
 
 before create => sub { $_[0]->path->mkpath };
 

@@ -12,7 +12,7 @@ around state => sub {
     my ($orig, $self) = @_;
     
     my $state = 
-        !-f $self->path 
+        !-e $self->path 
             ? 'missing'
         : ($self->path->stat->mode & 511) == (oct($self->permission) & 511)
             ? 'current'
@@ -23,7 +23,7 @@ around state => sub {
         : 'outdated';
 };
 
-before ['create', 'change'] => sub {
+after ['create', 'change'] => sub {
     my $self = shift;
     
     chmod oct($self->permission), $self->path;

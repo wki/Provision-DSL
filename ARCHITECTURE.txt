@@ -101,8 +101,8 @@ Entity Funktionsweise:
 
 Entity Erweiterung:
   - über Rolle(n) oder Kind-Klassen
-     * Entscheidung: (before|around|after) (is_ok)
-     * Steuerung:    (before|after) (create|remove)
+     * Entscheidung: around state
+     * Steuerung:    (before|after) (create|change|remove)
   - Aufruf-Reihenfolge:
      * Kind-Klassen, dann Kind-Rollen reverse (before, around)
      * Klasse, dann Rollen reverse (before, around)
@@ -115,12 +115,13 @@ Entity Erweiterung:
 Datenstruktur zum Deployment (gepackt als .tar.gz):
 
 /
-  apply.pl                  -- standard provision Datei
-  bin/                      -- evtl. ein paar vorbereitete Binärdateien
-    cpanm
-    perlbrew
-  etc/                      -- evtl. Konfigurations-Dateien
-  lib/                      -- alle benötigten Bibliotheken
+  provision.pl              -- standard provision Datei
+  local/
+    bin/                    -- evtl. ein paar vorbereitete Binärdateien
+      cpanm
+      perlbrew
+    etc/                    -- evtl. Konfigurations-Dateien
+    lib/                    -- alle benötigten Bibliotheken
   resources/                -- Resource-Dateien
 
 

@@ -12,16 +12,22 @@ has gid => (
     coerce => to_Gid,
 );
 
-around is_ok => sub {
+around state => sub {
     my ($orig, $self) = @_;
     
-    return -e $self->path 
-        && ($self->path->stat->uid == $self->uid)
-        && ($self->path->stat->gid == $self->gid)
-        && $self->$orig();
+    my $state = !-e $self->path
+        ? 'missing'
+    : ($self->path->stat->uid == $self->uid)
+       && ($self->path->stat->gid == $self->gid)
+        ? 'current'
+        : 'outdated';
+    
+    return $state eq $self->$orig()
+        ? $state
+        : 'outdated';
 };
 
-after create => sub {
+after ['create', 'change'] => sub {
     my $self = shift;
     
     chown $self->uid, $self->gid, $self->path;
