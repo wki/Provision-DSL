@@ -44,12 +44,12 @@ sub new_with_options {
 
     my %opt;
     Getopt::Long::Configure('bundling');
-    GetOptionsFromArray(
+    my $options_ok = GetOptionsFromArray(
         \@argv => \%opt,
         map {s{\s*;\s*.*}{}; $_} $class->options
     );
 
-    usage($class) if $opt{help};
+    usage($class) if $opt{help} || !$options_ok;
 
     return $class->new( { %opt, args => \@argv } );
 }

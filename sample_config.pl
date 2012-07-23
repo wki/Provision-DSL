@@ -1,9 +1,13 @@
 {
+    # just a name, currently not used.
     name           => 'sample config',
+    
+    # the file to run on the controlled machine
     provision_file => 'examples.pl',
 
-    # only hostname is mandatory, all others are optional
-    # options are added to the ssh commandline as-is
+    # ssh connection details
+    #  - only hostname is mandatory, all others are optional
+    #  - options are added to the ssh commandline as-is
     ssh => {
         hostname      => 'localhost',
         user          => 'wolfgang',
@@ -11,10 +15,11 @@
         # options     => '--foo 42 --bar zzz',
     },
     
+    # resources to get packed into resources/ in a tar archive
     resources => [
         {
-            # copy everything inside t/resources 
-            #    to xxx inside resources directory in tar file
+            # copy everything inside t/resources except /dirx
+            #    to 'resources/files'
             source      => 't/resources',       # root directory
             destination => 'files',             # subdir inside resources
             exclude     => 'dirx',              # globs allowed
@@ -22,4 +27,11 @@
         
         # ... more rules
     ],
+    
+    # environment variables to set on the local machine
+    environment => {
+        (-d "$ENV{HOME}/minicpan"
+            ? (PERL_CPANM_OPT => "--mirror $ENV{HOME}/minicpan --mirror-only")
+            : ()),
+    },
 }

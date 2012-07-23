@@ -14,7 +14,7 @@ use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
 #
 # test with:
-# PERL_CPANM_OPT="--mirror /Users/wolfgang/minicpan --mirror-only" PERL5LIB=lib bin/provision.pl -c sample_config.pl -n -v --debug
+# PERL5LIB=lib bin/provision.pl -c sample_config.pl -n -v --debug
 #
 
 with 'Provision::DSL::Role::CommandlineOptions',
@@ -89,6 +89,8 @@ sub run {
 
     $self->log_debug('root_dir =', $self->root_dir);
     $self->log_debug(Data::Dumper->Dump([$self->config], ['config']));
+    
+    $self->prepare_environment;
 
     $self->pack_requisites;
 
@@ -101,6 +103,17 @@ sub run {
     my $result = $self->remote_execute;
 
     $self->log('Finished Provisioning');
+}
+
+sub prepare_environment {
+    my $self = shift;
+    
+    return if !exists $self->config->{environment};
+    
+    my %vars = %{$self->config->{environment}};
+    @ENV{keys %vars} = values %vars;
+    
+    $self->log_debug(Data::Dumper->Dump([\%ENV, \%vars], ['ENV', 'vars']));
 }
 
 sub pack_requisites {

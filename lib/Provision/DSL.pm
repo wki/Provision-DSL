@@ -1,6 +1,7 @@
 package Provision::DSL;
 use strict;
 use warnings;
+use feature ':5.10';
 use Module::Pluggable search_path => 'Provision::DSL::Entity', sub_name => 'entities';
 use Module::Pluggable search_path => 'Provision::DSL::Source', sub_name => 'sources';
 use Module::Load;
@@ -134,7 +135,7 @@ sub os {
 
 sub Done { goto &done }
 sub done {
-    print "Done.\n";
+    say 'Done.';
     
     exit;
 }
