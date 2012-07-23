@@ -1,8 +1,10 @@
 package Provision::DSL::Entity;
 use Moo;
+use Carp;
 use Provision::DSL::Types;
 
-has name => ( is => 'ro', isa => Str, required => 1);
+has name => ( is => 'lazy', isa => Str);
+sub _build_name { croak '"name" attribute is mandatory' }
 
 has app => (
     is       => 'ro',
@@ -18,7 +20,7 @@ has app => (
 
 has parent => ( is => 'ro', predicate => 'has_parent' );
 
-has wanted  => ( is => 'ro', isa => Bool, default => sub { 1 } );
+has wanted  => ( is => 'ro', isa => Str,  default => sub { 1 } );
 has changed => ( is => 'rw', isa => Bool, default => sub { 0 } );
 
 has listen => ( is => 'ro', coerce => to_Channels, default => sub { [] } );

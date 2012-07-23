@@ -10,10 +10,6 @@ use Module::Load;
 
 Provision::DSL - a simple provisioning toolkit
 
-=head1 SYNOPSIS
-
-    $ provision.pl -c path/to/config_file
-
 =head1 DESCRIPTION
 
 See L<Provision::DSL::Manual> for a comprehensive description

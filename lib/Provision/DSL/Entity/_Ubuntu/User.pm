@@ -3,14 +3,19 @@ use Moo;
 
 extends 'Provision::DSL::Entity::User';
 
-sub _build_home_directory {
+our $DSCL = '/usr/bin/dscl';
+
+sub _build_home_dir {
     my $self = shift;
     
     return (getpwuid($self->uid))[7] // "/home/${\$self->name}"; # /
 }
 
-before create => sub {
+after create => sub {
     my $self = shift;
+
+    $self->log_dryrun("would create User '${\$self->name}'")
+        and return;
 
     ...
 };

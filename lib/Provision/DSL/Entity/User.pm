@@ -15,7 +15,7 @@ has uid => (
     isa => Int,
 );
 
-has home_directory => (
+has home_dir => (
     is => 'lazy',
     coerce => to_Dir,
 );
@@ -64,11 +64,11 @@ around is_ok => sub {
 before create => sub {
     my $self = shift;
 
-    $self->log_dryrun("would create User home_directory '${\$self->home_directory}'")
+    $self->log_dryrun("would create User home_dir '${\$self->home_dir}'")
         and return;
 
-    # $self->home_directory->mkpath;
-    # chown $self->uid, $self->group->gid, $self->home_directory;
+    # $self->home_dir->mkpath;
+    # chown $self->uid, $self->group->gid, $self->home_dir;
 };
 
 1;

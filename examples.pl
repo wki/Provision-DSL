@@ -12,6 +12,11 @@ File "$SITE_DIR/testfile" => {
     content => 'blabla',
 };
 
+Perlbrew {
+    install_cpanm => 1,
+    wanted  => '5.14.2',
+};
+
 exit;
 
 Perlbrew sites => {

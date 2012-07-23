@@ -5,7 +5,7 @@ extends 'Provision::DSL::Entity::User';
 
 our $DSCL = '/usr/bin/dscl';
 
-sub _build_home_directory {
+sub _build_home_dir {
     my $self = shift;
     
     return (getpwuid($self->uid))[7] // "/Users/${\$self->name}"; # /
@@ -27,7 +27,7 @@ before create => sub {
     $self->app->system_command($DSCL, '.', -append => $user,
                                UniqueID => $self->uid);
     $self->app->system_command($DSCL, '.', -append => $user,
-                               NFSHomeDirectory => $self->home_directory);
+                               NFSHomeDirectory => $self->home_dir);
     $self->app->system_command($DSCL, '.', -append => $user,
                                UserShell => '/bin/bash');
 };

@@ -49,7 +49,7 @@ sub new_with_options {
         map {s{\s*;\s*.*}{}; $_} $class->options
     );
 
-    usage($class) if $opt{help} || !$options_ok;
+    $class->usage if $opt{help} || !$options_ok;
 
     return $class->new( { %opt, args => \@argv } );
 }

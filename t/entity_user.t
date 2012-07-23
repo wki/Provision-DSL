@@ -8,11 +8,10 @@ my $current_user = getpwuid($<);
 
 can_ok 'main', 'User';
 
-### FIXME: must test with os-specific entities
-
 # basic behavior
 {
     my $u;
+    
     
     undef $u;
     dies_ok { $u = User() }
@@ -31,10 +30,10 @@ can_ok 'main', 'User';
              'creating a named and known user entity lives';
     isa_ok $u, 'Provision::DSL::Entity::User';
     ok $u->is_present, 'a known user is present';
-    isa_ok $u->home_directory, 'Path::Class::Dir';
-    ok -d $u->home_directory, 'home directory exists';
+    isa_ok $u->home_dir, 'Path::Class::Dir';
+    ok -d $u->home_dir, 'home directory exists';
     # fails for root when started via sudo
-    # is $u->home_directory->absolute->resolve->stringify,
+    # is $u->home_dir->absolute->resolve->stringify,
     #    dir($ENV{HOME})->absolute->resolve->stringify,
     #    'home directory eq $ENV{HOME}';
     isa_ok $u->group, 'Provision::DSL::Entity::Group';

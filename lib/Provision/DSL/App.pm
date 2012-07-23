@@ -54,8 +54,11 @@ sub create_entity {
         if exists $self->_entity_cache->{$entity}
            && exists $self->_entity_cache->{$entity}->{$args{name}};
 
-    $self->log_debug("create_entity $entity($args{name}) from", \%args);
-    return $self->_entity_cache->{$entity}->{$args{name}} = $class->new(\%args);
+    my $instance = $class->new(\%args);
+    my $name = $instance->name;
+    
+    $self->log_debug("create_entity $entity($name}) from", \%args);
+    return $self->_entity_cache->{$entity}->{$name} = $instance;
 }
 
 sub get_cached_entity {

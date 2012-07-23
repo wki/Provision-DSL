@@ -13,7 +13,7 @@ our @EXPORT = qw(
     to_Str
     to_Channels 
     to_Dir to_ExistingDir to_File
-    to_Uid to_Gid
+    to_User to_Uid to_Group to_Gid
 );
 
 sub Str {
@@ -79,11 +79,23 @@ sub to_File {
     return sub { file($_[0])->absolute->cleanup }
 }
 
+sub to_User {
+    return sub {
+        $Provision::DSL::app->create_entity('User', $_[0]);
+    }
+}
+
 sub to_Uid {
     return sub { 
         blessed $_[0] && $_[0]->can('uid')
             ? $_[0]->uid
             : $_[0]
+    }
+}
+
+sub to_Group {
+    return sub {
+        $Provision::DSL::app->create_entity('Group', $_[0]);
     }
 }
 

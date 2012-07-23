@@ -9,48 +9,46 @@ Provision::DSL::Manual - How to use Provision::DSL
 fire a script
 
     $ provision.pl -c path/to/configuration_file
-    
-where configuration file might look like
+
+where a minimal configuration file might look like
 
     {
-        name => 'sample config',
-        provision => 'path/to/provisioning_script.pl',
-    
-        # only hostname is mandatory, all others are optional
-        # options are added to the ssh commandline as-is
+        name           => 'a descriptive name',
+        provision_file => 'path/to/provisioning_script.pl',
+        
         ssh => {
-            hostname      => 'localhost',
-            user          => 'wolfgang',
-            identity_file => 'id_rsa',
-            options       => '-x',
+            hostname => 'your_server.domain.de',
+            user     => 'websites',
         },
         
-        resources => {
-            include => [qw(abc def ghi)],
-            exclude => 'ddd',
-        },
+        resources => [
+            {
+                source      => 'root',
+                destination => 'files/root',
+                exclude     => ['cache'],
+            },
+        ],
     }
 
 and your provisioning script could be
 
     #!/usr/bin/env perl
     use Provision::DSL;
-        
+
     # install packages unless present
     Package 'build-essential';
-    
+
     # ensures that a user is present with requested attributes
     User sites => {
         uid => 1200,
     };
-    
+
     # get perlbrew running for user 'sites'
     Perlbrew sites => {
+        wanted => '5.14.2',
         install_cpanm  => 1,
-        install_perl   => '5.14.2',
-        switch_to_perl => '5.14.2',
     };
-    
+
     # ensures a directory tree for your site is created and filled
     # tell our listeners if things have changed
     Dir '/path/to/site' => {
@@ -59,13 +57,13 @@ and your provisioning script could be
         contents => Resource('website'),
         tell     => 'website_changed',
     };
-    
+
     # create a customized config file for whatever daemon
     File '/etc/whatever.conf' => {
         user     => 'root',
         contents => Template('etc/whatever.tt', { vars => { ... } }),
     };
-    
+
     # maintain a service for running a http daemon
     Service 'mysite_http_daemon' => {
         ... params not yet defined, sorry
