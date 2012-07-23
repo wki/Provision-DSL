@@ -8,6 +8,7 @@ our @EXPORT = qw(
     Str Int Bool
     CodeRef
     ExistingDir
+    PerlVersion
     
     to_Str
     to_Channels 
@@ -46,6 +47,11 @@ sub CodeRef {
 sub ExistingDir {
     return sub { -d $_[0] or croak "dir '$_[0]' does not exist" }
 }
+
+sub PerlVersion {
+    return sub { $_[0] =~ m{\A (?:perl-)\d+\.\d+\.\d+(?:-RC\d)? \z}xms }
+}
+
 
 sub to_Str {
     return sub {

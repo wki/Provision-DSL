@@ -10,6 +10,7 @@ use Cwd;
 use IPC::Run ();
 use Config;
 use Provision::DSL::Types;
+use Provision::DSL::Const;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
 #
@@ -18,7 +19,8 @@ use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 #
 
 with 'Provision::DSL::Role::CommandlineOptions',
-     'Provision::DSL::Role::CommandExecution';
+     'Provision::DSL::Role::CommandExecution',
+     'Provision::DSL::Role::HTTP';
 
 has config => (
     is => 'ro',
@@ -53,10 +55,10 @@ has temp_lib_dir => (
 
 sub _build_temp_lib_dir {
     my $self = shift;
-    
+
     my $dir = $self->root_dir->subdir('.provision_lib');
     $dir->mkpath if !-d $dir;
-    
+
     return $dir;
 }
 
@@ -89,7 +91,7 @@ sub run {
 
     $self->log_debug('root_dir =', $self->root_dir);
     $self->log_debug(Data::Dumper->Dump([$self->config], ['config']));
-    
+
     $self->prepare_environment;
 
     $self->pack_requisites;
@@ -107,47 +109,41 @@ sub run {
 
 sub prepare_environment {
     my $self = shift;
-    
+
     return if !exists $self->config->{environment};
-    
+
     my %vars = %{$self->config->{environment}};
     @ENV{keys %vars} = values %vars;
-    
+
     $self->log_debug(Data::Dumper->Dump([\%ENV, \%vars], ['ENV', 'vars']));
 }
 
 sub pack_requisites {
     my $self = shift;
 
-    $self->pack_resources;
+    $self->ensure_perlbrew_installer_loaded;
+
     $self->pack_dependent_libs;
     $self->pack_provision_libs;
+    $self->pack_resources;
     $self->pack_provision_script;
 }
 
-sub pack_resources {
+sub ensure_perlbrew_installer_loaded {
     my $self = shift;
 
-    my $resources = $self->config->{resources}
-        or return;
+    my $installer_file = $self->temp_lib_dir->file(PERLBREW_INSTALLER);
+    return if -f $installer_file;
 
-    if (ref $resources eq 'ARRAY') {
-        $self->pack_resource($_) for @$resources;
-    } else {
-        $self->pack_resource($resources);
-    }
-}
+    $self->log_debug('loading perlbrew installer');
 
-sub pack_resource {
-    my ($self, $resource) = @_;
-
-    my $resource_subdir = $resource->{destination} // '';
+    $installer_file->dir->mkpath;
+    my $installer = $self->http_get(PERLBREW_INSTALLER_URL);
+    my $fh = $installer_file->openw;
+    print $fh $installer;
+    $fh->close;
     
-    $self->_pack_dir(
-        $self->root_dir,
-        $resource->{source} => "resources/$resource_subdir",
-        $resource->{exclude}
-    );
+    chmod 0755, $installer_file;
 }
 
 sub pack_dependent_libs {
@@ -155,14 +151,14 @@ sub pack_dependent_libs {
 
     my @install_libs = qw(
         autodie Moo Role::Tiny Try::Tiny
-        HTTP::Lite Path::Class Template::Simple
+        HTTP::Tiny Path::Class Template::Simple
     );
-    
+
     foreach my $lib (@install_libs) {
         my $lib_filename = "lib/perl5/$lib.pm";
         $lib_filename =~ s{::}{/}xmsg;
         next if -f $self->temp_lib_dir->file($lib_filename);
-        
+
         $self->system_command(
             'cpanm',
             -L => $self->temp_lib_dir,
@@ -185,7 +181,7 @@ sub pack_provision_libs {
     #   - if add-ons are present, we get them, too
     my $this_file = file(__FILE__)->resolve->absolute;
     my $provision_dsl_install_dir = $this_file->dir->parent->parent->parent;
-    
+
     $self->_pack_dir(
         $provision_dsl_install_dir,
         'Provision' => 'local/lib/perl5',
@@ -260,6 +256,31 @@ sub pack_provision_script {
         'provision.pl',
         scalar $provision_script->slurp,
         { type => FILE, mode => 0755 },
+    );
+}
+
+sub pack_resources {
+    my $self = shift;
+
+    my $resources = $self->config->{resources}
+        or return;
+
+    if (ref $resources eq 'ARRAY') {
+        $self->pack_resource($_) for @$resources;
+    } else {
+        $self->pack_resource($resources);
+    }
+}
+
+sub pack_resource {
+    my ($self, $resource) = @_;
+
+    my $resource_subdir = $resource->{destination} // '';
+
+    $self->_pack_dir(
+        $self->root_dir,
+        $resource->{source} => "resources/$resource_subdir",
+        $resource->{exclude}
     );
 }
 
