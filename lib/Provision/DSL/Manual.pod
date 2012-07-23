@@ -54,15 +54,15 @@ and your provisioning script could be
     # ensures a directory tree for your site is created and filled
     # tell our listeners if things have changed
     Dir '/path/to/site' => {
-        user => 'sites',
-        mkdir => [ qw(logs pid) ],
+        user     => 'sites',
+        mkdir    => [ qw(logs pid) ],
         contents => Resource('website'),
-        tell => 'website_changed',
+        tell     => 'website_changed',
     };
     
     # create a customized config file for whatever daemon
     File '/etc/whatever.conf' => {
-        user => 'root',
+        user     => 'root',
         contents => Template('etc/whatever.tt', { vars => { ... } }),
     };
     
@@ -74,13 +74,23 @@ and your provisioning script could be
 
 =head1 DESCRIPTION
 
-Provision::DSL is a simple domain specific language allowing to describe
-how a combination of packages, files, directories and services should
-look like. Every building block describes a simple entity of your
-provisioning. The entities are evaluated in source order and usually there
-is no dependency between them, except explicitly specified.
+Provision::DSL is a simple domain specific language allowing to describe how a
+combination of packages, files, directories and services should look like on a
+*nix machine you like to control. The entities listed in a provisioning script
+are evaluated in source order. Unless there are dependencies between
+individual entities, each entity decides on its own if it must C<<< create()
+>>>, C<<< change() >>> or C<<< remove() >>> itself.
 
-Every entity checks its own state resulting in one of three states:
+Each entity has a C<wanted> attribute which defaults to a true boolean value
+but may be set to some false value. Some types of entites directly use the
+value for eg a version number to install.
+
+Entities needing data of some kind may request such an information from
+resources which are available at the moment of deployment. Think of resources
+as a copy of certain directories and files from the repository of the project
+you are deploying.
+
+Every entity checks itself resulting in one of three states:
 
 =over
 
@@ -104,9 +114,11 @@ to get it into the wanted state.
 
 =back
 
-During processing entities in source-order, an entity may C<tell> a word,
-which other entites may C<listen> to. Should a word get spoken, a listening
-entity will get forced to C<outdated> state. ### FIXME: not yet implemented
+Usually, entities are simply processed in source order without knowing
+each other. If changes in one entity should influence another entity,
+the originating entity could C<talk> a special word, a dependent entity
+could C<listen> to. If en entity hears a word, is listens to, it will
+change to the outdated state.
 
 =head2 Types of entities
 
