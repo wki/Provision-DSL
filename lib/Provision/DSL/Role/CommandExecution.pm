@@ -4,6 +4,33 @@ use IPC::Open3 'open3';
 use Try::Tiny;
 use Carp;
 
+=pod
+
+Just an idea:
+
+my $command => Provision::DSL::Command->new('/usr/bin/ssh');
+my $command => Provision::DSL::Command->new('/usr/bin/ssh', { ...} );
+
+my $command = Provision::DSL::Command->new( {
+    command => '/usr/bin/ssh',
+    args    => [ -f => 'oo', '--bar' ],
+    env     => { ... },
+    stdin   => 'asdf',
+    stdout  => \$ | \&,
+    stderr  => \$ | \&,
+    
+    # using "sudo -n -- command" for command when using:
+    user    => user,
+    group   => group,
+} );
+
+$command->run;
+
+my $status = $command->status;
+my $ok = $command->success;         # status == 0
+
+=cut
+
 sub command_succeeds {
     my $self = shift;
     my @args = @_;

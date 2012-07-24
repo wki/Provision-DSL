@@ -7,7 +7,7 @@ use base 'Exporter';
 our @EXPORT = qw(
     Str Int Bool
     CodeRef
-    ExistingDir
+    ExistingDir ExistingFile ExecutableFile
     PerlVersion
     
     to_Str
@@ -46,6 +46,14 @@ sub CodeRef {
 
 sub ExistingDir {
     return sub { -d $_[0] or croak "dir '$_[0]' does not exist" }
+}
+
+sub ExistingFile {
+    return sub { -f $_[0] or croak "file '$_[0]' does not exist" }
+}
+
+sub ExecutableFile {
+    return sub { -x $_[0] or croak "file '$_[0]' is not executable" }
 }
 
 sub PerlVersion {

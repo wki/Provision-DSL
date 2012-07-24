@@ -20,7 +20,7 @@ around BUILDARGS => sub {
     my $class = shift;
     
     my %args;
-    $args{name} = shift if !ref $_[0];
+    $args{name} = shift if !ref $_[0] && (scalar @_ == 1 || ref $_[1] eq 'HASH');
     %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
     
     return $class->$orig(%args);
