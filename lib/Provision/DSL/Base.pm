@@ -1,5 +1,6 @@
 package Provision::DSL::Base;
 use Moo;
+use Provision::DSL::Types;
 
 has name => (
     is => 'ro',
