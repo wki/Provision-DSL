@@ -2,12 +2,17 @@ package Provision::DSL::Command;
 use Moo;
 use Provision::DSL::Types;
 
+extends 'Provision::DSL::Base';
+with 'Provision::DSL::Role::User',
+     'Provision::DSL::Role::Group';
+
 has command => (
-    is => 'ro',
+    is => 'lazy',
     isa => ExecutableFile,
-    required => 1,
     coerce => to_File,
 );
+
+sub _build_command { $_[0]->name }
 
 has args => (
     is => 'ro',
@@ -24,35 +29,10 @@ has ['stdin', 'stdout', 'stderr'] => (
     predicate => 1,
 );
 
-# use Role User?
-has user => (
-    is => 'ro',
-    coerce => to_User
-    predicate => 1,
-);
-
-# use Role Group?
-has group => (
-    is => 'ro',
-    coerce => to_Group
-    predicate => 1,
-);
-
 has _status => (
     is => 'rw',
     predicate => '_has_status',
 );
-
-around BUILDARGS => sub {
-    my $orig = shift;
-    my $class = shift;
-
-    my %args;
-    $args{command} = shift if !ref $_[0] && (scalar @_ == 1 || ref $_[1] eq 'HASH');
-    %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
-
-    return $class->$orig(%args);
-};
 
 sub run {
     
