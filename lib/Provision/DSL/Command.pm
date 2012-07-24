@@ -1,6 +1,8 @@
 package Provision::DSL::Command;
 use Moo;
+use IPC::Run3;
 use Provision::DSL::Types;
+use Carp;
 
 extends 'Provision::DSL::Base';
 with 'Provision::DSL::Role::User',
@@ -24,7 +26,17 @@ has env => (
     default => sub { {} },
 );
 
-has ['stdin', 'stdout', 'stderr'] => (
+has stdin => (
+    is => 'ro',
+    predicate => 1,
+);
+
+has stdout => (
+    is => 'ro',
+    predicate => 1,
+);
+
+has stderr => (
     is => 'ro',
     predicate => 1,
 );
@@ -35,8 +47,24 @@ has _status => (
 );
 
 sub run {
+    my $self = shift;
     
-    ### sudo -n when user|group
+    ### TODO: /usr/bin/sudo -n  -u | -g when user|group
+    my @command_and_args = (
+        $self->command->stringify,
+        @{$self->args},
+    );
+    
+    local %ENV;
+    @ENV{keys %{$self->env}} = values %{$self->env};
+    
+    run3 \@command_and_args,
+        ($self->has_stdin  ? $self->stdin  : \undef),
+        ($self->has_stdout ? $self->stdout : sub {}),
+        ($self->has_stderr ? $self->stderr : sub {});
+
+    $self->_status($? >> 8)
+        and croak "Nonzero exit status while executing '${\$self->command}'";
 }
 
 sub status {

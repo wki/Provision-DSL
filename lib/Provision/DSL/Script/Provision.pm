@@ -152,6 +152,7 @@ sub pack_dependent_libs {
     my @install_libs = qw(
         autodie Moo Role::Tiny Try::Tiny
         HTTP::Tiny Path::Class Template::Simple
+        IPC::Run3
     );
 
     foreach my $lib (@install_libs) {

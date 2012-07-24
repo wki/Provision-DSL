@@ -1,3 +1,5 @@
+use strict;
+use warnings;
 use Test::More;
 use Test::Exception;
 use FindBin;
@@ -6,7 +8,7 @@ use ok 'Provision::DSL::Source::Template';
 
 my $root_dir = "$FindBin::Bin/resources";
 
-$t = Provision::DSL::Source::Template->new(
+my $t = Provision::DSL::Source::Template->new(
     { 
         root_dir => $root_dir, 
         name => 'dirx/file.tt', 
