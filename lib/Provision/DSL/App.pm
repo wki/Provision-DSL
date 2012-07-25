@@ -1,5 +1,5 @@
 package Provision::DSL::App;
-use feature ':5.10';
+# use feature ':5.10';
 use Moo;
 use Carp;
 use Scalar::Util 'blessed';
@@ -11,20 +11,17 @@ with 'Provision::DSL::Role::CommandlineOptions',
 # Entity => Provision::DSL::Entity::Xxx
 has entity_package_for => (
     is => 'rw',
-    # isa => 'HashRef',
     default => sub { {} },
 );
 
 # Entity => { name => $object }
 has _entity_cache => (
     is => 'rw',
-    # isa => 'HashRef',
     default => sub { {} },
 );
 
 has _channel_changed => (
     is => 'rw',
-    # isa => 'HashRef',
     default => sub { {} },
 );
 

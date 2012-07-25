@@ -10,8 +10,7 @@ with 'Provision::DSL::Role::User',
 
 has command => (
     is => 'lazy',
-    isa => ExecutableFile,
-    coerce => to_File,
+    isa => Str,
 );
 
 sub _build_command { $_[0]->name }
@@ -49,9 +48,20 @@ has _status => (
 sub run {
     my $self = shift;
     
-    ### TODO: /usr/bin/sudo -n  -u | -g when user|group
+    my @sudo;
+    if ($self->has_user || $self->has_group) {
+        @sudo = (
+            '/usr/bin/sudo',
+            '-n',
+            ($self->has_user  ? (-u => $self->user->name)  : ()),
+            ($self->has_group ? (-g => $self->group->name) : ()),
+            '--'
+        );
+    }
+    
     my @command_and_args = (
-        $self->command->stringify,
+        @sudo,
+        $self->command,
         @{$self->args},
     );
     
@@ -65,6 +75,10 @@ sub run {
 
     $self->_status($? >> 8)
         and croak "Nonzero exit status while executing '${\$self->command}'";
+    
+    if ($self->has_stdout && ref $self->stdout eq 'SCALAR' && defined wantarray) {
+        return ${$self->stdout};
+    }
 }
 
 sub status {

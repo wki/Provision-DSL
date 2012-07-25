@@ -1,10 +1,12 @@
 package Provision::DSL::Entity::Perlbrew;
 use Moo;
-use LWP::Simple;
+use Try::Tiny;
 use Provision::DSL::Types;
+use Provision::DSL::Source::Bin;
 
 extends 'Provision::DSL::Entity::Compound';
-with 'Provision::DSL::Role::User';
+with 'Provision::DSL::Role::User',
+     'Provision::DSL::Role::HTTP';
 
 has install_cpanm => (
     is      => 'ro',
@@ -91,12 +93,19 @@ sub _build_children {
 before create => sub {
     my $self = shift;
 
-    # in tar: local/bin/install.perlbrew.sh
-    my $perlbrew_install = get('http://install.perlbrew.pl')
-        or die 'could not download perlbrew';
+    # find or get perlbrew installer
+    my $installer;
+    try {
+        $installer = Provision::DSL::Source::Bin->new('install.perlbrew.sh');
+    } catch {
+        # load via $self->http_get('http://install.perlbrew.pl');
+        # needs temp file for execution
+        die 'loading perlbrew via http: not implemented';
+    };
 
-    $self->pipe_into_command($perlbrew_install,
-                             '/usr/bin/su', $self->user->name);
+    $self->run_command_as_user('/bin/sh', $installer);
+    # $self->pipe_into_command($perlbrew_install,
+    #                          '/usr/bin/su', $self->user->name);
 };
 
 1;

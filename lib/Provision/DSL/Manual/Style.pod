@@ -1,0 +1,73 @@
+=head1 NAME
+
+Provision::DSL::Manual::Style - Style and Patterns used
+
+=head1 CLASSES
+
+=head2 Everything has a name
+
+Almost every class has an attribute C<name> which is mandatory. In order
+to maintain meaningful names for attributes actually needed for a class
+very often, a better-named attribute is constructed like this:
+
+    has attribute_name => (
+        is => 'lazy',
+    );
+    
+    sub _build_attribute_name { $_[0]->name }
+
+=head2 Easy construction
+
+As the name attribute is an identifying attribute and copied to a more
+meaningful one, every constructor can be used with a single scalar argument
+(assuming there are no more mandatory attributes, of course).
+
+    # instead of writing:
+    my $object = SomeClass->new( { name => 'some name' } );
+    
+    # you can write:
+    my $object = SomeClass->new('some name');
+
+In order to be consistent with the syntax of the DSL, additional attributes
+may be added in a similar way:
+
+    my $object = SomeClass->new('name', { more attributes } );
+
+=head1 TYPES
+
+=head2 Type Constraints
+
+All Type Constraints are defined in L<Provision::DSL::Types> and exported
+into the importing namespace. When possible, the names are kept equal to 
+the names, L<Moose::Util::TypeConstraints> uses.
+
+To fit into the concepts of L<Moo>, every type constraint looks like this:
+
+    sub TypeName {
+        return sub {
+            ( some condition being true for the type )
+                or croak "not a TypeName: $_[0]";
+        };
+    }
+
+=head2 Coercions
+
+Coercion names begin with 'to_' and are named like C<to_TypeName>. Their
+implementation might look like this:
+
+    sub to_TypeName {
+        return sub {
+            # convert $_[0] to TypeName and return a proper value
+        };
+    }
+
+=head1 AUTHOR
+
+Wolfgang Kinkeldei
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
