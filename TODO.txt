@@ -4,6 +4,10 @@ TODO for provisioning
 Generell:
   * Rolle User, Group neu
   
+  * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
+             Provision::DSL::Installer::Port | Apt | Aptitude | ...
+             Methoden: latest_version, installed_version, install(version)
+  
   * Mechanismus für Generelle Voreinstellungen, z.B.:
     Defaults(
         File    => { user => 'me', group => 'we' },
@@ -17,13 +21,9 @@ Generell:
     File '/etc/path/to/conf' => {
         change => [
             {
-                after => qr{...},       # muß davor irgendwo kommen --- sinnvoll?
-                before => qr{...},      # muß danach irgendwo kommen --- sinnvoll?
-                like => qr{...},        # Muster muß passen und eindeutig sein oder min/max
-                min => 1,               # Mindestzahl von Treffern
-                max => 1,               # Maximalzahl von Treffern
-                replace => ...          # Ersetzung. String oder sub{}
-                comment => '#',         # Kommentarzeichen falls von "#" abweichend, [ '/*', '*/' ] falls klammernd
+                line_like   => qr{...},     # Muster muß passen und eindeutig sein
+                replacement     => ...          # Ersetzung. String oder sub{}
+                comment => '#',     # Kommentarzeichen falls von "#" abweichend, [ '/*', '*/' ] falls klammernd
             },
         ],
     };
