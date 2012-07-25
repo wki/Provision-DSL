@@ -34,6 +34,12 @@ and your provisioning script could be
 
     #!/usr/bin/env perl
     use Provision::DSL;
+    
+    # set some defaults for definitions below
+    Defaults {
+        Dir  => { user => 'sites' },
+        File => { user => 'sites' },
+    };
 
     # install packages unless present
     Package 'build-essential';
@@ -52,7 +58,6 @@ and your provisioning script could be
     # ensures a directory tree for your site is created and filled
     # tell our listeners if things have changed
     Dir '/path/to/site' => {
-        user     => 'sites',
         mkdir    => [ qw(logs pid) ],
         contents => Resource('website'),
         tell     => 'website_changed',

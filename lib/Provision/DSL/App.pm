@@ -1,5 +1,4 @@
 package Provision::DSL::App;
-# use feature ':5.10';
 use Moo;
 use Carp;
 use Scalar::Util 'blessed';
@@ -34,27 +33,22 @@ sub DEMOLISH {
 ####################################### Entity handling
 
 sub create_entity {
-    my $self   = shift;
-    my $entity = shift;
+    my ($self, $entity, $args) = @_;
 
     # die "create entity: $entity";
-
-    my %args = (app => $self);
-    $args{name} = shift if !ref $_[0];
-    %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
 
     my $class = $self->entity_package_for->{$entity}
         or croak "no class for entity '$entity' found";
 
     ### FIXME: does "re-create" error make sense?
-    croak "cannot re-create entity '$entity' ($args{name})"
+    croak "cannot re-create entity '$entity' ($args->{name})"
         if exists $self->_entity_cache->{$entity}
-           && exists $self->_entity_cache->{$entity}->{$args{name}};
+           && exists $self->_entity_cache->{$entity}->{$args->{name}};
 
-    my $instance = $class->new(\%args);
+    my $instance = $class->new($args);
     my $name = $instance->name;
     
-    $self->log_debug("create_entity $entity($name}) from", \%args);
+    $self->log_debug("create_entity $entity($name) from", $args);
     return $self->_entity_cache->{$entity}->{$name} = $instance;
 }
 

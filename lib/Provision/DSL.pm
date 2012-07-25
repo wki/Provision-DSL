@@ -16,8 +16,9 @@ See L<Provision::DSL::Manual> for a comprehensive description
 
 =cut
 
-our @EXPORT = qw(Done done OS Os os);
+our @EXPORT = qw(Done done OS Os os Defaults);
 our $app;
+our %default_for_entity;
 
 sub import {
     my $package = caller;
@@ -81,7 +82,15 @@ sub create_and_export_entity_keywords {
             if (defined wantarray) {
                 return $app->get_cached_entity($entity_name, @_);
             } else {
-                $app->create_entity($entity_name, @_)->execute;
+                my %args = exists $default_for_entity{$entity_name}
+                    ? %{$default_for_entity{$entity_name}}
+                    : ();
+                $args{app} = $app;
+                $args{name} = shift if !ref $_[0];
+                
+                %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
+                    
+                $app->create_entity($entity_name, \%args)->execute;
             }
         };
     }
@@ -134,6 +143,12 @@ sub done {
     say 'Done.';
     
     exit;
+}
+
+sub Defaults {
+    my %d = ref $_[0] eq 'HASH' ? %{$_[0]} : @_;
+    
+    @default_for_entity{keys %d} = values %d;
 }
 
 =head1 AUTHOR

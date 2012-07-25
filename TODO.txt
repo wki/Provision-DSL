@@ -8,22 +8,13 @@ Generell:
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
              Methoden: latest_version, installed_version, install(version)
   
-  * Mechanismus für Generelle Voreinstellungen, z.B.:
-    Defaults(
-        File    => { user => 'me', group => 'we' },
-        Package => { installer => 'apt' },
-        ...
-    );
-    
-    beim Instantiieren werden die Default-Werte pro Klasse _zuerst_ gesetzt.
-    
   * File: Methode, um Config-Dateien vom Original abweichend zu editieren
     File '/etc/path/to/conf' => {
-        change => [
+        modify => [
             {
-                line_like   => qr{...},     # Muster muß passen und eindeutig sein
-                replacement     => ...          # Ersetzung. String oder sub{}
-                comment => '#',     # Kommentarzeichen falls von "#" abweichend, [ '/*', '*/' ] falls klammernd
+                if_line_like    => qr{...},     # Muster muß passen und eindeutig sein
+                replace_with    => ...          # Ersetzung. String oder sub{}
+                comment_symbol  => '#',     # Kommentarzeichen falls von "#" abweichend, [ '/*', '*/' ] falls klammernd
             },
         ],
     };
