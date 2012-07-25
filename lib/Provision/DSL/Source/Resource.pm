@@ -1,6 +1,7 @@
 package Provision::DSL::Source::Resource;
 use Moo;
 use FindBin;
+use Carp;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Source';
@@ -20,11 +21,11 @@ has path => (
 sub _build_path {
     my $self = shift;
 
-    my $thing = $self->root_dir->subdir( $self->name )->cleanup;
-    if ( !-d $thing ) {
-        $thing = $self->root_dir->file( $self->name )->cleanup;
-        die "Resource-path does not exist: '${\$self->name}'"
-          if !-f $thing;
+    my $thing = $self->root_dir->subdir($self->name);
+    if (!-d $thing) {
+        $thing = $self->root_dir->file($self->name);
+        croak "Resource-path does not exist: '${\$self->name}'"
+            if !-f $thing;
     }
 
     return $thing->resolve;
@@ -33,8 +34,8 @@ sub _build_path {
 sub _build_content {
     my $self = shift;
 
-    die 'dir-resources cannot retrieve content' if -d $self->path;
-    die 'file-resource does not exist'          if !-f $self->path;
+    croak 'dir-resources cannot retrieve content' if -d $self->path;
+    croak 'file-resource does not exist'          if !-f $self->path;
 
     return scalar $self->path->slurp;
 }
