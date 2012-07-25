@@ -3,16 +3,36 @@ TODO for provisioning
 
 Generell:
   * Rolle User, Group neu
-  * geminesame Basisklasse von allem mit "name" Attribut und BUILDARGS
-  * ::Command erstellen
+  
+  * Mechanismus für Generelle Voreinstellungen, z.B.:
+    Defaults(
+        File    => { user => 'me', group => 'we' },
+        Package => { installer => 'apt' },
+        ...
+    );
+    
+    beim Instantiieren werden die Default-Werte pro Klasse _zuerst_ gesetzt.
+    
+  * File: Methode, um Config-Dateien vom Original abweichend zu editieren
+    File '/etc/path/to/conf' => {
+        change => [
+            {
+                after => qr{...},       # muß davor irgendwo kommen --- sinnvoll?
+                before => qr{...},      # muß danach irgendwo kommen --- sinnvoll?
+                like => qr{...},        # Muster muß passen und eindeutig sein oder min/max
+                min => 1,               # Mindestzahl von Treffern
+                max => 1,               # Maximalzahl von Treffern
+                replace => ...          # Ersetzung. String oder sub{}
+                comment => '#',         # Kommentarzeichen falls von "#" abweichend, [ '/*', '*/' ] falls klammernd
+            },
+        ],
+    };
 
 Execute:
   * cwd attribute
 
-
 Perlbrew:
   * beim Installieren: laufen lassen von local/bin/perlbrew self-install
-
 
 new Entities:
   * cron (path, arguments, environment)
