@@ -4,6 +4,19 @@ TODO for provisioning
 Generell:
   * Rolle User, Group neu
   
+  * Entity -- extends Base? warum nicht?
+  
+  * Provision::DSL::App#create_entity
+    --> nach Erzeugung: jedes überflüssige Attribut auf mögliche Rollen testen,
+        erste gefundene nehmen! Überflüssig heißt: kein Accessor vorhanden.
+        * Provision::DSL::TraitFor::<<Entity>>::_<<OS>>::<<Attribute>>
+        * Provision::DSL::TraitFor::<<Entity>>::<<Attribute>>
+        * Provision::DSL::TraitFor::_<<OS>>::<<Attribute>>
+        * Provision::DSL::TraitFor::<<Attribute>>
+        
+    --> falls vorhanden: Objekt um Rolle erweitern
+        Role::Tiny->apply_roles_to_object($obj, @roles);
+  
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
              Methoden: latest_version, installed_version, install(version)
@@ -12,8 +25,8 @@ Generell:
     File '/etc/path/to/conf' => {
         modify => [
             {
-                if_line_like    => qr{...},     # Muster muß passen und eindeutig sein
-                replace_with    => ...          # Ersetzung. String oder sub{}
+                if_line_like    => qr{...}, # Muster muß passen und eindeutig sein
+                replace_with    => ...      # Ersetzung. String oder sub{}
                 comment_symbol  => '#',     # Kommentarzeichen falls von "#" abweichend, [ '/*', '*/' ] falls klammernd
             },
         ],

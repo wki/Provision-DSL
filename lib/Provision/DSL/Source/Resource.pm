@@ -21,9 +21,9 @@ has path => (
 sub _build_path {
     my $self = shift;
 
-    my $thing = $self->root_dir->subdir($self->name);
+    my $thing = $self->root_dir->subdir($self->name)->cleanup;
     if (!-d $thing) {
-        $thing = $self->root_dir->file($self->name);
+        $thing = $self->root_dir->file($self->name)->cleanup;
         croak "Resource-path does not exist: '${\$self->name}'"
             if !-f $thing;
     }

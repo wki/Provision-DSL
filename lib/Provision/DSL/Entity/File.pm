@@ -1,5 +1,6 @@
 package Provision::DSL::Entity::File;
 use Moo;
+use Carp;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity';
@@ -26,10 +27,10 @@ has content => (
     predicate => 1,
 );
 
-has patches => {
-    is => 'ro'
+has patches => (
+    is => 'ro',
     predicate => 1,
-};
+);
 
 sub BUILD {
     my $self = shift;
@@ -75,7 +76,7 @@ sub apply_modification {
             };
 
         my $nr_replacements =
-            $content =~ s{^ ($match) $}{_replace($patch)}exmsg;
+            $content =~ s{^ ($match) $}{$self->_replace($patch)}exmsg;
         
         croak "File(${\$self->name}) patch '$match' is ambiguous"
             if $nr_replacements > 1;
@@ -85,7 +86,7 @@ sub apply_modification {
 }
 
 sub _replace_with {
-    my $patch = shift;
+    my ($self, $patch) = @_;
     
     my $replacement = $patch->{replace_with}
         or croak "File(${\$self->name}) no replacement in patch '$patch->{if_line_like}'";
