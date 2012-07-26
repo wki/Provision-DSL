@@ -1,6 +1,5 @@
 package Child;
 use Moo;
-use namespace::autoclean;
 
 extends 'ParentX';
 with 'ChildRole1','ChildRole2';
