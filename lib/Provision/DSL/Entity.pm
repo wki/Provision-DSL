@@ -63,7 +63,30 @@ sub execute {
     $self->$action();
 }
 
-sub state { $_[0]->default_state }
+sub state { 
+    my $self = shift;
+    
+    if (@_) {
+        return 'missing' if $_[0] eq 'missing';
+        my %seen = map { ($_ => 1) } @_;
+        return 'outdated' if scalar keys %seen > 1;
+        return (keys %seen)[0];
+    } else {
+        return $self->default_state;
+    }
+}
+
+# # merge my own state with states of former called "around" states
+# # others win if 'missing', otherwise 'outdated' is reported if different
+# sub merge_state {
+#     my ($self, $other_state, $my_state) = @_;
+#     
+#     return $other_state eq 'missing'
+#         ? 'missing'
+#     : $other_state eq $my_state
+#         ? $my_state
+#         : 'outdated';
+# }
 
 sub is_ok {
     my $self   = shift;

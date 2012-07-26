@@ -22,28 +22,25 @@ sub all_children { @{$_[0]->children} }
 
 sub has_no_children { !scalar @{$_[0]->children} }
 
-sub state {
+around state => sub {
+    my $orig = shift;
     my $self = shift;
     
-    return $self->default_state if $self->has_no_children;
+    # if ($self->nr_children) {
+    #     my $nr_children_ok = scalar grep { $_->is_ok } $self->all_children;
+    #     
+    # }
+    
+    return $self->$orig(@_) if $self->has_no_children;
     
     # count children being OK versus children reporting being not-ok
     my $nr_children_ok = scalar grep { $_->is_ok } $self->all_children;
     
-    return $nr_children_ok == $self->nr_children
+    my $state = $nr_children_ok == $self->nr_children
         ? 'current'
         : 'outdated';
     
-    # WRONG:
-    # # only considering children states.
-    # # must use around state in child class to expand
-    # my %seen_state =
-    #     map { ($_->state => 1) }
-    #     $self->all_children;
-    # 
-    # return scalar keys %seen_state == 1
-    #     ? (keys %seen_state)[0]
-    #     : 'outdated';
+    return $self->$orig($state, @_);
 };
 
 # only remove() receives wanted=0, all others use their own wanted attribute

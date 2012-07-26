@@ -65,13 +65,6 @@ sub _build_children {
             },
         ),
         $self->create_entity(
-            Perlbrew_Cpanm => { 
-                name => join('_', $self->name, 'cpanm'),
-                user => $self->user, 
-                parent => $self,
-            }
-        ),
-        $self->create_entity(
             Perlbrew_Perl => {
                 name => join('_', $self->name, 'perl'),
                 user    => $self->user,
@@ -104,8 +97,6 @@ before create => sub {
     };
 
     $self->run_command_as_user('/bin/sh', $installer);
-    # $self->pipe_into_command($perlbrew_install,
-    #                          '/usr/bin/su', $self->user->name);
 };
 
 1;

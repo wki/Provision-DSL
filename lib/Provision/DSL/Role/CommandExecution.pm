@@ -16,6 +16,17 @@ sub command_succeeds {
     return $result;
 }
 
+sub run_command_as_user {
+    my ($self, $executable, @args) = @_;
+
+    Provision::DSL::Command->new($executable,
+        {
+            args   => \@args,
+            ($self->has_user  ? (user  => $self->user)  : ()),
+            ($self->has_group ? (group => $self->group) : ()),
+        })->run;
+}
+
 sub system_command {
     my ($self, $executable, @args) = @_;
 

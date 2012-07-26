@@ -6,17 +6,6 @@ Generell:
   
   * Entity -- extends Base? warum nicht?
   
-  * Provision::DSL::App#create_entity
-    --> nach Erzeugung: jedes überflüssige Attribut auf mögliche Rollen testen,
-        erste gefundene nehmen! Überflüssig heißt: kein Accessor vorhanden.
-        * Provision::DSL::TraitFor::<<Entity>>::_<<OS>>::<<Attribute>>
-        * Provision::DSL::TraitFor::<<Entity>>::<<Attribute>>
-        * Provision::DSL::TraitFor::_<<OS>>::<<Attribute>>
-        * Provision::DSL::TraitFor::<<Attribute>>
-        
-    --> falls vorhanden: Objekt um Rolle erweitern
-        Role::Tiny->apply_roles_to_object($obj, @roles);
-  
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
              Methoden: latest_version, installed_version, install(version)
@@ -45,3 +34,20 @@ Idea:
   * How to handle dir lists?
       - { path, permission, user, group }
       - Object ???
+
+Stati weiterreichen :: wie?
+  - Entity:
+      state()  -->default_state     ==> 'current'
+      state('missing')              ==> 'missing'
+      state('outdated')             ==> 'outdated'
+      state('current')              ==> 'current'
+
+  - XXX > Entity
+      $self->$orig('missing', @_)
+      $self->$orig('outdated', @_)
+      $self->$orig('current', @_)
+  
+  - Rolle:
+      $self->$orig('xxx', @_)
+
+

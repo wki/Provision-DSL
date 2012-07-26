@@ -62,7 +62,38 @@ like this:
 
 =head2 Different operating systems
 
-### create Provision::DSL::Entity::_XXX::YourEntity
+### create Provision::DSL::Entity::_((OS))::YourEntity
+
+=head2 Individual entities
+
+Each single entity may be extended with a trait. Simply add a new attribute
+which is typically not supported by the entity.
+
+    Dir '/path/to/x' => (
+        restore => 'ftp://user:pass@ftp.domain.com/foo',
+    );
+
+Next, define a trait "Restore" in one of the namespaces. (Replace "Attribute")
+with "Restore", "Entity" with "Dir" and set your OS right. The following
+namespaces are checked in this order where the first match begins. This allows
+os-dependent, entity-dependent or universal traits, just as you like.
+
+=over
+
+=item Provision::DSL::TraitFor::((Entity))::_((OS))::((Attribute))
+
+=item Provision::DSL::TraitFor::((Entity))::((Attribute))
+
+=item Provision::DSL::TraitFor::_((OS))::((Attribute))
+
+=item Provision::DSL::TraitFor::((Attribute))
+
+=back
+
+The trait can handle thing in a similar way as a role but is applied to
+the instance of the Dir-Object in the moment the provision is running. After
+applying all traits, every superfluous attribute value is handed over
+to a equal-named accessor method, if possible.
 
 =head1 RESOURCES
 

@@ -2,8 +2,10 @@ package Provision::DSL;
 use strict;
 use warnings;
 use feature ':5.10';
-use Module::Pluggable search_path => 'Provision::DSL::Entity', sub_name => 'entities';
-use Module::Pluggable search_path => 'Provision::DSL::Source', sub_name => 'sources';
+use Module::Pluggable search_path => 'Provision::DSL::Entity', 
+                      sub_name => 'entities';
+use Module::Pluggable search_path => 'Provision::DSL::Source', 
+                      sub_name => 'sources';
 use Module::Load;
 
 =head1 NAME
@@ -43,7 +45,7 @@ sub instantiate_app {
     my $app_package = "Provision::DSL::App::$os";
     load $app_package;
 
-    $app = $app_package->new_with_options(@argv);
+    $app = $app_package->new_with_options(os => $os, @argv);
 }
 
 sub create_and_export_entity_keywords {
