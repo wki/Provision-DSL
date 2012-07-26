@@ -2,6 +2,7 @@ use Test::More;
 use FindBin;
 use lib "$FindBin::Bin/lib_moo";
 use ok 'ParentX';
+use ok 'ParentT';
 use ok 'Child';
 use ok 'ModifyingChild';
 
@@ -49,6 +50,32 @@ is join(" / ", @{$m->message}),
  . 'after PR1::m / after PR2::m / a PR1::m / a PR2::m / after P::m / '
  . 'after CR1::m / after CR2::m / after MC::m / a CR1::m / a CR2::m / a MC::m',
    'modifying child calling order is OK';
+
+
+#
+# using traits does not affect classes
+#
+my $m1 = ParentT->new;
+$m1->method();
+is join(" / ", @{$m1->message}),
+   'before P::m / in P::m / after P::m',
+   'no-trait calling order is OK';
+
+my $m2 = ParentT->new;
+Role::Tiny->apply_roles_to_object($m2, 'Trait');
+$m2->method();
+
+is join(" / ", @{$m2->message}),
+   'b T::m / before T::m / before P::m / '
+ . 'in P::m / '
+ . 'after P::m / after T::m / a T::m',
+   'trait calling order is OK';
+
+my $m3 = ParentT->new;
+$m3->method();
+is join(" / ", @{$m3->message}),
+   'before P::m / in P::m / after P::m',
+   'no-trait calling order is still OK';
 
 
 done_testing;
