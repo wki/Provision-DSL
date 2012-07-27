@@ -1,0 +1,48 @@
+Eigene Migrations-Idee
+
+1) Jeder DB-Stand besitzt eine Versions-Nummer longint
+    x / 100: main version, x % 100 subverison
+   z.B. 13.3, als Verzeichnis geschrieben 0013/03/...
+
+2) auf der DB sitzt eine Tabelle
+   create table _migration (
+        migration_id serial not null primary key
+        version integer not null,
+        created timestamp,
+        filename text,
+        is_success boolean,
+        message text
+   );
+
+3) Zu jeder Version gehört
+    * eine .sql Datei ODER
+    * eine .pl Datei.
+   jede Datei wird in einer Transaktion eingespielt, danach ein Eintrag in
+   _migration vorgenommen. Die Transaktion dabei _NICHT_ vom Script hergestellt.
+
+
+
+
+
+Test mit DBIx::Class::Migration
+
+
+1) bestehende Datenbank in Struktur pressen
+
+  $ mkdir share
+  
+  $ dbic-migration -I lib --schema_class Wittmann::Schema \
+        --database PostgreSQL \
+        --dsn dbi:Pg:dbname=wittmann_dev \
+        -U postgres -P secret prepare
+
+
+2) bestehende DB leeren, dann
+
+ $ dbic-migration -I lib --schema_class Wittmann::Schema \
+       --database PostgreSQL \
+       --dsn dbi:Pg:dbname=wittmann_dev \
+       -U postgres -P secret install
+
+
+--- im Moment noch relativ unflexibel... Erst Bestückung problematisch.

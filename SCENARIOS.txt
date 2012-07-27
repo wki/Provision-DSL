@@ -1,0 +1,90 @@
+Typische Einsatzgebiete:
+------------------------
+
+
+1) Vorbereitungen einer Maschine
+
+    Benutzer einrichten:
+        User some_user => {
+            uid => 1234,
+            gid => 1234,
+            home_directory => '/home/some_user',
+        };
+
+    Pakete bereitstellen:
+        Package 'postgresql-server' => {
+            wanted => '9.1',
+        };
+
+    Config-Dateien:
+        File '/etc/somedaemon.conf' => {
+            user => 'root',
+            group => 'wheel',
+            permission => '0640',
+            content => Resource('config/somedaemon.conf'),
+            tell => 'somedeamon config changed',
+        };
+
+    Services/Daemons:
+        Service 'somedaemon' => {
+            listen => 'somedeamon config changed',
+            content => Resource('config/somedaemon'),
+            runlevel => 2,
+        };
+
+    Perlbrew einrichten:
+        Perlbrew 'some_user' => {
+            wanted => '5.16.0',
+            install_cpanm => 1,
+        };
+
+
+2) Einrichtung einer Web Site
+
+    Verzeichnis vorbereiten:
+        Dir $SITEDIR => {
+            user => 'sites',
+            mkdir => [qw(
+                logs
+                pid
+                MyApp/local
+                MyApp/root/cache
+                MyApp/root/files
+                MyApp/root/static/_css
+                MyApp/root/static/_js
+            )],
+            content => Resource('website'),
+            tell => 'website changed',
+        };
+
+    Perl Module checken:
+        Execute 'check_perl_modules' => {
+            path => Perlbrew->cpanm,
+            arguments => [
+                '-L' => "$SITEDIR/MyApp/local",
+                '--installdeps' => "$SITEDIR/MyApp",
+                '--mirror' => 'http://cpan.nureg.de', '--mirror-only',
+            ],
+            listen => 'website changed',
+        };
+
+    Datenbank vorbereiten (mit DBIx::Class::Migration)
+        Database 'mydomain_live' => {
+            # needed???
+            user => 'postgres',
+            password => 'asdf',
+            host => 'localhost',
+
+            content => Resource('db'), # verweis auf Verzeichnis mit DBIC::Migration Informationen
+        };
+
+    Daemon für Plack website:
+        -- wie oben, listen auf 'website changed'
+
+    Config für nginx:
+        -- wie File, tell 'nginx config changed'
+
+    Daemon für nginx:
+        -- wie oben, listen auf 'nginx config changed'
+
+    evtl. Erzeugung statischer Dateien durch ersten Request.
