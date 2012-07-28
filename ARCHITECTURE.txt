@@ -100,7 +100,7 @@ Entity Funktionsweise:
 
 
 Entity Erweiterung:
-  - über Rolle(n) oder Kind-Klassen
+  - über Rolle(n), Traits oder Kind-Klassen
      * Entscheidung: around state
      * Steuerung:    (before|after) (create|change|remove)
   - Aufruf-Reihenfolge:
@@ -109,7 +109,6 @@ Entity Erweiterung:
      * Methode
      * Rollen, dann Klasse (around, after)
      * Kind-Rollen, dann Kind-Klasse (around, after)
-
 
 
 Datenstruktur zum Deployment (gepackt als .tar.gz):

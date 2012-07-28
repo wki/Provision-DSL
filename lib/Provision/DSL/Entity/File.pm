@@ -36,7 +36,7 @@ sub BUILD {
     my $self = shift;
 
     my $name = $self->name;
-    
+
     croak "File($name) needs 'content' *OR* 'patches'"
         if !$self->has_content && !$self->has_patches;
 
@@ -44,24 +44,24 @@ sub BUILD {
         if $self->has_content && $self->has_patches;
 }
 
-sub state {
+before state => sub {
     my $self = shift;
 
-    return 'missing' if !-f $self->path;
-
-    my $current_content = scalar $self->path->slurp;
-
-    if ($self->has_content) {
-        return $current_content eq $self->content
-            ? 'current'
-            : 'outdated';
+    if (!-f $self->path) {
+        $self->set_state('missing');
     } else {
-        my $modified_content = $self->apply_modification($current_content);
-        return $current_content eq $modified_content
-            ? 'current'
-            : 'outdated';
+        my $state = 'current';
+        my $current_content = scalar $self->path->slurp;
+
+        $state = 'outdated'
+            if ($self->has_content
+                    && ($current_content ne $self->content))
+            || ($self->has_patches
+                    && ($current_content ne $self->apply_modification($current_content)));
+
+        $self->set_state($state);
     }
-}
+};
 
 sub apply_modification {
     my ($self, $content) = @_;
@@ -77,7 +77,7 @@ sub apply_modification {
 
         my $nr_replacements =
             $content =~ s{^ ($match) $}{$self->_replace($patch)}exmsg;
-        
+
         croak "File(${\$self->name}) patch '$match' is ambiguous"
             if $nr_replacements > 1;
     }
@@ -87,7 +87,7 @@ sub apply_modification {
 
 sub _replace_with {
     my ($self, $patch) = @_;
-    
+
     my $replacement = $patch->{replace_with}
         or croak "File(${\$self->name}) no replacement in patch '$patch->{if_line_like}'";
 
@@ -112,7 +112,7 @@ before create => sub { $_[0]->_create_from_content };
 
 sub _create_from_content {
     my $self = shift;
-    
+
     croak "File(${\$self->name}) no content for missing file"
         if !$self->has_content;
 

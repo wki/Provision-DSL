@@ -27,18 +27,25 @@ has exclude => (
     # default => sub { [] },
 );
 
-sub state {
+before state => sub {
     my $self = shift;
     
-    return 'missing ' if !-d $self->path;
-    
-    return $self->_rsync_command(
-                '--dry-run',
-                '--out-format' => 'copying %n',
-           ) =~ m{^(?:deleting|copying)\s}xms
+    my $state = 'current';
+
+    if (!-d $self->path) {
+        $state = 'missing';
+    } else {
+        $state =
+            $self->_rsync_command(
+                    '--dry-run',
+                    '--out-format' => 'copying %n',
+            ) =~ m{^(?:deleting|copying)\s}xms
         ? 'outdated'
         : 'current';
-}
+    }
+    
+    $self->set_state($state);
+};
 
 sub _rsync_command {
     my $self = shift;

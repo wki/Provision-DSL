@@ -35,6 +35,8 @@ Idea:
       - { path, permission, user, group }
       - Object ???
 
+--- Versuch 1:
+
 Stati weiterreichen :: wie?
   - Entity:
       state()  -->default_state     ==> 'current'
@@ -49,5 +51,3 @@ Stati weiterreichen :: wie?
   
   - Rolle:
       $self->$orig('xxx', @_)
-
-

@@ -8,19 +8,13 @@ has permission => (
     # required => 1, 
 );
 
-around state => sub {
-    my ($orig, $self) = @_;
+before state => sub {
+    my $self = shift;
     
-    my $state = 
-        !-e $self->path 
-            ? 'missing'
-        : ($self->path->stat->mode & 511) == (oct($self->permission) & 511)
-            ? 'current'
-            : 'outdated';
+    return if !-d $self->path;
     
-    return $state eq $self->$orig
-        ? $state
-        : 'outdated';
+    $self->add_state('outdated')
+        if ($self->path->stat->mode & 511) != (oct($self->permission) & 511)
 };
 
 after ['create', 'change'] => sub {

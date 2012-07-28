@@ -12,19 +12,14 @@ has gid => (
     coerce => to_Gid,
 );
 
-around state => sub {
-    my ($orig, $self) = @_;
+before state => sub {
+    my $self = shift;
     
-    my $state = !-e $self->path
-        ? 'missing'
-    : ($self->path->stat->uid == $self->uid)
-       && ($self->path->stat->gid == $self->gid)
-        ? 'current'
-        : 'outdated';
+    return if !-d $self->path;
     
-    return $state eq $self->$orig()
-        ? $state
-        : 'outdated';
+    $self->add_state('outdated')
+        if ($self->path->stat->uid != $self->uid)
+           || ($self->path->stat->gid != $self->gid)
 };
 
 after ['create', 'change'] => sub {

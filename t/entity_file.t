@@ -32,6 +32,8 @@ my $app = Provision::DSL::App->new();
     lives_ok { $f->execute(1) } 'creating a former unknown file lives';
     ok -f $f->path, 'a former unknown file exists';
     ok $f->is_ok, 'a former unknown file is ok';
+    is $f->state, 'current', 'former unknown file is in current state';
+    
     is scalar $f->path->slurp, 'foo', 'content is "foo"';
     
     lives_ok { $f->execute(0) } 'removing a file lives';

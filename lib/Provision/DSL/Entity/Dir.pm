@@ -2,11 +2,11 @@ package Provision::DSL::Entity::Dir;
 use Moo;
 use Provision::DSL::Types;
 
-extends 'Provision::DSL::Entity::Compound';
-
 sub path;    # must forward-declare
-with 'Provision::DSL::Role::PathPermission',
-     'Provision::DSL::Role::PathOwner';
+
+extends 'Provision::DSL::Entity::Compound';
+with    'Provision::DSL::Role::PathPermission',
+        'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0755' }
 
@@ -32,14 +32,8 @@ has content => (
     predicate => 'has_content',
 );
 
-around state => sub {
-    my ($orig, $self) = @_;
-    
-    !-d $self->path
-        ? 'missing'
-    : $self->$orig() eq 'current'
-        ? 'current'
-        : 'outdated';
+before state => sub {
+    $_[0]->set_state(-d $_[0]->path ? 'missing' : 'current')
 };
 
 before create => sub { $_[0]->path->mkpath };

@@ -33,6 +33,9 @@ has not_if    => ( is => 'ro', isa => CodeRef, predicate => 'has_not_if' );
 has default_state => ( is => 'lazy' );
 sub _build_default_state { 'current' }
 
+has _main_state       => ( is => 'rw', predicate => 1 );
+has _additional_state => ( is => 'rw', predicate => 1 );
+
 sub _build_uid { $< }
 sub _build_gid { $( }
 
@@ -42,7 +45,7 @@ sub execute {
     my $state  = shift // $self->state;
 
     my @log = ($self, $state);
-    
+
     if (my @changed = grep { $self->has_changed($_) } @{$self->listen}) {
         push @log, 'heard: ' . join(', ', @changed);
     } elsif ($self->is_ok($wanted, $state)) {
@@ -63,30 +66,36 @@ sub execute {
     $self->$action();
 }
 
-sub state { 
-    my $self = shift;
-    
-    if (@_) {
-        return 'missing' if $_[0] eq 'missing';
-        my %seen = map { ($_ => 1) } @_;
-        return 'outdated' if scalar keys %seen > 1;
-        return (keys %seen)[0];
+sub set_state {
+    my ($self, $state) = @_;
+
+    $self->_main_state($state);
+}
+
+sub add_state {
+    my ($self, $state) = @_;
+
+    if (!$self->_has_additional_state) {
+        $self->_additional_state($state);
     } else {
-        return $self->default_state;
+        $self->_additional_state('outdated')
+            if $self->_additional_state ne $state;
     }
 }
 
-# # merge my own state with states of former called "around" states
-# # others win if 'missing', otherwise 'outdated' is reported if different
-# sub merge_state {
-#     my ($self, $other_state, $my_state) = @_;
-#     
-#     return $other_state eq 'missing'
-#         ? 'missing'
-#     : $other_state eq $my_state
-#         ? $my_state
-#         : 'outdated';
-# }
+sub state {
+    my $self = shift;
+
+    my $main_state = $self->_has_main_state
+        ? $self->_main_state
+        : $self->default_state;
+
+    return $main_state eq 'missing'
+        || !$self->_has_additional_state
+        || $main_state eq $self->_additional_state
+            ? $main_state
+            : 'outdated';
+}
 
 sub is_ok {
     my $self   = shift;

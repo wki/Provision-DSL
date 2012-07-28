@@ -22,25 +22,11 @@ sub all_children { @{$_[0]->children} }
 
 sub has_no_children { !scalar @{$_[0]->children} }
 
-around state => sub {
-    my $orig = shift;
+before state => sub {
     my $self = shift;
     
-    # if ($self->nr_children) {
-    #     my $nr_children_ok = scalar grep { $_->is_ok } $self->all_children;
-    #     
-    # }
-    
-    return $self->$orig(@_) if $self->has_no_children;
-    
-    # count children being OK versus children reporting being not-ok
-    my $nr_children_ok = scalar grep { $_->is_ok } $self->all_children;
-    
-    my $state = $nr_children_ok == $self->nr_children
-        ? 'current'
-        : 'outdated';
-    
-    return $self->$orig($state, @_);
+    $self->add_state($_->is_ok ? 'current' : 'outdated')
+        for $self->add_children;
 };
 
 # only remove() receives wanted=0, all others use their own wanted attribute

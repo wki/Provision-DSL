@@ -5,8 +5,8 @@ use Provision::DSL::Types;
 use Provision::DSL::Source::Bin;
 
 extends 'Provision::DSL::Entity::Compound';
-with 'Provision::DSL::Role::User',
-     'Provision::DSL::Role::HTTP';
+with    'Provision::DSL::Role::User',
+        'Provision::DSL::Role::HTTP';
 
 has install_cpanm => (
     is      => 'ro',
@@ -43,14 +43,8 @@ has perlbrew => (
 
 sub _build_perlbrew { $_[0]->perlbrew_dir->file('bin/perlbrew') }
 
-around state => sub {
-    my ($orig, $self) = @_;
-    
-    return !-f $self->perlbrew
-        ? 'missing'
-        : $self->$orig() eq 'current'
-            ? 'current'
-            : 'outdated';
+before state => sub {
+    $_[0]->set_state(-f $_[0]->perlbrew ? 'current' : 'missing');
 };
 
 sub _build_children {
