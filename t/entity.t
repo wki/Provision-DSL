@@ -98,8 +98,62 @@ my $app = Provision::DSL::App->new();
             expect_after  => {_diagnostics => ['remove']},
         },
 
-        ### TODO: add only_if, not_if test cases
-        ### TODO: add "listen" test cases
+        # only_if, not_if test cases
+        {
+            name => 'only_if false',
+            attributes => {default_state => 'missing', only_if => sub {0} },
+            expect_before => {is_ok => 1},
+            expect_after  => {_diagnostics => []},
+        },
+        {
+            name => 'only_if true',
+            attributes => {default_state => 'missing', only_if => sub {1} },
+            expect_before => {is_ok => 0},
+            expect_after  => {_diagnostics => ['create']},
+        },
+        {
+            name => 'not_if false',
+            attributes => {default_state => 'missing', not_if => sub {0} },
+            expect_before => {is_ok => 0},
+            expect_after  => {_diagnostics => ['create']},
+        },
+        {
+            name => 'not_if true',
+            attributes => {default_state => 'missing', not_if => sub {1} },
+            expect_before => {is_ok => 1},
+            expect_after  => {_diagnostics => []},
+        },
+        
+        # "listen" test cases
+        {
+            name => 'listen to silent channel',
+            attributes => {default_state => 'current', listen => 'foobar' },
+            expect_before => {is_ok => 1},
+            expect_after  => {_diagnostics => []},
+        },
+        {
+            name => 'listen to loud channel',
+            run_before => sub { $app->set_changed('foobar') },
+            attributes => {default_state => 'current', listen => 'foobar' },
+            expect_before => {is_ok => 1},
+            expect_after  => {_diagnostics => ['change']},
+        },
+        {
+            name => 'do not talk',
+            run_before => sub { ok !$app->has_changed('changed'), 'channel not changed before noop' },
+            run_after => sub { ok !$app->has_changed('changed'), 'channel not changed after noop' },
+            attributes => {default_state => 'current', talk => 'changed' },
+            expect_before => {is_ok => 1},
+            expect_after  => {_diagnostics => []},
+        },
+        {
+            name => 'talk',
+            run_before => sub { ok !$app->has_changed('changed'), 'channel not changed before create' },
+            run_after => sub { ok $app->has_changed('changed'), 'channel has changed after create' },
+            attributes => {default_state => 'missing', talk => 'changed' },
+            expect_before => {is_ok => 0},
+            expect_after  => {_diagnostics => ['create']},
+        },
     );
 
     foreach my $testcase (@testcases) {
@@ -109,10 +163,14 @@ my $app = Provision::DSL::App->new();
             %{$testcase->{attributes}},
         );
 
+        $testcase->{run_before}->() if $testcase->{run_before};
         test_expectation($e, $testcase, 'before');
         $e->execute();
         test_expectation($e, $testcase, 'after');
+        $testcase->{run_after}->() if $testcase->{run_after};
     }
+    
+    done_testing; exit;
 }
 
 # check basic state handling

@@ -105,13 +105,12 @@ sub is_ok {
     my $ok = ($wanted && $state eq 'current')
         ||  (!$wanted && $state eq 'missing');
 
-    ### FIXME: does not look very clever yet.
     my $modifier =
         $self->has_only_if ? !$self->only_if->()
       : $self->has_not_if  ? $self->not_if->()
-      :                      1;
+      :                      0;
 
-    return $ok && $modifier;
+    return $ok || $modifier;
 }
 
 # returns a coderef which when called forces change
