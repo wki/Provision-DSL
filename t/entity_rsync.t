@@ -9,7 +9,8 @@ use Provision::DSL::App;
 use ok 'Provision::DSL::Entity::Rsync';
 
 my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
-my $app = Provision::DSL::App->new();
+my $app = require "$FindBin::Bin/inc/prepare_app.pl";
+
 clear_directory_content($x_dir);
 
 

@@ -64,6 +64,7 @@ sub _build_children {
                 Rsync => {
                     parent  => $self,
                     name    => $self->name,
+                    path    => $self->path,
                     content => $self->content,
                     exclude => $self->mkdir,
                 }

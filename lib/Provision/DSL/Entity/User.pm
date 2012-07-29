@@ -20,6 +20,13 @@ has home_dir => (
     coerce => to_Dir,
 );
 
+# _build_home_dir is OS-dependent
+sub _build_home_dir {
+    my $self = shift;
+    
+    return (getpwuid($self->uid))[7] // "/home/${\$self->name}"; # /
+}
+
 sub _build_uid {
     my $self = shift;
     
@@ -37,32 +44,16 @@ sub _build_uid {
     die 'could not create a unique UID';
 }
 
-# sub _build_gid {
-#     my $self = shift;
-#     
-#     my $gid = (getpwnam($self->name))[3];
-#     if (defined $gid) {
-#         return $gid;
-#     } else {
-#         ### FIXME : search for group return $self->name;
-#     }
-# }
-
-around is_ok => sub {
-    my ($orig, $self) = @_;
-    
-    return defined getpwnam($self->name) 
-        && $self->$orig();
-};
-
-before create => sub {
+before state => sub {
     my $self = shift;
-
-    $self->log_dryrun("would create User home_dir '${\$self->home_dir}'")
-        and return;
-
-    # $self->home_dir->mkpath;
-    # chown $self->uid, $self->group->gid, $self->home_dir;
+    
+    $self->set_state(
+        defined getpwnam($self->name)
+            ? 'current'
+            : 'missing'
+    );
 };
+
+# creation/removal is OS-dependent
 
 1;

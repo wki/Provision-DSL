@@ -6,25 +6,20 @@ extends 'Provision::DSL::Entity';
 
 has path => (
     is => 'lazy',
-    # isa => 'PathClassDir',
-    # coerce => 1,
-    # required => 1,
-    # lazy_build => 1,
+    coerce => to_Dir,
 );
 sub _build_path { $_[0]->name }
 
 has content => (
     is => 'ro',
-    # isa => 'ExistingDir',
-    # coerce => 1,
-    # required => 1,
+    coerce => to_ExistingDir,
+    required => 1,
 );
 
 has exclude => (
     is => 'ro',
-    # isa => 'DirList',
-    # coerce => 1,
-    # default => sub { [] },
+    # coerce => to_DirList, ### FIXME: create me
+    default => sub { [] },
 );
 
 before state => sub {

@@ -3,35 +3,31 @@ use warnings;
 use Test::More;
 use Test::Exception;
 use Path::Class;
+use FindBin;
+use Provision::DSL::App;
 
-use ok 'Provision::DSL';
+use ok 'Provision::DSL::Entity::User';
+
+my $app = require "$FindBin::Bin/inc/prepare_app.pl";
 
 my $current_user = getpwuid($<);
-
-can_ok 'main', 'User';
 
 # basic behavior
 {
     my $u;
     
-    
     undef $u;
-    dies_ok { $u = User() }
-            'creating an unnamed user entity dies';
-    
-    
-    undef $u;
-    lives_ok { $u = User('frodo_unknown_hopefully') }
+    lives_ok { $u = $app->create_entity('User', {name => 'frodo_unknown_hopefully' }) }
              'creating a named but unknown user entity lives';
-    isa_ok $u, 'Provision::DSL::Entity::User';
-    ok !$u->is_present, 'an unknown user is not present';
+    ok !$u->is_ok, 'an unknown user is not ok';
+    is $u->state, 'missing', 'an unknown user is missing';
     
     
     undef $u;
-    lives_ok { $u = User($current_user) }
+    lives_ok { $u = $app->create_entity('User', {name => $current_user }) }
              'creating a named and known user entity lives';
-    isa_ok $u, 'Provision::DSL::Entity::User';
-    ok $u->is_present, 'a known user is present';
+    ok $u->is_ok, 'a known user is ok';
+    is $u->state, 'current', 'a known user is current';
     isa_ok $u->home_dir, 'Path::Class::Dir';
     ok -d $u->home_dir, 'home directory exists';
     # fails for root when started via sudo
@@ -43,7 +39,7 @@ can_ok 'main', 'User';
 
 # creating and removing a user (requires root privileges)
 SKIP: {
-    skip 'root privileges required for creating users', 7 if $<;
+    skip 'root privileges required for creating users', 9 if $<;
     
     my $unused_uid  = find_unused_uid();
     my $unused_user = find_unused_user();
@@ -52,17 +48,19 @@ SKIP: {
     # warn "USING GROUP: $group";
     # my $g = Group($group);
 
-    my $u = User($unused_user, {uid => $unused_uid, group => $group});
+    my $u = $app->create_entity('User', {name => $unused_user, uid => $unused_uid, group => $group});
     ok !$u->is_present, "unused user '$unused_user' ($unused_uid) not present";
     
-    lives_ok { $u->process(1) } 'creating a new user lives';
-    ok $u->is_present, "former unused user '$unused_user' ($unused_uid) present";
+    lives_ok { $u->execute(1) } 'creating a new user lives';
+    ok $u->is_ok, "former unused user '$unused_user' ($unused_uid) present";
+    is $u->state, 'current', 'a created user is current';
     is getpwnam($unused_user), $unused_uid, 'user really present';
     
-    lives_ok { $u->process(0) } 'removing an existing user lives';
+    lives_ok { $u->execute(0) } 'removing an existing user lives';
     
     ### strange: these 2 fail, but remove really works.
-    ok !$u->is_present, "user '$unused_user' ($unused_uid) removed";
+    ok !$u->is_ok, "user '$unused_user' ($unused_uid) removed";
+    is $u->state, 'missing', 'an unknown user is missing';
     ok !getpwnam($unused_user), 'user really removed';
 }
 

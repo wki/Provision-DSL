@@ -31,10 +31,16 @@ sub _build_gid {
     die 'could not create a unique GID';
 }
 
-around is_ok => sub {
-    my ($orig, $self) = @_;
+before state => sub {
+    my $self = shift;
     
-    return defined getgrnam($self->name) && $self->$orig();
+    $self->set_state(
+        defined getgrnam($self->name)
+            ? 'current'
+            : 'missing'
+    );
 };
+
+# creation/removal is OS-dependent
 
 1;

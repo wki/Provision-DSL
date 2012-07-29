@@ -2,23 +2,10 @@ TODO for provisioning
 ---------------------
 
 Generell:
-  * Rolle User, Group neu
-  
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
              Methoden: latest_version, installed_version, install(version)
   
-  * File: Methode, um Config-Dateien vom Original abweichend zu editieren
-    File '/etc/path/to/conf' => {
-        modify => [
-            {
-                if_line_like    => qr{...}, # Muster muß passen und eindeutig sein
-                replace_with    => ...      # Ersetzung. String oder sub{}
-                comment_symbol  => '#',     # Kommentarzeichen falls von "#" abweichend, [ '/*', '*/' ] falls klammernd
-            },
-        ],
-    };
-
 Execute:
   * cwd attribute
 
@@ -32,20 +19,3 @@ Idea:
   * How to handle dir lists?
       - { path, permission, user, group }
       - Object ???
-
-----------------
-
-User / Group:
-  * P::D::Role::User
-      has user => ...
-        default: $<
-      coercion to_User von User, string, uid
-  * P::D::Role::Group
-      has group => ...
-        default: ->user->gid / $(
-      coercion to_Group von Group, string, uid
-
-Benutzung bei:
-  * File + Dir :: PathOwner
-  * Perlbrew
-  * Execute
