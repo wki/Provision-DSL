@@ -4,8 +4,6 @@ TODO for provisioning
 Generell:
   * Rolle User, Group neu
   
-  * Entity -- extends Base? warum nicht?
-  
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
              Methoden: latest_version, installed_version, install(version)
@@ -35,19 +33,19 @@ Idea:
       - { path, permission, user, group }
       - Object ???
 
---- Versuch 1:
+----------------
 
-Stati weiterreichen :: wie?
-  - Entity:
-      state()  -->default_state     ==> 'current'
-      state('missing')              ==> 'missing'
-      state('outdated')             ==> 'outdated'
-      state('current')              ==> 'current'
+User / Group:
+  * P::D::Role::User
+      has user => ...
+        default: $<
+      coercion to_User von User, string, uid
+  * P::D::Role::Group
+      has group => ...
+        default: ->user->gid / $(
+      coercion to_Group von Group, string, uid
 
-  - XXX > Entity
-      $self->$orig('missing', @_)
-      $self->$orig('outdated', @_)
-      $self->$orig('current', @_)
-  
-  - Rolle:
-      $self->$orig('xxx', @_)
+Benutzung bei:
+  * File + Dir :: PathOwner
+  * Perlbrew
+  * Execute

@@ -33,7 +33,7 @@ has content => (
 );
 
 before state => sub {
-    $_[0]->set_state(-d $_[0]->path ? 'missing' : 'current')
+    $_[0]->set_state(-d $_[0]->path ? 'current' : 'missing')
 };
 
 before create => sub { $_[0]->path->mkpath };

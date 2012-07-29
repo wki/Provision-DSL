@@ -1,10 +1,8 @@
 package Provision::DSL::Entity;
 use Moo;
-use Carp;
 use Provision::DSL::Types;
 
-has name => ( is => 'lazy', isa => Str);
-sub _build_name { croak '"name" attribute is mandatory' }
+extends 'Provision::DSL::Base';
 
 has app => (
     is       => 'ro',
@@ -33,11 +31,8 @@ has not_if    => ( is => 'ro', isa => CodeRef, predicate => 'has_not_if' );
 has default_state => ( is => 'lazy' );
 sub _build_default_state { 'current' }
 
-has _main_state       => ( is => 'rw', predicate => 1 );
-has _additional_state => ( is => 'rw', predicate => 1 );
-
-sub _build_uid { $< }
-sub _build_gid { $( }
+has _main_state       => ( is => 'rw', predicate => 1, clearer => 1 );
+has _additional_state => ( is => 'rw', predicate => 1, clearer => 1 );
 
 sub execute {
     my $self   = shift;
@@ -64,6 +59,9 @@ sub execute {
     $self->log(@log, "$state => $action");
 
     $self->$action();
+    
+    $self->_clear_main_state;
+    $self->_clear_additional_state;
 }
 
 sub set_state {

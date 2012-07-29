@@ -5,6 +5,7 @@ use Scalar::Util 'blessed';
 use Module::Pluggable search_path => 'Provision::DSL::TraitFor',
                       sub_name => 'traits';
 use Role::Tiny ();
+use Try::Tiny;
 use Provision::DSL::Types;
 
 with 'Provision::DSL::Role::CommandlineOptions',
@@ -52,6 +53,19 @@ sub os {
 
 ####################################### Entity handling
 
+sub get_or_create_entity {
+    my ($self, $entity, $name) = @_;
+    
+    my $instance;
+    try {
+        $instance = $self->get_cached_entity($entity, $name);
+    } catch {
+        $instance = $self->create_entity($entity, { name => $name });
+    };
+    
+    return $instance;
+}
+
 sub create_entity {
     my ($self, $entity, $args) = @_;
 
@@ -65,7 +79,7 @@ sub create_entity {
         if exists $self->_entity_cache->{$entity}
            && exists $self->_entity_cache->{$entity}->{$args->{name}};
 
-    my $instance = $class->new($args);
+    my $instance = $class->new({ app => $self, %$args });
     my $name = $instance->name;
 
     my $os = $self->os;

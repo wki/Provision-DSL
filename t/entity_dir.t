@@ -8,14 +8,25 @@ use Provision::DSL::App;
 
 use ok 'Provision::DSL::Entity::Dir';
 use ok 'Provision::DSL::Entity::Rsync';
+use ok 'Provision::DSL::Entity::User';
+use ok 'Provision::DSL::Entity::Group';
 
 my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
 my $app = Provision::DSL::App->new(
     entity_package_for => {
         Dir   => 'Provision::DSL::Entity::Dir',
         Rsync => 'Provision::DSL::Entity::Rsync',
+        User  => 'Provision::DSL::Entity::User',
+        Group => 'Provision::DSL::Entity::Group',
     },
 );
+
+{
+    package Provision::DSL;
+
+    no strict 'refs';
+    $Provision::DSL::app = $app;
+}
 
 # creating and removing a non-existing directory
 {
@@ -31,18 +42,22 @@ my $app = Provision::DSL::App->new(
     'creating a named but unknown dir entity lives';
 
     ok !-d $d->path, 'an unknown dir does not exist';
+    is $d->state, 'missing', 'an unknown dir reports state "missing"';
     ok !$d->is_ok, 'an unknown dir is not ok';
     
     lives_ok { $d->execute(1) } 'creating a former unknown dir lives';
     ok -d $d->path, 'a former unknown dir exists';
+    is $d->state, 'current', 'an unknown dir reports state "current"';
     ok $d->is_ok, 'a former unknown dir is ok';
     
     lives_ok { $d->execute(0) } 'removing a dir lives';
     ok !-d $d->path, 'a removed dir does not exist';
+    is $d->state, 'missing', 'a removed dir reports state "missing"';
     ok !$d->is_ok, 'a removed dir is not ok';
+    
 }
 
-# creating an existing directory
+# handling an existing directory
 {
     clear_directory_content($x_dir);
 
@@ -56,6 +71,7 @@ my $app = Provision::DSL::App->new(
     'creating a named and existing dir entity lives';
 
     ok -d $d->path, 'a known dir exists';
+    is $d->state, 'current', 'a known dir reports state "current"';
     ok $d->is_ok, 'a known dir is ok';
 }
 

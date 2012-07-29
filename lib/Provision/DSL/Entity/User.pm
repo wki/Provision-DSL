@@ -3,7 +3,7 @@ use Moo;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity';
-# with 'Provision::Role::Group';
+with 'Provision::DSL::Role::Group';
 
 ### FIXME: how do we ensure group existence?
 
@@ -18,12 +18,6 @@ has uid => (
 has home_dir => (
     is => 'lazy',
     coerce => to_Dir,
-);
-
-has gid => (
-    is => 'lazy',
-    isa => Int,
-    coerce => to_Gid,
 );
 
 sub _build_uid {
@@ -43,16 +37,16 @@ sub _build_uid {
     die 'could not create a unique UID';
 }
 
-sub _build_gid {
-    my $self = shift;
-    
-    my $gid = (getpwnam($self->name))[3];
-    if (defined $gid) {
-        return $gid;
-    } else {
-        ### FIXME : search for group return $self->name;
-    }
-}
+# sub _build_gid {
+#     my $self = shift;
+#     
+#     my $gid = (getpwnam($self->name))[3];
+#     if (defined $gid) {
+#         return $gid;
+#     } else {
+#         ### FIXME : search for group return $self->name;
+#     }
+# }
 
 around is_ok => sub {
     my ($orig, $self) = @_;

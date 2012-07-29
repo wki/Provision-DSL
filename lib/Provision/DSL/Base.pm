@@ -1,12 +1,14 @@
 package Provision::DSL::Base;
 use Moo;
+use Carp;
 use Provision::DSL::Types;
 
 has name => (
-    is => 'ro',
+    is => 'lazy',
     isa => Str,
-    required => 1,
 );
+
+sub _build_name { croak '"name" attribute is mandatory' }
 
 around BUILDARGS => sub {
     my $orig = shift;
@@ -18,5 +20,12 @@ around BUILDARGS => sub {
 
     return $class->$orig(%args);
 };
+
+sub BUILD {
+    my $self = shift;
+    
+    # trigger builder to ensure we have a name or die
+    my $dummy = $self->name;
+}
 
 1;

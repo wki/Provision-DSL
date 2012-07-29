@@ -26,7 +26,7 @@ before state => sub {
     my $self = shift;
     
     $self->add_state($_->is_ok ? 'current' : 'outdated')
-        for $self->add_children;
+        for $self->all_children;
 };
 
 # only remove() receives wanted=0, all others use their own wanted attribute
