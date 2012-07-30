@@ -14,6 +14,7 @@ our @EXPORT = qw(
     to_Channels
     to_Dir to_ExistingDir to_File
     to_User to_Group
+    to_Permission
 );
 
 sub Str {
@@ -57,7 +58,10 @@ sub ExecutableFile {
 }
 
 sub PerlVersion {
-    return sub { $_[0] =~ m{\A (?:perl-)\d+\.\d+\.\d+(?:-RC\d)? \z}xms }
+    return sub { 
+        $_[0] =~ m{\A (?:perl-)?\d+\.\d+\.\d+(?:-RC\d+)? \z}xms
+        or croak "'$_' does not look like a perl version"
+    }
 }
 
 
@@ -107,6 +111,14 @@ sub to_Group {
                 : scalar getgrgid($_[0])
         );
     }
+}
+
+sub to_Permission {
+    return sub {
+        $_[0] =~ m{\A 0[0-7]+ \z}xms
+            ? oct $_[0]
+            : $_[0] + 0;
+    };
 }
 
 1;

@@ -4,8 +4,7 @@ use Provision::DSL::Types;
 
 has permission => (
     is => 'lazy', 
-    # coerce => to_Permission,
-    # required => 1, 
+    coerce => to_Permission,
 );
 
 before state => sub {
@@ -14,13 +13,13 @@ before state => sub {
     return if !-d $self->path;
     
     $self->add_state('outdated')
-        if ($self->path->stat->mode & 511) != (oct($self->permission) & 511)
+        if ($self->path->stat->mode & 511) != ($self->permission & 511)
 };
 
 after ['create', 'change'] => sub {
     my $self = shift;
     
-    chmod oct($self->permission), $self->path;
+    chmod $self->permission, $self->path;
 };
 
 1;
