@@ -10,8 +10,8 @@ before create => sub {
 
     my $group = "/Groups/${\$self->name}";
 
-    $self->app->system_command($DSCL, '.', -create => $group); 
-    $self->app->system_command($DSCL, '.', -append => $group,
+    $self->app->run_command($DSCL, '.', -create => $group); 
+    $self->app->run_command($DSCL, '.', -append => $group,
                           PrimaryGroupID => $self->gid);
 };
 
@@ -21,7 +21,7 @@ after remove => sub {
     my $members = (getgrgid($self->gid))[3];
     die "Cannot remove group ${\$self->name}: in use by '$members'" if $members;
     
-    $self->app->system_command($DSCL, '.', -delete => "/Groups/${\$self->name}");
+    $self->app->run_command($DSCL, '.', -delete => "/Groups/${\$self->name}");
 };
 
 1;

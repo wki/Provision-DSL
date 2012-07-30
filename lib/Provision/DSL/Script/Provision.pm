@@ -160,7 +160,7 @@ sub pack_dependent_libs {
         $lib_filename =~ s{::}{/}xmsg;
         next if -f $self->temp_lib_dir->file($lib_filename);
 
-        $self->system_command(
+        $self->run_command(
             'cpanm',
             -L => $self->temp_lib_dir,
             -n => $lib

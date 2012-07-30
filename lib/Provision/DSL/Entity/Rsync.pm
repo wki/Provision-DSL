@@ -55,7 +55,7 @@ sub _rsync_command {
         "${\$self->content}/" => "${\$self->path}/",
     );
     
-    return $self->system_command('/usr/bin/rsync', @args);
+    return $self->run_command('/usr/bin/rsync', @args);
 }
 
 # rsync reports to delete a directory if its subdirectory is in exclusion

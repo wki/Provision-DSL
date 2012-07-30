@@ -31,16 +31,16 @@ before create => sub {
     my $self = shift;
 
     if ($self->_is_service_running) {
-        $self->system_command($LAUNCHCTL, stop => $self->name);
+        $self->run_command($LAUNCHCTL, stop => $self->name);
     } else {
-        $self->system_command($LAUNCHCTL, load => '-w' => $self->path);
+        $self->run_command($LAUNCHCTL, load => '-w' => $self->path);
     }
 };
 
 before remove => sub {
     my $self = shift;
 
-    $self->system_command($LAUNCHCTL, unload => '-w' => $self->path);
+    $self->run_command($LAUNCHCTL, unload => '-w' => $self->path);
 };
 
 1;

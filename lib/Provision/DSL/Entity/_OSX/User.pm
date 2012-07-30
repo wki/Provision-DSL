@@ -17,25 +17,25 @@ before create => sub {
     my $user  = "/Users/${\$self->name}";
     my $group = "/Groups/${\$self->group->name}";
 
-    $self->app->system_command($DSCL, '.', -create => $group); 
-    $self->app->system_command($DSCL, '.', -append => $group,
+    $self->app->run_command($DSCL, '.', -create => $group); 
+    $self->app->run_command($DSCL, '.', -append => $group,
                                PrimaryGroupID => $self->group->gid);
 
-    $self->app->system_command($DSCL, '.', -create => $user);
-    $self->app->system_command($DSCL, '.', -append => $user,
+    $self->app->run_command($DSCL, '.', -create => $user);
+    $self->app->run_command($DSCL, '.', -append => $user,
                                PrimaryGroupID => $self->group->gid);
-    $self->app->system_command($DSCL, '.', -append => $user,
+    $self->app->run_command($DSCL, '.', -append => $user,
                                UniqueID => $self->uid);
-    $self->app->system_command($DSCL, '.', -append => $user,
+    $self->app->run_command($DSCL, '.', -append => $user,
                                NFSHomeDirectory => $self->home_dir);
-    $self->app->system_command($DSCL, '.', -append => $user,
+    $self->app->run_command($DSCL, '.', -append => $user,
                                UserShell => '/bin/bash');
 };
 
 after remove => sub {
     my $self = shift;
     
-    $self->app->system_command($DSCL, '.', -delete => "/Users/${\$self->name}");
+    $self->app->run_command($DSCL, '.', -delete => "/Users/${\$self->name}");
 };
 
 1;

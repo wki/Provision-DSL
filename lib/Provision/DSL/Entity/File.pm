@@ -23,7 +23,7 @@ sub _build_path { $_[0]->name }
 has content => (
     is => 'ro',
     isa => Str,
-    coerce => to_Str,
+    coerce => to_Content,
     predicate => 1,
 );
 

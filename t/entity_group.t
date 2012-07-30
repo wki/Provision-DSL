@@ -4,7 +4,6 @@ use Test::More;
 use Test::Exception;
 use Path::Class;
 use FindBin;
-use Provision::DSL::App;
 
 use ok 'Provision::DSL::Entity::Group';
 

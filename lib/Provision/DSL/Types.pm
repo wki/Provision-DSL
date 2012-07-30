@@ -11,6 +11,7 @@ our @EXPORT = qw(
     PerlVersion
 
     to_Str
+    to_Content
     to_Channels
     to_Dir to_ExistingDir to_File
     to_User to_Group
@@ -66,6 +67,10 @@ sub PerlVersion {
 
 
 sub to_Str {
+    return sub { "$_[0]" }
+}
+
+sub to_Content {
     return sub {
         blessed $_[0] && $_[0]->can('content')
             ? $_[0]->content

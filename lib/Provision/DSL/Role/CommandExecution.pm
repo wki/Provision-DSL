@@ -4,12 +4,23 @@ use Try::Tiny;
 use Carp;
 use Provision::DSL::Command;
 
+# all commands: $executable [, \%options] , @args
+
 sub command_succeeds {
-    my ($self, $executable, @args) = @_;
+    my $self       = shift;
+    my $executable = shift;
+    my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
+    my @args       = @_;
 
     my $result;
     try {
-        Provision::DSL::Command->new($executable, { args => \@args })->run;
+        Provision::DSL::Command->new(
+            {
+                name => $executable,
+                args => \@args,
+                %options
+            }
+        )->run;
         $result = 1;
     };
 
@@ -17,39 +28,42 @@ sub command_succeeds {
 }
 
 sub run_command_as_user {
-    my ($self, $executable, @args) = @_;
+    my $self       = shift;
+    my $executable = shift;
+    my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
 
-    Provision::DSL::Command->new($executable,
+    $self->pipe_into_command(undef, $executable,
         {
-            args   => \@args,
             ($self->has_user  ? (user  => $self->user)  : ()),
             ($self->has_group ? (group => $self->group) : ()),
-        })->run;
+            %options,
+        },
+        @_
+    );
 }
 
-sub system_command {
-    my ($self, $executable, @args) = @_;
+sub run_command {
+    my $self = shift;
 
-    my $stdout;
-    Provision::DSL::Command->new($executable,
-        {
-            args   => \@args,
-            stdout => \$stdout,
-        })->run;
-
-    return $stdout;
+    $self->pipe_into_command(undef, @_);
 }
 
 sub pipe_into_command {
-    my ($self, $stdin, $executable, @args) = @_;
+    my $self       = shift;
+    my $stdin      = shift;
+    my $executable = shift;
+    my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
 
     my $stdout;
-    Provision::DSL::Command->new($executable,
+    Provision::DSL::Command->new(
         {
-            args   => \@args,
-            stdin  => $stdin,
+            name   => $executable,
+            args   => [ @_ ],
+            (defined $stdin ? (stdin  => $stdin) : ()),
             stdout => \$stdout,
-        })->run;
+            %options
+        }
+    )->run;
 
     return $stdout;
 }

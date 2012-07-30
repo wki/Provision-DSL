@@ -4,7 +4,6 @@ use Test::More;
 use Test::Exception;
 use Path::Class;
 use FindBin;
-use Provision::DSL::App;
 
 my $app = require "$FindBin::Bin/inc/prepare_app.pl";
 my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');

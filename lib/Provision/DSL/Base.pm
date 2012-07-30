@@ -6,6 +6,7 @@ use Provision::DSL::Types;
 has name => (
     is => 'lazy',
     isa => Str,
+    # coerce => to_Str,
 );
 
 sub _build_name { croak '"name" attribute is mandatory' }

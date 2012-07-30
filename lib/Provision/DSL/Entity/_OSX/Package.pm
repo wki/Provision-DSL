@@ -15,13 +15,13 @@ around is_ok => sub {
 before create => sub {
     my $self = shift;
 
-    $self->system_command($PORT, install => $self->name);
+    $self->run_command($PORT, install => $self->name);
 };
 
 after remove => sub {
     my $self = shift;
 
-    $self->system_command($PORT, uninstall => $self->name);
+    $self->run_command($PORT, uninstall => $self->name);
 };
 
 sub _installed_version {

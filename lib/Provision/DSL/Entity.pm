@@ -11,7 +11,7 @@ has app => (
         qw(verbose dryrun
           log log_dryrun log_debug
           create_entity
-          system_command pipe_into_command command_succeeds
+          run_command pipe_into_command command_succeeds
           set_changed has_changed)
     ],
 );

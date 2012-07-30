@@ -10,7 +10,7 @@ with 'Provision::DSL::Role::User',
 
 has command => (
     is => 'lazy',
-    isa => Str,
+    coerce => to_Str,
 );
 
 sub _build_command { $_[0]->name }
@@ -67,7 +67,7 @@ sub run {
     
     local %ENV;
     @ENV{keys %{$self->env}} = values %{$self->env};
-    
+
     run3 \@command_and_args,
         ($self->has_stdin  ? $self->stdin  : \undef),
         ($self->has_stdout ? $self->stdout : sub {}),

@@ -1,7 +1,9 @@
-use ok 'Provision::DSL::Entity::Dir';
-use ok 'Provision::DSL::Entity::Rsync';
-use ok 'Provision::DSL::Entity::User';
-use ok 'Provision::DSL::Entity::Group';
+use Provision::DSL::App;
+
+use Provision::DSL::Entity::Dir;
+use Provision::DSL::Entity::Rsync;
+use Provision::DSL::Entity::User;
+use Provision::DSL::Entity::Group;
 
 my $app = Provision::DSL::App->new(
     entity_package_for => {
