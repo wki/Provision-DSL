@@ -311,6 +311,9 @@ sub remote_execute {
         : '';
 
     my @command_and_args = (
+        #
+        # establish an ssh connection with compression
+        #
         '/usr/bin/ssh',
         (defined $identity_file
             ? ('-i' => $identity_file)
@@ -318,6 +321,10 @@ sub remote_execute {
         '-C',
         ($ssh_config->{options} // ()),
         "$user_prefix$ssh_config->{hostname}",
+        
+        #
+        # execute perl running script from stdin (-) with options
+        #
         'perl -'
             . ($self->dryrun  ? ' -n' : '')
             . ($self->verbose ? ' -v' : '')
