@@ -3,6 +3,10 @@ use Moo;
 
 extends 'Provision::DSL::Entity::Package';
 
+### feststellen ob Package installiert: `/usr/bin/dpkg-query --show <<package>>`
+### Status dpkg-query --status <<package>>
+### istallieren mit aptitude: /usr/bin/aptitude install <<package>> [ = version]
+
 around is_ok => sub {
     my ($orig, $self) = @_;
 
