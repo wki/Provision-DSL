@@ -2,7 +2,6 @@ package Provision::DSL::Entity::Execute;
 use Moo;
 use Cwd;
 use Provision::DSL::Types;
-use Provision::DSL::Command;
 
 extends 'Provision::DSL::Entity';
 with 'Provision::DSL::Role::User',

@@ -5,8 +5,19 @@ use Provision::DSL::Types;
 use Carp;
 
 extends 'Provision::DSL::Base';
-with 'Provision::DSL::Role::User',
-     'Provision::DSL::Role::Group';
+# we do not use the user roles, we only need a string as user/group
+
+has user => (
+    is => 'ro',
+    coerce => to_Str,
+    predicate => 1,
+);
+
+has group => (
+    is => 'ro',
+    coerce => to_Str,
+    predicate => 1,
+);
 
 has command => (
     is => 'lazy',
@@ -53,8 +64,8 @@ sub run {
         @sudo = (
             '/usr/bin/sudo',
             '-n',
-            ($self->has_user  ? (-u => $self->user->name)  : ()),
-            ($self->has_group ? (-g => $self->group->name) : ()),
+            ($self->has_user  ? (-u => $self->user)  : ()),
+            ($self->has_group ? (-g => $self->group) : ()),
             '--'
         );
     }
@@ -65,9 +76,10 @@ sub run {
         @{$self->args},
     );
     
-    local %ENV;
+    my %old_env = %ENV;
+    local %ENV = %old_env;
     @ENV{keys %{$self->env}} = values %{$self->env};
-
+    
     run3 \@command_and_args,
         ($self->has_stdin  ? $self->stdin  : \undef),
         ($self->has_stdout ? $self->stdout : sub {}),

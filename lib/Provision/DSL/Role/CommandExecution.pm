@@ -34,8 +34,8 @@ sub run_command_as_user {
 
     $self->pipe_into_command(undef, $executable,
         {
-            ($self->has_user  ? (user  => $self->user)  : ()),
-            ($self->has_group ? (group => $self->group) : ()),
+            ($self->has_user  ? (user  => $self->user->name)  : ()),
+            ($self->has_group ? (group => $self->group->name) : ()),
             %options,
         },
         @_
