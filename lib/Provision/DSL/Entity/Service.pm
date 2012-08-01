@@ -3,14 +3,41 @@ use Moo;
 
 extends 'Provision::DSL::Entity::File';
 
-#
-# /etc/init.d --> service
-# /etc/rcX.d  --> je nach runlevel
-#
-# evtl. schon vorhanden.
-# /sbin/start-stop-daemon verwenden!
+sub BUILD {
+    my $self = shift;
+    
+    # avoid exception in File
+    if (!$self->has_patches) {
+        $self->patches([]);
+    }
+}
 
-# /usr/sbin/update-rc.d -- zum Ändern des runlevel
+sub _allow_remove { 0 }
 
+before state => sub {
+    my $self = shift;
+    
+    if ($self->_service_running) {
+        $self->set_state('missing');
+    } else {
+        $self->set_state('current');
+    }
+};
+
+# start service after a possible file creation
+after ['create', 'change'] => sub {
+    my $self = shift;
+    
+    $self->_stop_service;
+    $self->_install_service;
+    $self->_start_service;
+};
+
+# stop service before a possible file removal
+before remove => sub {
+    my $self = shift;
+    
+    $self->_stop_service;
+};
 
 1;

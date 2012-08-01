@@ -4,8 +4,8 @@ use Moo;
 extends 'Provision::DSL::Entity::Package';
 with 'Provision::DSL::Role::CommandExecution';
 
-our $DPKG_Q   = '/usr/bin/dpkg-query';
-our $APTITUDE = '/usr/bin/aptitude';
+our $DPKG_QUERY = '/usr/bin/dpkg-query';
+our $APTITUDE   = '/usr/bin/aptitude';
 
 before ['create','change'] => sub {
     my $self = shift;
@@ -21,7 +21,7 @@ after remove => sub {
 
     $self->run_command($APTITUDE,
                        { user => 'root' },
-                       remove => $self->name);
+                       purge => $self->name);
     $self->clear_installed_version;
 };
 
@@ -30,7 +30,7 @@ sub _build_installed_version {
 
     my ($name, $version, $dummy) =
         split qr/\s+/,
-              $self->run_command($DPKG_Q, '--show' => $self->name);
+              $self->run_command($DPKG_QUERY, '--show' => $self->name);
 
     return $version;
 }

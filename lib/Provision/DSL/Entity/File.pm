@@ -13,6 +13,8 @@ with 'Provision::DSL::Role::PathPermission',
 
 sub _build_permission { '0644' }
 
+sub _allow_remove { 1 }
+
 has path => (
     is => 'lazy',
     coerce => to_File,
@@ -135,6 +137,10 @@ before change => sub {
     }
 };
 
-after remove => sub { $_[0]->path->remove };
+after remove => sub { 
+    my $self = shift;
+
+    $self->path->remove if $self->_allow_remove;
+};
 
 1;
