@@ -10,4 +10,7 @@ extends 'Provision::DSL::Entity::File';
 # evtl. schon vorhanden.
 # /sbin/start-stop-daemon verwenden!
 
+# /usr/sbin/update-rc.d -- zum Ändern des runlevel
+
+
 1;
