@@ -7,8 +7,7 @@ use ok 'Provision::DSL';
 
 can_ok 'main', qw(OS Os os Done done);
 
-# foreach my $os (qw(OSX Ubuntu)) {
-foreach my $os (qw(OSX)) {
+foreach my $os (qw(OSX Ubuntu)) {
     # simulate $os
     no strict 'refs';
     no warnings 'redefine';
