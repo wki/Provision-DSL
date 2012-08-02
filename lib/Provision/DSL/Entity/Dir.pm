@@ -1,7 +1,7 @@
 package Provision::DSL::Entity::Dir;
 use Moo;
 use Provision::DSL::Types;
-use Provision::DSL::Util 'remove_recursive';
+# use Provision::DSL::Util 'remove_recursive';
 
 sub path;    # must forward-declare
 
@@ -43,8 +43,6 @@ before state => sub {
 before create => sub {
     my $self = shift;
     
-    # $_[0]->path->mkpath
-    
     $self->run_command_as_user(
         '/bin/mkdir',
         '-p', $self->path,
@@ -54,7 +52,6 @@ before create => sub {
 after remove => sub {
     my $self = shift;
 
-    # $self->path->traverse(\&remove_recursive) if -d $self->path;
     $self->run_command_as_user(
         '/bin/rm',
         '-rf', $self->path,
