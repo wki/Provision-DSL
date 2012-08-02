@@ -6,7 +6,10 @@ use Provision::DSL::Util 'remove_recursive';
 sub path;    # must forward-declare
 
 extends 'Provision::DSL::Entity::Compound';
-with    'Provision::DSL::Role::PathPermission',
+with    'Provision::DSL::Role::CommandExecution',
+        'Provision::DSL::Role::User',
+        'Provision::DSL::Role::Group',
+        'Provision::DSL::Role::PathPermission',
         'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0755' }
@@ -37,12 +40,25 @@ before state => sub {
     $_[0]->set_state(-d $_[0]->path ? 'current' : 'missing')
 };
 
-before create => sub { $_[0]->path->mkpath };
+before create => sub {
+    my $self = shift;
+    
+    # $_[0]->path->mkpath
+    
+    $self->run_command_as_user(
+        '/bin/mkdir',
+        '-p', $self->path,
+    );
+};
 
 after remove => sub {
     my $self = shift;
 
-    $self->path->traverse(\&remove_recursive) if -d $self->path;
+    # $self->path->traverse(\&remove_recursive) if -d $self->path;
+    $self->run_command_as_user(
+        '/bin/rm',
+        '-rf', $self->path,
+    );
 };
 
 sub _build_children {

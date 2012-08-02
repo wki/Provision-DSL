@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use Provision::DSL;
-my $SITE_DIR = '/home/vagrant/site/xxx';
+my $WEB_DIR     = '/web/data';
+my $SITE_DIR    = "$WEB_DIR/www.mysite.de";
 
 Package 'build-essential';
 
@@ -12,6 +13,10 @@ Perlbrew {
     wanted  => '5.16.0',
 };
 
+Dir $WEB_DIR => {
+    user => 'root',
+    permission => '0755',
+};
 
 __END__
 
