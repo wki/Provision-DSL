@@ -1,6 +1,7 @@
 package Provision::DSL::Entity::Dir;
 use Moo;
 use Provision::DSL::Types;
+use Provision::DSL::Util 'remove_recursive';
 
 sub path;    # must forward-declare
 
@@ -41,15 +42,8 @@ before create => sub { $_[0]->path->mkpath };
 after remove => sub {
     my $self = shift;
 
-    $self->path->traverse(\&_remove_recursive) if -d $self->path;
+    $self->path->traverse(\&remove_recursive) if -d $self->path;
 };
-
-sub _remove_recursive {
-    my ($child, $cont) = @_;
-
-    $cont->() if -d $child;
-    $child->remove;
-}
 
 sub _build_children {
     my $self = shift;

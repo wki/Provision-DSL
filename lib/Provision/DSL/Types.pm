@@ -15,7 +15,7 @@ our @EXPORT = qw(
     to_Channels
     to_Dir to_ExistingDir to_File
     to_User to_Group
-    to_Permission
+    to_Permission to_PerlVersion
 );
 
 sub Str {
@@ -60,7 +60,7 @@ sub ExecutableFile {
 
 sub PerlVersion {
     return sub { 
-        $_[0] =~ m{\A (?:perl-)?\d+\.\d+\.\d+(?:-RC\d+)? \z}xms
+        $_[0] =~ m{\A perl- \d+\.\d+\.\d+(?:-RC\d+)? \z}xms
         or croak "'$_' does not look like a perl version"
     }
 }
@@ -98,23 +98,27 @@ sub to_File {
 
 sub to_User {
     return sub {
-        $Provision::DSL::app->get_or_create_entity(
-            'User',
-            $_[0] =~ m{\D}
-                ? $_[0]
-                : scalar getpwuid($_[0])
-        );
+        blessed $_[0] && $_[0]->isa('Provision::DSL::Entity::User')
+            ? $_[0]
+            : $Provision::DSL::app->get_or_create_entity(
+                'User',
+                $_[0] =~ m{\D}
+                    ? $_[0]
+                    : scalar getpwuid($_[0])
+            );
     }
 }
 
 sub to_Group {
     return sub {
-        $Provision::DSL::app->get_or_create_entity(
-            'Group', 
-            $_[0] =~ m{\D}
-                ? $_[0]
-                : scalar getgrgid($_[0])
-        );
+        blessed $_[0] && $_[0]->isa('Provision::DSL::Entity::Group')
+            ? $_[0]
+            : $Provision::DSL::app->get_or_create_entity(
+                'Group', 
+                $_[0] =~ m{\D}
+                    ? $_[0]
+                    : scalar getgrgid($_[0])
+            );
     }
 }
 
@@ -124,6 +128,10 @@ sub to_Permission {
             ? oct $_[0]
             : $_[0] + 0;
     };
+}
+
+sub to_PerlVersion {
+    return sub { "perl-$_[0]" };
 }
 
 1;

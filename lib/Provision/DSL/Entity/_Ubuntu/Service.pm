@@ -1,6 +1,5 @@
 package Provision::DSL::Entity::_Ubuntu::Service;
-use Moose;
-use namespace::autoclean;
+use Moo;
 
 extends 'Provision::DSL::Entity::Service';
 
@@ -63,5 +62,4 @@ sub __service {
 #
 #
 
-__PACKAGE__->meta->make_immutable;
 1;

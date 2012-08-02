@@ -5,7 +5,9 @@ use Provision::DSL::Types;
 use Provision::DSL::Source::Bin;
 
 extends 'Provision::DSL::Entity::Compound';
-with    'Provision::DSL::Role::User',
+with    'Provision::DSL::Role::CommandExecution',
+        'Provision::DSL::Role::User',
+        'Provision::DSL::Role::Group',
         'Provision::DSL::Role::HTTP';
 
 has install_cpanm => (
@@ -17,16 +19,14 @@ has install_cpanm => (
 has install_perl => (
     is  => 'lazy',
     isa => PerlVersion,
+    coerce => to_PerlVersion,
+    required => 1,
 );
 
 sub _build_install_perl { $_[0]->wanted }
 
-has switch_to_perl => (
-    is  => 'ro',
-    isa => Str,
-);
-
 sub _build_name { scalar getpwuid($<) }
+
 sub _build_user { $_[0]->name }
 
 has perlbrew_dir => (
@@ -43,6 +43,20 @@ has perlbrew => (
 
 sub _build_perlbrew { $_[0]->perlbrew_dir->file('bin/perlbrew') }
 
+has perl => (
+    is => 'lazy',
+    coerce => to_File,
+);
+
+sub _build_perl { 
+    my $self = shift;
+    
+    $self->perlbrew_dir
+         ->subdir('perls')
+         ->subdir($self->install_perl)
+         ->file('bin/perl')
+}
+
 before state => sub {
     $_[0]->set_state(-f $_[0]->perlbrew ? 'current' : 'missing');
 };
@@ -52,26 +66,12 @@ sub _build_children {
 
     return [
         $self->create_entity(
-            Perlbrew_Install => {
-                name => join('_', $self->name, 'install'),
-                user => $self->user, 
-                parent => $self,
-            },
-        ),
-        $self->create_entity(
             Perlbrew_Perl => {
                 name => join('_', $self->name, 'perl'),
                 user    => $self->user,
+                group   => $self->group,
                 parent  => $self,
                 install => $self->install_perl
-            }
-        ),
-        $self->create_entity(
-            Perlbrew_Switch => {
-                name => join('_', $self->name, 'switch'),
-                user   => $self->user,
-                parent => $self,
-                switch => $self->switch_to_perl
             }
         ),
     ];

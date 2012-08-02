@@ -31,15 +31,24 @@ sub run_command_as_user {
     my $self       = shift;
     my $executable = shift;
     my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
+    
+    ATTRIBUTE:
+    foreach my $attribute (qw(user group)) {
+        my $predicate = "has_$attribute";
+        my $entity = $self;
+        while ($entity) {
+            if ($entity->can($attribute)) {
+                if ($entity->$predicate) {
+                    $options{$attribute} = $entity->$attribute->name;
+                }
+                next ATTRIBUTE;
+            } else {
+                $entity = $entity->parent;
+            }
+        }
+    }
 
-    $self->pipe_into_command(undef, $executable,
-        {
-            ($self->has_user  ? (user  => $self->user->name)  : ()),
-            ($self->has_group ? (group => $self->group->name) : ()),
-            %options,
-        },
-        @_
-    );
+    $self->pipe_into_command(undef, $executable, \%options, @_);
 }
 
 sub run_command {

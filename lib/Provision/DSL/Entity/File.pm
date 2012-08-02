@@ -14,6 +14,7 @@ with 'Provision::DSL::Role::PathPermission',
 sub _build_permission { '0644' }
 
 sub _allow_remove { 1 }
+sub _strict_args  { 1 }
 
 has path => (
     is => 'lazy',
@@ -40,7 +41,7 @@ sub BUILD {
     my $name = $self->name;
 
     croak "File($name) needs 'content' *OR* 'patches'"
-        if !$self->has_content && !$self->has_patches;
+        if $self->_strict_args && !$self->has_content && !$self->has_patches;
 
     croak "File($name) can only have 'content' *OR* 'patches', not both"
         if $self->has_content && $self->has_patches;

@@ -4,9 +4,12 @@ my $SITE_DIR = '/home/vagrant/site/xxx';
 
 Package 'build-essential';
 
+Service 'nginx';
+
 Perlbrew {
     install_cpanm => 1,
-    wanted  => '5.14.2',
+    # wanted  => '5.14.2',
+    wanted  => '5.16.0',
 };
 
 
@@ -31,7 +34,7 @@ exit;
 
 Perlbrew sites => {
     install_cpanm => 1,
-    install_perl  => '5.14.2',
+    wanted        => '5.14.2',
     switch_perl   => '5.14.2',
 };
 

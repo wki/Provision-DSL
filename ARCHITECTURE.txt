@@ -33,7 +33,6 @@ Bestandteile:
           + content: ExistingDir
       * Perlbrew                Kinder: install, cpanm, perl, switch
           + install_cpanm: Bool
-          + install_perl: Str
           + switch_to_perl: Str
       * _XXX::User              Kinder: Dir (=home), Group
           + uid: Int

@@ -70,8 +70,7 @@ my $c = C->new();
 {
     dies_ok { $c->perl('') } 'empty is not a perl version';
     dies_ok { $c->perl('foo') } 'foo is not a perl version';
-    lives_ok { $c->perl('5.14.4') } '5.14.4 looks like a perl version';
-    lives_ok { $c->perl('5.14.4-RC7') } '5.14.4-RC7 looks like a perl version';
+    dies_ok { $c->perl('5.14.4') } '5.14.4 does not look like a perl version';
     lives_ok { $c->perl('perl-5.14.4') } 'perl-5.14.4 looks like a perl version';
     lives_ok { $c->perl('perl-5.14.4-RC7') } 'perl-5.14.4-RC7 looks like a perl version';
 }

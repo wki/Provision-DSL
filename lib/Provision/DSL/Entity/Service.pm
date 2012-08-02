@@ -3,16 +3,19 @@ use Moo;
 
 extends 'Provision::DSL::Entity::File';
 
-sub BUILD {
-    my $self = shift;
-    
-    # avoid exception in File
-    if (!$self->has_patches) {
-        $self->patches([]);
-    }
-}
+# sub BUILD {
+#     my $self = shift;
+#     
+#     warn 'Service::BUILD';
+#     
+#     # avoid exception in File
+#     if (!$self->has_patches) {
+#         $self->patches([]);
+#     }
+# }
 
 sub _allow_remove { 0 }
+sub _strict_args  { 0 }
 
 before state => sub {
     my $self = shift;
