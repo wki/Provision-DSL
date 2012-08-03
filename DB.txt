@@ -1,48 +1,84 @@
 Eigene Migrations-Idee
 
-1) Jeder DB-Stand besitzt eine Versions-Nummer longint
+1) Jeder DB-Stand besitzt eine Versions-Nummer int
     x / 100: main version, x % 100 subverison
-   z.B. 13.3, als Verzeichnis geschrieben 0013/03/...
+   z.B. 13.3
+        als Verzeichnis geschrieben 0013/03/...
+        als Integer in der DB: 1303
 
-2) auf der DB sitzt eine Tabelle
-   create table _migration (
-        migration_id serial not null primary key
-        version integer not null,
-        created timestamp,
-        filename text,
-        is_success boolean,
-        message text
-   );
+2) auf der DB gibt es zwei zusätzliche Tabellen:
+    create table db_version (
+        db_version_id   serial not null primary key,
+        version         integer not null unique,            -- 100 = 1.00
+        created         timestamp not null default now(),   -- wann begonnen
+        updated         timestamp                           -- letzer erfolgreicher Script-Lauf
+    );
+
+    create table db_script (
+        db_script_id    serial not null primary key,
+        db_version_id   integer not null references db_version(db_version_id),
+        filename        text not null,
+        executed        timestamp not null default now(),
+        is_success      boolean,
+        message         text
+    );
 
 3) Zu jeder Version gehört
-    * eine .sql Datei ODER
-    * eine .pl Datei.
-   jede Datei wird in einer Transaktion eingespielt, danach ein Eintrag in
-   _migration vorgenommen. Die Transaktion dabei _NICHT_ vom Script hergestellt.
+    * eine .sql Datei (beliebiger Name) ODER
+    * eine .pm Datei z.B. customer_update.pm
+   Jede Datei wird in einer Transaktion eingespielt, danach ein Eintrag in
+   _script und _migration vorgenommen.
+   Da Package-Namen keine führenden Ziffern haben dürfen, erfolgt Reihenfolge
+   über führende Buchstaben:
+     a_asdf.pm
+     b_hjhjhj.pm
+     c_adssf.sql
+     ...
+   Die Transaktion wird dabei _NICHT_ vom Script hergestellt, sondern von der
+   Umgebung kontrolliert.
 
+   Pseudo Code:
+    * falls nicht vorhanden, erzeuge _migration und _script Tabellen
+    * lies letzte bekannte Version aus DB
+    * hole Liste aller gelaufenen Scripte
+    * hole Liste aller vorhandenen Scripte
+    * ermittle zu startende Scripte: vorhanden - (gelaufen - erfolgreich)
+    * Beginne beim aktuellen Stand und gehe bis zur gesünschten Version:
+        * Trage Version in _migration ein, falls noch nicht vorhanden
+        * für jedes zu startende Script:
+            * öffne Transaktion
+            * lass script laufen
+            * schließe Transaktion
+            * trage Script + Status und Message in _script ein
+            * aktualisiere _migration.updated falls erfolgreich
+            * stop, falls Fehler, sonst weiter
 
+    Script Lauf (sql):
+        * echo 'begin;'
+               + ((datei-inhalt))
+               + 'insert into _script (...) values ();'
+               + 'update _migration set ...;'
+               + 'commit;'
+               | psql ...
+        * stderr: warnings und Fehler
+        * stdout: am Ende "COMMIT" oder "ROLLBACK"
+        * wenn Script erfolgreich eingetragen, hat es geklappt.
 
+    Script Lauf (pl):
+        * "Migrations-Script" ist eine Rolle
+        * wird zur Laufzeit in eine bestimmte Klasse geladen
+        * bietet die Methode "execute"
+        * nutzt das Attribut "schema"
 
+        * App::DB::Migrate ist laufende App
+        * DB connect ausführen
+        * Migrations-Script laden (Module::Load)
+        * with 'Package::Des::Moduls' ausführen.
+        * innerhalb Transaktion ->execute()
+        * bei Erfolg _script, _migration aktualisieren
 
-Test mit DBIx::Class::Migration
+4) Erst Bestückung:
 
+ * Verzeichnis "0001/01"
+ * enthält initialen Dump 'xxx_dump.sql'
 
-1) bestehende Datenbank in Struktur pressen
-
-  $ mkdir share
-  
-  $ dbic-migration -I lib --schema_class Wittmann::Schema \
-        --database PostgreSQL \
-        --dsn dbi:Pg:dbname=wittmann_dev \
-        -U postgres -P secret prepare
-
-
-2) bestehende DB leeren, dann
-
- $ dbic-migration -I lib --schema_class Wittmann::Schema \
-       --database PostgreSQL \
-       --dsn dbi:Pg:dbname=wittmann_dev \
-       -U postgres -P secret install
-
-
---- im Moment noch relativ unflexibel... Erst Bestückung problematisch.
