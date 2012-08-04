@@ -54,9 +54,14 @@ sub _execute {
     my $cwd = getcwd;
     chdir $self->chdir if $self->has_chdir;
 
+    my %extra_opts;
+    if ($self->app->verbose) {
+        $extra_opts{stdout} = sub { print STDOUT $_[0] };
+        $extra_opts{stderr} = sub { print STDERR $_[0] };
+    }
     my $script_output = $self->run_command_as_user(
         $self->path->stringify,
-        { env => $self->env },
+        { env => $self->env, %extra_opts },
         @{$self->args},
     );
 

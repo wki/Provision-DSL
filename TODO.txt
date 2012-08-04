@@ -19,6 +19,11 @@ Perlbrew:
 new Entities:
   * cron (path, arguments, environment)
 
+Provision:
+  * -f switch: alle Entities sind outdated
+  * --debug pass thru oder --trace ?
+  * bei -v: stdout bei Execute mit anzeigen?
+
 Idea:
   * How to handle dir lists?
       - { path, permission, user, group }
