@@ -5,7 +5,11 @@ Generell:
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
              Methoden: latest_version, installed_version, install(version)
-  
+
+Config:
+  * cpan_mirror option starts a CPAN::Mirror::Server::HTTP server
+  * remove environment
+
 Execute:
   * cwd attribute
 

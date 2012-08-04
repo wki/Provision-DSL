@@ -59,7 +59,7 @@ sub ExecutableFile {
 }
 
 sub PerlVersion {
-    return sub { 
+    return sub {
         $_[0] =~ m{\A perl- \d+\.\d+\.\d+(?:-RC\d+)? \z}xms
         or croak "'$_' does not look like a perl version"
     }
@@ -89,7 +89,13 @@ sub to_Dir {
 }
 
 sub to_ExistingDir {
-    return sub { dir($_[0])->absolute->resolve }
+    return sub {
+        (
+            blessed $_[0] && $_[0]->can('path')
+                ? $_[0]->path
+                : dir($_[0])
+        )->absolute->resolve
+    }
 }
 
 sub to_File {
@@ -114,7 +120,7 @@ sub to_Group {
         blessed $_[0] && $_[0]->isa('Provision::DSL::Entity::Group')
             ? $_[0]
             : $Provision::DSL::app->get_or_create_entity(
-                'Group', 
+                'Group',
                 $_[0] =~ m{\D}
                     ? $_[0]
                     : scalar getgrgid($_[0])

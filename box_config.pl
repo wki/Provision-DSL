@@ -28,6 +28,12 @@
         # ... more rules
     ],
     
+    # install a cpan mirror for target machine
+    cpan_mirror => {
+        root => "$ENV{HOME}/minicpan",
+        port => 8080,
+    },
+    
     # environment variables to set on the local machine
     # environment => {
     #     (-d "$ENV{HOME}/minicpan"

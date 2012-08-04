@@ -57,6 +57,18 @@ sub _build_perl {
          ->file('bin/perl')
 }
 
+has cpanm => (
+    is => 'lazy',
+    coerce => to_File,
+);
+
+sub _build_cpanm { 
+    my $self = shift;
+    
+    $self->perlbrew_dir
+         ->file('bin/cpanm')
+}
+
 before state => sub {
     $_[0]->set_state(-f $_[0]->perlbrew ? 'current' : 'missing');
 };
@@ -68,8 +80,6 @@ sub _build_children {
         $self->create_entity(
             Perlbrew_Perl => {
                 name => join('_', $self->name, 'perl'),
-                user    => $self->user,
-                group   => $self->group,
                 parent  => $self,
                 install => $self->install_perl
             }

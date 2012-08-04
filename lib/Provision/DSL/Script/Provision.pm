@@ -9,6 +9,7 @@ use MIME::Base64;
 use Cwd;
 use IPC::Run ();
 use Config;
+use Try::Tiny;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
@@ -105,6 +106,7 @@ sub run {
     my $result = $self->remote_execute;
 
     $self->log('Finished Provisioning');
+    exit $? >> 8; ### FIXME: get remote execute status somehow.
 }
 
 sub prepare_environment {
@@ -136,14 +138,18 @@ sub ensure_perlbrew_installer_loaded {
     return if -f $installer_file;
 
     $self->log_debug('loading perlbrew installer');
-
-    $installer_file->dir->mkpath;
-    my $installer = $self->http_get(PERLBREW_INSTALLER_URL);
-    my $fh = $installer_file->openw;
-    print $fh $installer;
-    $fh->close;
     
-    chmod 0755, $installer_file;
+    try {
+        $installer_file->dir->mkpath;
+        my $installer = $self->http_get(PERLBREW_INSTALLER_URL);
+        my $fh = $installer_file->openw;
+        print $fh $installer;
+        $fh->close;
+        
+        chmod 0755, $installer_file;
+    } catch {
+        die 'Could not load Perlbrew installer. Are you online?';
+    };
 }
 
 sub pack_dependent_libs {
@@ -194,18 +200,25 @@ sub _pack_dir {
     my $root_dir = shift;
     my $source_subdir_name = shift;
     my $target_subdir_name = shift;
+    
+    my @exclude_globs = ref $_[0] eq 'ARRAY' ? @{$_[0]} : @_;
+    push @exclude_globs, '.provision_lib';
 
     my @exclude_regexes =
         map {
-            s{\A /}{\\A}xms;    # leading / => begin of string
-            s{\*\*}{.*}xmsg;    # ** => anything including /
-            s{\*}{[^/]*}xmsg;   # * => anything but /
-            s{\?}{.}xmsg;       # ? => one char
-            s{\.}{\\.}xmsg;     # . => escaped .
-
-            qr{$_}xms;
+            s{\A (?=[^/])}{(\\A|/)}xms; # start of a file name
+            s{\A /}{\\A}xms;            # leading / => begin of string
+            s{[*][*]}{.*}xmsg;          # ** => anything including /
+            s{[*]}{[^/]*}xmsg;          # * => anything but /
+            s{[?]}{[^/]}xmsg;           # ? => one char but not /
+            s{[.]}{\\.}xmsg;            # . => escaped .
+            s{/ \z}{}xms;               # trailing / => ignore
+    
+            qr{$_ (/|\z)}xms;
         }
-        ref $_[0] eq 'ARRAY' ? @{$_[0]} : @_;
+        @exclude_globs;
+
+    $self->log_debug('Exclude Regexes:', @exclude_regexes);
 
     my $cwd = getcwd;
     chdir $root_dir;
@@ -231,15 +244,14 @@ sub _pack_dir {
                 { type => DIR, mode => 0755 },
             );
         } else {
-            $self->log_debug('adding FILE:', $dest_file);
+            $self->log_debug('adding FILE:', $relative_file_name, $dest_file);
             $self->tar->add_data(
                 $dest_file,
                 scalar $child->slurp,
                 { type => FILE, mode => 0644 },
             );
         }
-
-       return $cont->();
+        return $cont->();
     });
 
     chdir $cwd;
@@ -276,12 +288,16 @@ sub pack_resources {
 sub pack_resource {
     my ($self, $resource) = @_;
 
-    my $resource_subdir = $resource->{destination} // '';
+    my $resource_subdir =
+        $resource->{destination}
+        // $resource->{source}
+        // '';
 
+    $self->log_debug('EXCLUDE:', $resource->{exclude});
     $self->_pack_dir(
         $self->root_dir,
         $resource->{source} => "resources/$resource_subdir",
-        $resource->{exclude}
+        $resource->{exclude} // [],
     );
 }
 
@@ -321,7 +337,7 @@ sub remote_execute {
         '-C',
         ($ssh_config->{options} // ()),
         "$user_prefix$ssh_config->{hostname}",
-        
+
         #
         # execute perl running script from stdin (-) with options
         #

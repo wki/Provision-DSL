@@ -45,19 +45,26 @@ has env => (
 
 sub _build_env { $_[0]->environment }
 
-after ['create', 'change'] => sub {
+# needed to make Execute work like a resource.
+sub content { $_[0]->_execute }
+
+sub _execute {
     my $self = shift;
 
     my $cwd = getcwd;
     chdir $self->chdir if $self->has_chdir;
-    
-    $self->run_command_as_user(
+
+    my $script_output = $self->run_command_as_user(
         $self->path->stringify,
         { env => $self->env },
         @{$self->args},
     );
 
     chdir $cwd if $self->has_chdir;
-};
+
+    return $script_output;
+}
+
+after ['create', 'change'] => sub { $_[0]->_execute };
 
 1;

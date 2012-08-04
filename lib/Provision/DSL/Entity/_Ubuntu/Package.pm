@@ -1,5 +1,6 @@
 package Provision::DSL::Entity::_Ubuntu::Package;
 use Moo;
+use Try::Tiny;
 
 extends 'Provision::DSL::Entity::Package';
 with 'Provision::DSL::Role::CommandExecution';
@@ -12,6 +13,7 @@ before ['create','change'] => sub {
 
     $self->run_command($APTITUDE,
                        { user => 'root' },
+                       '--assume-yes',
                        install => $self->name);
     $self->clear_installed_version;
 };
@@ -28,9 +30,14 @@ after remove => sub {
 sub _build_installed_version {
     my $self = shift;
 
-    my ($name, $version, $dummy) =
-        split qr/\s+/,
-              $self->run_command($DPKG_QUERY, '--show' => $self->name);
+    my ($name, $version, $dummy);
+    try {
+        ($name, $version, $dummy) =
+            split qr/\s+/,
+                  $self->run_command($DPKG_QUERY, '--show' => $self->name);
+    } catch {
+        $version = 0;
+    };
 
     return $version;
 }
@@ -46,7 +53,13 @@ sub _build_latest_version {
     my $last_prio = -1;
     my $latest_version;
     foreach my $line (split /\n/, $result) {
-        my ($status, $name, $version, $release, $prio) = split qr/\s+/, $line;
+        next if ($line !~ m{\A (.+?) \s+ 
+                               (\Q${\$self->name}\E .*?) \s+
+                               (\S+) \s+
+                               (\S+) \s+
+                               (\S+)}xms);
+        my ($status, $name, $version, $release, $prio) = ($1, $2, $3, $4, $5);
+        
         if ($prio > $last_prio) {
             $latest_version = $version;
             $last_prio = $prio;
