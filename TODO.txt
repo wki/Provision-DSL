@@ -17,13 +17,20 @@ Perlbrew:
   * beim Installieren: laufen lassen von local/bin/perlbrew self-install
 
 new Entities:
-  * cron (path, arguments, environment)
+  * Cron (path, arguments, environment)
+  * Perl_Modules (name-->local_lib_dir, perl, cpanm, mirror, installdeps, install)
 
 Provision:
   * -f switch: alle Entities sind outdated
   * --debug pass thru oder --trace ?
   * bei -v: stdout bei Execute mit anzeigen?
 
+Bedingungen:
+  * bisher: only_if, not_if. Kein Einfluß auf State, nur Laufzeit
+  * besser ???
+       current_if => ... / outdated_if => ...
+       present_if => ... / missing_if => ...
+       
 Idea:
   * How to handle dir lists?
       - { path, permission, user, group }

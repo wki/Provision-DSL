@@ -40,7 +40,6 @@ exit;
 Perlbrew sites => {
     install_cpanm => 1,
     wanted        => '5.14.2',
-    switch_perl   => '5.14.2',
 };
 
 File '/path/to/file.ext' => {
@@ -66,16 +65,36 @@ Dir '/path/to/website' => {
     tell => 'source_changed',
 };
 
-Execute install_cpan_modules => {
-    path => Perlbrew('sites')->cpanm,
-    cwd => '/path/to/website/MyApp',
-    arguments => [
-        '-L'            => 'local',
-        '--installdeps' => '.',
-    ],
+#### BAD, because not idempotent
+# Execute install_cpan_modules => {
+#     path => Perlbrew('sites')->cpanm,
+#     cwd => '/path/to/website/MyApp',
+#     arguments => [
+#         '-L'            => 'local',
+#         '--installdeps' => '.',
+#     ],
+#     
+#     # too dangerous because a deletion in local is not discovered.
+#     # listen => Dir('/path/to/website/MyApp'),
+# };
+
+### BETTER:
+Perl_Modules '/path/to/website/MyApp/local' => {
+    perl => Perlbrew->perl,
+    cpanm => Perlbrew->cpanm,
     
-    # too dangerous because a deletion in local is not discovered.
-    # listen => Dir('/path/to/website/MyApp'),
+    # optional: a CPAN mirror to use
+    mirror => '',
+    
+    # --installdeps from a distribution dir
+    installdeps => '/path/to/website/MyApp',
+    
+    # manually picked modules or tarballs
+    install => [
+        'Package::Name',
+        'Package-Name-0.07.tar.gz',
+        Resource('modules/my_package'),
+    ],
 };
 
 File '/path/to/website/MyApp/static/_css/site.css' => {
