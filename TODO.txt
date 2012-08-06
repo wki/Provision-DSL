@@ -31,9 +31,19 @@ Provision:
 
 Bedingungen:
   * bisher: only_if, not_if. Kein Einfluß auf State, nur Laufzeit
-  * besser ???
-       current_if => ... / outdated_if => ...
-       present_if => ... / missing_if => ...
+  * besser:
+      Entity:
+        when  -- optional
+      
+      Condition:
+        Always
+        Never
+        OnDemand
+        FilePresent(file)
+        DirPresent(dir)
+        PathPermission(path, perm)
+        PathOwner(path, owner)
+        PathNewer(path, <dir/*.css>)
        
 Idea:
   * How to handle dir lists?
