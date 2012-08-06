@@ -6,6 +6,10 @@ Generell:
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
              Methoden: latest_version, installed_version, install(version)
 
+_Ubuntu::Package
+  * aptitude meldet keine Fehler beim Installieren
+  * --> Test nach der Installation erforderlich.
+
 Config:
   * cpan_mirror option starts a CPAN::Mirror::Server::HTTP server
   * remove environment
