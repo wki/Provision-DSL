@@ -1,5 +1,6 @@
 package Provision::DSL::Entity::Dir;
 use Moo;
+use Try::Tiny;
 use Provision::DSL::Types;
 # use Provision::DSL::Util 'remove_recursive';
 
@@ -43,19 +44,33 @@ before calculate_state => sub {
 before create => sub {
     my $self = shift;
     
-    $self->run_command_as_user(
-        '/bin/mkdir',
-        '-p', $self->path,
-    );
+    try {
+        $self->run_command_as_user(
+            '/bin/mkdir',
+            '-p', $self->path,
+        );
+    } catch {
+        $self->run_command_as_superuser(
+            '/bin/mkdir',
+            '-p', $self->path,
+        );
+    };
 };
 
 after remove => sub {
     my $self = shift;
 
-    $self->run_command_as_user(
-        '/bin/rm',
-        '-rf', $self->path,
-    );
+    try {
+        $self->run_command_as_user(
+            '/bin/rm',
+            '-rf', $self->path,
+        );
+    } catch {
+        $self->run_command_as_superuser(
+            '/bin/rm',
+            '-rf', $self->path,
+        );
+    };
 };
 
 sub _build_children {

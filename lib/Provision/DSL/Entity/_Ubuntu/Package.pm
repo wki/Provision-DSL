@@ -35,6 +35,7 @@ sub _build_installed_version {
         ($name, $version, $dummy) =
             split qr/\s+/,
                   $self->run_command($DPKG_QUERY, '--show' => $self->name);
+        # warn "INSTALLED: $name VERSION: $version";
     } catch {
         $version = 0;
     };
@@ -51,7 +52,7 @@ sub _build_latest_version {
                            'versions'   => $self->name);
     
     my $last_prio = -1;
-    my $latest_version;
+    my $latest_version = '';
     foreach my $line (split /\n/, $result) {
         next if ($line !~ m{\A (.+?) \s+ 
                                (\Q${\$self->name}\E .*?) \s+
@@ -60,12 +61,13 @@ sub _build_latest_version {
                                (\S+)}xms);
         my ($status, $name, $version, $release, $prio) = ($1, $2, $3, $4, $5);
         
-        if ($prio > $last_prio) {
+        if ($prio > $last_prio || $version gt $latest_version) {
             $latest_version = $version;
             $last_prio = $prio;
         }
     }
     
+    # warn "LATEST: $latest_version";
     die "package '${\$self->{name}}' not found" if !$latest_version;
     
     return $latest_version;

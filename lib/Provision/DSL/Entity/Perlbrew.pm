@@ -14,7 +14,6 @@ has install_perl => (
     is  => 'lazy',
     isa => PerlVersion,
     coerce => to_PerlVersion,
-    required => 1,
 );
 
 sub _build_install_perl { $_[0]->wanted }

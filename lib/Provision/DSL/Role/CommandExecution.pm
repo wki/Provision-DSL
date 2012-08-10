@@ -27,6 +27,21 @@ sub command_succeeds {
     return $result;
 }
 
+sub run_command_as_superuser {
+    my $self       = shift;
+    my $executable = shift;
+    my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
+
+    $self->pipe_into_command(
+        undef,
+        '/usr/bin/sudo',
+        \%options,
+        '-n',
+        '-u' => 'root',
+        $executable,
+        @_);
+}
+
 sub run_command_as_user {
     my $self       = shift;
     my $executable = shift;

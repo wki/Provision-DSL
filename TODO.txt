@@ -21,7 +21,9 @@ Perlbrew:
   * beim Installieren: laufen lassen von local/bin/perlbrew self-install
 
 Service:
-  * reload() feststellen. Idee: Prozess-Alter vs. config-file(s)
+  * reload() feststellen.
+    Idee: Prozess-Alter vs. config-file(s)
+    problematisch, wenn sich das dahinter sitzende Script geändert habt
 
 new Entities:
   * Cron (path, arguments, environment)
