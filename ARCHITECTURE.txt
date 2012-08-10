@@ -13,8 +13,7 @@ Bestandteile:
  * DSL                          pro DSL Befehl eine sub
  * App                          zentrale Ablaufsteuerung
     ----[ logging ]
-    ----[ entity caching ]
-    ----[ talked words ]
+    ----[ entity creation + caching ]
     ----[ command execution ]
  * Entity                       Basisklasse von Entities
     * Compound
@@ -76,12 +75,10 @@ Entity Funktionsweise:
      + app                      ->P::DSL::App
      + parent                   ->P::DSL::Entity, wenn compound
      + wanted                   bool oder Version [1]
-     + talk                     auszusprechende Worte falls Änderung
      + ...                      weitere Angaben bei Kind-Klassen
 
      ----[ Bestimmen des Status ]
-     + only_if / not_if         <-> is_ok, vorrangig
-     + listen                   zu lauschende Worte
+     - add_to_state             Beisteuern von Zuständen durch Kind/Rolle/...
      - state                    missing / outdated / current
      - is_ok()                  wenn Endzustand "wanted" erreicht
                                 normalerweise abgeleitet aus state/wanted
@@ -94,7 +91,6 @@ Entity Funktionsweise:
      - create()                 von Kindern zu erweitern, before!
      - change()                 von Kindern zu erweitern, before!
      - remove()                 von Kindern zu erweitern, after!
-     - reloader()               -> coderef zum Reload
 
 
 

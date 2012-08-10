@@ -5,8 +5,8 @@ use Provision::DSL::Util 'remove_recursive';
 extends 'Provision::DSL::Entity';
 with    'Provision::DSL::Role::CommandExecution';
 
-before state => sub {
-    $_[0]->set_state(-f $_[0]->parent->perl ? 'current' : 'missing');
+before calculate_state => sub {
+    $_[0]->add_to_state(-f $_[0]->parent->perl ? 'current' : 'missing');
 };
 
 before ['create', 'change'] => sub {

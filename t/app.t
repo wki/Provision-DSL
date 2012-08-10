@@ -36,13 +36,5 @@ use ok 'Provision::DSL::App';
     is $e1, $e4, 'loading a properly named entity works';
 }
 
-# channels
-{
-    my $app = Provision::DSL::App->new;
-    
-    ok !$app->has_changed('something'), '"something" not changed';
-    $app->set_changed('something');
-    ok $app->has_changed('something'), '"something" has changed';
-}
 
 done_testing;

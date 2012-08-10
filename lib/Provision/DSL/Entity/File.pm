@@ -47,11 +47,11 @@ sub BUILD {
         if $self->has_content && $self->has_patches;
 }
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
 
     if (!-f $self->path) {
-        $self->set_state('missing');
+        $self->add_to_state('missing');
     } else {
         my $state = 'current';
         my $current_content = scalar $self->path->slurp;
@@ -62,7 +62,7 @@ before state => sub {
             || ($self->has_patches
                     && ($current_content ne $self->apply_modification($current_content)));
 
-        $self->set_state($state);
+        $self->add_to_state($state);
     }
 };
 

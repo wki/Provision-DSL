@@ -36,8 +36,8 @@ has content => (
     predicate => 'has_content',
 );
 
-before state => sub {
-    $_[0]->set_state(-d $_[0]->path ? 'current' : 'missing')
+before calculate_state => sub {
+    $_[0]->add_to_state(-d $_[0]->path ? 'current' : 'missing')
 };
 
 before create => sub {

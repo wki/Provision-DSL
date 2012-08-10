@@ -7,12 +7,12 @@ has permission => (
     coerce => to_Permission,
 );
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
     
     return if !-d $self->path;
     
-    $self->add_state('outdated')
+    $self->add_to_state('outdated')
         if ($self->path->stat->mode & 511) != ($self->permission & 511)
 };
 

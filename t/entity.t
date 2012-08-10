@@ -30,10 +30,10 @@ use ok 'Provision::DSL::Entity';
     # used to fake a state from outside
     has r2_state => ( is => 'ro' );
 
-    before state => sub {
+    before calculate_state => sub {
         my $self = shift;
 
-        $self->add_state($self->r2_state) if $self->r2_state;
+        $self->add_to_state($self->r2_state) if $self->r2_state;
     };
 }
 
@@ -46,10 +46,10 @@ use ok 'Provision::DSL::Entity';
     # used to fake a state from outside
     has e2_state => ( is => 'ro' );
 
-    before state => sub {
+    before calculate_state => sub {
         my $self = shift;
 
-        $self->set_state($self->e2_state) if $self->e2_state;
+        $self->add_to_state($self->e2_state) if $self->e2_state;
     };
 }
 
@@ -98,62 +98,62 @@ my $app = Provision::DSL::App->new();
             expect_after  => {_diagnostics => ['remove']},
         },
 
-        # only_if, not_if test cases
-        {
-            name => 'only_if false',
-            attributes => {default_state => 'missing', only_if => sub {0} },
-            expect_before => {is_ok => 1},
-            expect_after  => {_diagnostics => []},
-        },
-        {
-            name => 'only_if true',
-            attributes => {default_state => 'missing', only_if => sub {1} },
-            expect_before => {is_ok => 0},
-            expect_after  => {_diagnostics => ['create']},
-        },
-        {
-            name => 'not_if false',
-            attributes => {default_state => 'missing', not_if => sub {0} },
-            expect_before => {is_ok => 0},
-            expect_after  => {_diagnostics => ['create']},
-        },
-        {
-            name => 'not_if true',
-            attributes => {default_state => 'missing', not_if => sub {1} },
-            expect_before => {is_ok => 1},
-            expect_after  => {_diagnostics => []},
-        },
+        # # only_if, not_if test cases
+        # {
+        #     name => 'only_if false',
+        #     attributes => {default_state => 'missing', only_if => sub {0} },
+        #     expect_before => {is_ok => 1},
+        #     expect_after  => {_diagnostics => []},
+        # },
+        # {
+        #     name => 'only_if true',
+        #     attributes => {default_state => 'missing', only_if => sub {1} },
+        #     expect_before => {is_ok => 0},
+        #     expect_after  => {_diagnostics => ['create']},
+        # },
+        # {
+        #     name => 'not_if false',
+        #     attributes => {default_state => 'missing', not_if => sub {0} },
+        #     expect_before => {is_ok => 0},
+        #     expect_after  => {_diagnostics => ['create']},
+        # },
+        # {
+        #     name => 'not_if true',
+        #     attributes => {default_state => 'missing', not_if => sub {1} },
+        #     expect_before => {is_ok => 1},
+        #     expect_after  => {_diagnostics => []},
+        # },
         
-        # "listen" test cases
-        {
-            name => 'listen to silent channel',
-            attributes => {default_state => 'current', listen => 'foobar' },
-            expect_before => {is_ok => 1},
-            expect_after  => {_diagnostics => []},
-        },
-        {
-            name => 'listen to loud channel',
-            run_before => sub { $app->set_changed('foobar') },
-            attributes => {default_state => 'current', listen => 'foobar' },
-            expect_before => {is_ok => 1},
-            expect_after  => {_diagnostics => ['change']},
-        },
-        {
-            name => 'do not talk',
-            run_before => sub { ok !$app->has_changed('changed'), 'channel not changed before noop' },
-            run_after => sub { ok !$app->has_changed('changed'), 'channel not changed after noop' },
-            attributes => {default_state => 'current', talk => 'changed' },
-            expect_before => {is_ok => 1},
-            expect_after  => {_diagnostics => []},
-        },
-        {
-            name => 'talk',
-            run_before => sub { ok !$app->has_changed('changed'), 'channel not changed before create' },
-            run_after => sub { ok $app->has_changed('changed'), 'channel has changed after create' },
-            attributes => {default_state => 'missing', talk => 'changed' },
-            expect_before => {is_ok => 0},
-            expect_after  => {_diagnostics => ['create']},
-        },
+        # # "listen" test cases
+        # {
+        #     name => 'listen to silent channel',
+        #     attributes => {default_state => 'current', listen => 'foobar' },
+        #     expect_before => {is_ok => 1},
+        #     expect_after  => {_diagnostics => []},
+        # },
+        # {
+        #     name => 'listen to loud channel',
+        #     run_before => sub { $app->set_changed('foobar') },
+        #     attributes => {default_state => 'current', listen => 'foobar' },
+        #     expect_before => {is_ok => 1},
+        #     expect_after  => {_diagnostics => ['change']},
+        # },
+        # {
+        #     name => 'do not talk',
+        #     run_before => sub { ok !$app->has_changed('changed'), 'channel not changed before noop' },
+        #     run_after => sub { ok !$app->has_changed('changed'), 'channel not changed after noop' },
+        #     attributes => {default_state => 'current', talk => 'changed' },
+        #     expect_before => {is_ok => 1},
+        #     expect_after  => {_diagnostics => []},
+        # },
+        # {
+        #     name => 'talk',
+        #     run_before => sub { ok !$app->has_changed('changed'), 'channel not changed before create' },
+        #     run_after => sub { ok $app->has_changed('changed'), 'channel has changed after create' },
+        #     attributes => {default_state => 'missing', talk => 'changed' },
+        #     expect_before => {is_ok => 0},
+        #     expect_after  => {_diagnostics => ['create']},
+        # },
     );
 
     foreach my $testcase (@testcases) {
@@ -169,8 +169,6 @@ my $app = Provision::DSL::App->new();
         test_expectation($e, $testcase, 'after');
         $testcase->{run_after}->() if $testcase->{run_after};
     }
-    
-    done_testing; exit;
 }
 
 # check basic state handling
@@ -179,39 +177,39 @@ my $app = Provision::DSL::App->new();
     my $e1 = E1->new(
         app  => $app,
         name => 'foo',
-        default_state => 'foo',
+        default_state => 'outdated',
     );
-    is $e1->state, 'foo', "initial state is 'default_state'";
+    is $e1->state, 'outdated', "initial state is 'default_state'";
 
-    # using set_state, not using add_state --> set_state is kept
+    # using a single state
     foreach my $state (qw(missing outdated current)) {
         my $e1 = E1->new(
             app  => $app,
-            name => 'foo',
-            default_state => 'foo',
+            name => 'outdated',
+            default_state => 'outdated',
         );
-        $e1->set_state($state);
+        $e1->add_to_state($state);
 
         is $e1->state, $state, "set state is '$state'";
     }
 
-    # not using set_state, only add_state --> outdated unless current
-    foreach my $state (qw(missing outdated current)) {
-        my $e1 = E1->new(
-            app  => $app,
-            name => 'foo',
-            default_state => 'current',
-        );
-        $e1->add_state($state);
-
-        if ($state eq 'current') {
-            is $e1->state, 'current', 'only current keeps state';
-        } else {
-            is $e1->state, 'outdated', 'state moved to outdated';
-        }
-    }
+    # # not using set_state, only add_state --> outdated unless current
+    # foreach my $state (qw(missing outdated current)) {
+    #     my $e1 = E1->new(
+    #         app  => $app,
+    #         name => 'foo',
+    #         default_state => 'current',
+    #     );
+    #     $e1->add_to_state($state);
+    # 
+    #     if ($state eq 'current') {
+    #         is $e1->state, 'current', 'only current keeps state';
+    #     } else {
+    #         is $e1->state, 'outdated', 'state moved to outdated';
+    #     }
+    # }
     
-    # using set_state and add_state --> outdate unless equal
+    # using two states --> outdate unless equal
     foreach my $set_state (qw(missing outdated current)) {
         foreach my $state (qw(missing outdated current)) {
             my $e1 = E1->new(
@@ -219,8 +217,8 @@ my $app = Provision::DSL::App->new();
                 name => 'foo',
                 default_state => 'current',
             );
-            $e1->set_state($set_state);
-            $e1->add_state($state);
+            $e1->add_to_state($set_state);
+            $e1->add_to_state($state);
             
             if ($set_state eq 'missing') {
                 is $e1->state, 'missing', "missing overrides '$state'";

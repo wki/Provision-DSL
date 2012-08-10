@@ -12,16 +12,16 @@ has latest_version => (
     is        => 'lazy',
 );
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
     
     my $installed = $self->installed_version;
     if (!$installed) {
-        $self->set_state('missing');
+        $self->add_to_state('missing');
     } elsif ($installed ne $self->latest_version) {
-        $self->set_state('outdated');
+        $self->add_to_state('outdated');
     } else {
-        $self->set_state('current');
+        $self->add_to_state('current');
     }
 };
 

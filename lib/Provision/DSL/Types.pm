@@ -6,6 +6,7 @@ use base 'Exporter';
 
 our @EXPORT = qw(
     Str Int Bool
+    State
     CodeRef
     ExistingDir ExistingFile ExecutableFile
     PerlVersion
@@ -36,6 +37,13 @@ sub Bool {
     return sub {
         !defined $_[0] || !ref $_[0]
             or croak "not a Bool: $_[0]";
+    };
+}
+
+sub State {
+    return sub {
+        defined $_[0] && !ref $_[0] && $_[0] =~ m{\A (?:missing|outdated|current) \z}xms
+            or croak "not a valid State: $_[0]";
     };
 }
 

@@ -23,11 +23,6 @@ has _entity_cache => (
     default => sub { {} },
 );
 
-has _channel_changed => (
-    is => 'rw',
-    default => sub { {} },
-);
-
 has _trait_package => (
     is => 'lazy',
 );
@@ -132,20 +127,6 @@ sub get_cached_entity {
     } else {
         croak "entity '$entity' is ambiguous, name required";
     }
-}
-
-####################################### Channel Handling
-
-sub set_changed {
-    my ($self, $channel) = @_;
-
-    $self->_channel_changed->{$channel} = 1;
-}
-
-sub has_changed {
-    my ($self, $channel) = @_;
-
-    return exists $self->_channel_changed->{$channel};
 }
 
 1;

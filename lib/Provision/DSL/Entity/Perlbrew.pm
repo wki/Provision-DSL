@@ -10,12 +10,6 @@ with    'Provision::DSL::Role::CommandExecution',
         'Provision::DSL::Role::Group',
         'Provision::DSL::Role::HTTP';
 
-has install_cpanm => (
-    is      => 'ro',
-    isa     => Bool,
-    default => sub { 0 },
-);
-
 has install_perl => (
     is  => 'lazy',
     isa => PerlVersion,
@@ -48,30 +42,17 @@ has perl => (
     coerce => to_File,
 );
 
-sub _build_perl { $_[0]->bin('perl') }
-
-has cpanm => (
-    is => 'lazy',
-    coerce => to_File,
-);
-
-sub _build_cpanm { 
+sub _build_perl { 
     my $self = shift;
     
     $self->perlbrew_dir
-         ->file('bin/cpanm')
+         ->subdir('perls')
+         ->subdir($self->install_perl)
+         ->file('bin/perl')
 }
 
-sub bin {
-    my ($self, $binary) = @_;
-    
-    $self->perlbrew_dir
-         ->subdir('perls', $self->install_perl, 'bin')
-         ->file($binary);
-}
-
-before state => sub {
-    $_[0]->set_state(-f $_[0]->perlbrew ? 'current' : 'missing');
+before calculate_state => sub {
+    $_[0]->add_to_state(-f $_[0]->perlbrew ? 'current' : 'missing');
 };
 
 sub _build_children {
@@ -81,6 +62,8 @@ sub _build_children {
         $self->create_entity(
             Perlbrew_Perl => {
                 name => join('_', $self->name, 'perl'),
+                user    => $self->user,
+                group   => $self->group,
                 parent  => $self,
                 install => $self->install_perl
             }

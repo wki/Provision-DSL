@@ -5,12 +5,12 @@ use Provision::DSL::Types;
 with 'Provision::DSL::Role::User',
      'Provision::DSL::Role::Group';
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
 
     return if !-d $self->path;
 
-    $self->add_state('outdated')
+    $self->add_to_state('outdated')
         if    ($self->has_user
                 && $self->path->stat->uid != $self->user->uid)
            || ($self->has_group

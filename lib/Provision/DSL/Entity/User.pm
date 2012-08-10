@@ -44,10 +44,10 @@ sub _build_uid {
     die 'could not create a unique UID';
 }
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
     
-    $self->set_state(
+    $self->add_to_state(
         defined getpwnam($self->name)
             ? 'current'
             : 'missing'

@@ -14,7 +14,7 @@ use ok 'Provision::DSL::Entity::Compound';
     extends 'Provision::DSL::Entity';
     
     has fake_state => (is => 'rw', default => sub { 'current' });
-    before state => sub { $_[0]->set_state($_[0]->fake_state) };
+    before calculate_state => sub { $_[0]->add_to_state($_[0]->fake_state) };
     
     sub create { push @{$_[0]->parent->_diagnostics}, "${\$_[0]->name}:create" }
     sub change { push @{$_[0]->parent->_diagnostics}, "${\$_[0]->name}:change" }
@@ -27,7 +27,7 @@ use ok 'Provision::DSL::Entity::Compound';
     extends 'Provision::DSL::Entity::Compound';
     
     has fake_state => (is => 'rw', default => sub { 'current' });
-    before state => sub { $_[0]->set_state($_[0]->fake_state) };
+    before calculate_state => sub { $_[0]->add_to_state($_[0]->fake_state) };
     
     has _diagnostics => (
         is => 'rw',

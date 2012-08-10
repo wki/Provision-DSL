@@ -22,7 +22,7 @@ has exclude => (
     default => sub { [] },
 );
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
     
     my $state = 'current';
@@ -39,7 +39,7 @@ before state => sub {
         : 'current';
     }
     
-    $self->set_state($state);
+    $self->add_to_state($state);
 };
 
 sub _rsync_command {

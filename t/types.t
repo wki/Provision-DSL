@@ -10,6 +10,7 @@ use FindBin;
     use Provision::DSL::Types;
     
     has str   => (is => 'rw', isa => Str);
+    has state => (is => 'rw', isa => State);
     has int   => (is => 'rw', isa => Int);
     has bool  => (is => 'rw', isa => Bool);
     has code  => (is => 'rw', isa => CodeRef);
@@ -21,13 +22,24 @@ use FindBin;
 
 my $c = C->new();
 
-# Str
+# Str, State
 {
     dies_ok  { $c->str(undef) }     'undef is not a string'; 
     dies_ok  { $c->str({}) }        'hashref is not a string';
     lives_ok { $c->str('') }        'empty string is a string';
     lives_ok { $c->str('foo') }     '"foo" is a string';
     lives_ok { $c->str(42) }        '42 is a string';
+
+    dies_ok  { $c->state(undef) }     'undef is not a state'; 
+    dies_ok  { $c->state({}) }        'hashref is not a state';
+    dies_ok  { $c->state('') }        'empty string is not a state';
+    dies_ok  { $c->state('foo') }     '"foo" is not a state';
+    foreach my $state (qw(missing outdated current)) {
+        dies_ok { $c->state(uc $state) } "\U$state\E is not a state";
+        dies_ok { $c->state(ucfirst $state) } "\u$state is not a state";
+        dies_ok { $c->state(" $state ") } "' $state ' is not a state";
+        lives_ok { $c->state($state) } "$state is a state";
+    }
 }
 
 # Int, Bool

@@ -17,13 +17,13 @@ extends 'Provision::DSL::Entity::File';
 sub _allow_remove { 0 }
 sub _strict_args  { 0 }
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
     
     if ($self->_service_running) {
-        $self->set_state('missing');
+        $self->add_to_state('missing');
     } else {
-        $self->set_state('current');
+        $self->add_to_state('current');
     }
 };
 

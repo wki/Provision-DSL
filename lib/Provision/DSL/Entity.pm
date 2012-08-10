@@ -8,31 +8,23 @@ has app => (
     is       => 'ro',
     required => 1,
     handles  => [
-        qw(verbose dryrun
-          log log_dryrun log_debug
-          create_entity
-          run_command pipe_into_command command_succeeds
-          set_changed has_changed)
+        qw(
+            verbose dryrun
+            log log_dryrun log_debug
+            create_entity
+            run_command pipe_into_command command_succeeds
+        )
     ],
 );
 
 has parent => ( is => 'ro', predicate => 'has_parent' );
 
-has wanted  => ( is => 'ro', isa => Str,  default => sub { 1 } );
-has changed => ( is => 'rw', isa => Bool, default => sub { 0 } );
-
-has listen => ( is => 'ro', coerce => to_Channels, default => sub { [] } );
-has talk   => ( is => 'ro', coerce => to_Channels, default => sub { [] } );
-
-# these conditions have precedence over is_ok
-has only_if   => ( is => 'ro', isa => CodeRef, predicate => 'has_only_if' );
-has not_if    => ( is => 'ro', isa => CodeRef, predicate => 'has_not_if' );
+has wanted  => ( is => 'ro', isa => Str,    default => sub { 1 } );
+has changed => ( is => 'rw', isa => Bool,   default => sub { 0 } );
+has _state  => ( is => 'rw', isa => State,  predicate => 1, clearer => 1 );
 
 has default_state => ( is => 'lazy' );
 sub _build_default_state { 'current' }
-
-has _main_state       => ( is => 'rw', predicate => 1, clearer => 1 );
-has _additional_state => ( is => 'rw', predicate => 1, clearer => 1 );
 
 sub execute {
     my $self   = shift;
@@ -41,15 +33,12 @@ sub execute {
 
     my @log = ($self, $state);
 
-    if (my @changed = grep { $self->has_changed($_) } @{$self->listen}) {
-        push @log, 'heard: ' . join(', ', @changed);
-    } elsif ($self->is_ok($wanted, $state)) {
+    if ($self->is_ok($wanted, $state)) {
         $self->log(@log, '- OK');
         return;
     }
 
     $self->changed(1);
-    $self->set_changed($_) for @{$self->talk};
 
     my $action = $wanted
         ? ($state eq 'missing' ? 'create' : 'change')
@@ -60,39 +49,35 @@ sub execute {
 
     $self->$action();
     
-    $self->_clear_main_state;
-    $self->_clear_additional_state;
+    $self->_clear_state;
 }
 
-sub set_state {
-    my ($self, $state) = @_;
-
-    $self->_main_state($state);
-}
-
-sub add_state {
-    my ($self, $state) = @_;
-
-    if (!$self->_has_additional_state) {
-        $self->_additional_state($state);
-    } else {
-        $self->_additional_state('outdated')
-            if $self->_additional_state ne $state;
+sub add_to_state {
+    my $self  = shift;
+    my $state = shift or return;
+    
+    if (!$self->_has_state) {
+        $self->_state($state);
+    } elsif ($self->_state ne 'missing' && $self->_state ne $state) {
+        $self->_state('outdated');
     }
+}
+
+sub calculate_state {
+    my $self = shift;
+    
+    # child classes and roles already ran their before methods if we are here
+    ### TODO: call state_from->... hooks also
+    
+    $self->_state($self->default_state) if !$self->_has_state;
 }
 
 sub state {
     my $self = shift;
+    
+    $self->calculate_state if !$self->_has_state;
 
-    my $main_state = $self->_has_main_state
-        ? $self->_main_state
-        : $self->default_state;
-
-    return $main_state eq 'missing'
-        || !$self->_has_additional_state
-        || $main_state eq $self->_additional_state
-            ? $main_state
-            : 'outdated';
+    return $self->_state;
 }
 
 sub is_ok {
@@ -100,22 +85,8 @@ sub is_ok {
     my $wanted = shift // $self->wanted;
     my $state  = shift // $self->state;
 
-    my $ok = ($wanted && $state eq 'current')
-        ||  (!$wanted && $state eq 'missing');
-
-    my $modifier =
-        $self->has_only_if ? !$self->only_if->()
-      : $self->has_not_if  ? $self->not_if->()
-      :                      0;
-
-    return $ok || $modifier;
-}
-
-# returns a coderef which when called forces change
-sub reloader {
-    my $self = shift;
-
-    return sub { $self->execute };
+    return ($state eq 'current' &&  $wanted)
+        || ($state eq 'missing' && !$wanted);
 }
 
 # 'before' and 'after' modifiers should get used for overloading

@@ -22,10 +22,10 @@ sub all_children { @{$_[0]->children} }
 
 sub has_no_children { !scalar @{$_[0]->children} }
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
     
-    $self->add_state($_->is_ok ? 'current' : 'outdated')
+    $self->add_to_state($_->is_ok ? 'current' : 'outdated')
         for $self->all_children;
 };
 

@@ -31,10 +31,10 @@ sub _build_gid {
     die 'could not create a unique GID';
 }
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
     
-    $self->set_state(
+    $self->add_to_state(
         defined getgrnam($self->name)
             ? 'current'
             : 'missing'

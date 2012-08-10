@@ -15,24 +15,24 @@ Every Entity must be able to report its state. The state is represented by one
 of three words: C<missing>, C<outdated> or C<current>. An entity derived from
 L<Entity|Provision::DSL::Entity> or
 L<Entity::Compound|Provision::DSL::Entity::Compound> must report its state
-using C<<< $self->set_state('outdated') >>>. 
+using C<<< $self->add_to_state('outdated') >>>. 
 A typical state routine looks like this:
 
-    before state => sub {
+    before calculate_state => sub {
         my $self = shift;
 
         # conditions, conditions, conditions
-        $self->set_state('missing');
+        $self->add_to_state('missing');
     };
 
 If a Role or Trait does a state-check it must report its state using
-C<<< $self->set_state('missing') >>>.
+C<<< $self->add_to_state('missing') >>>.
 
-    before state => sub {
+    before calculate_state => sub {
         my $self = shift;
     
         # conditions, conditions, conditions
-        $self->add_state('missing');
+        $self->add_to_state('missing');
     };
 
 The reason for this is the weight of a state depending on the origin. The
