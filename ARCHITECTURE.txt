@@ -7,7 +7,7 @@ nicht zum Weitergeben gedacht, daher in deutsch.
 
 
 Bestandteile:
- (+: attribut, -: methode, *: Klasse, !: Rolle)
+ (+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
 
  * script                       enthält DSL Befehle
  * DSL                          pro DSL Befehl eine sub
@@ -25,13 +25,12 @@ Bestandteile:
       * Dir                     Kinder: Dir, Rsync
           ! PathPermission
           ! PathOwner
-          ! CheckDirExistence   --> evtl. in Klasse nehmen
           + path: Dir
           + mkdir: DirList
           + rmdir: DirList
           + content: ExistingDir
-      * Perlbrew                Kinder: install, cpanm, perl, switch
-          + install_cpanm: Bool
+      * Perlbrew                Kinder: perl
+          !! InstallCpanm::install_cpanm: Bool
           + switch_to_perl: Str
       * _XXX::User              Kinder: Dir (=home), Group
           + uid: Int
@@ -56,6 +55,7 @@ Bestandteile:
  * Source                       Basisklasse von Datenquellen
       + name: Str
       + content: Str
+    * Bin                       Binary unter /bin im .tar Archiv
     * Resource
         + root_dir: ExistingDir
         + path: File | Dir
@@ -96,7 +96,7 @@ Entity Funktionsweise:
 
 Entity Erweiterung:
   - über Rolle(n), Traits oder Kind-Klassen
-     * Entscheidung: around state
+     * Entscheidung: before calculate_state
      * Steuerung:    (before|after) (create|change|remove)
   - Aufruf-Reihenfolge:
      * Kind-Klassen, dann Kind-Rollen reverse (before, around)

@@ -22,14 +22,13 @@ Typische Einsatzgebiete:
             group => 'wheel',
             permission => '0640',
             content => Resource('config/somedaemon.conf'),
-            tell => 'somedeamon config changed',
         };
 
     Services/Daemons:
         Service 'somedaemon' => {
-            listen => 'somedeamon config changed',
             content => Resource('config/somedaemon'),
-            runlevel => 2,
+            # runlevel => 2,
+            ### FIXME: how do we decide if we need a restart?
         };
 
     Perlbrew einrichten:
@@ -54,7 +53,6 @@ Typische Einsatzgebiete:
                 MyApp/root/static/_js
             )],
             content => Resource('website'),
-            tell => 'website changed',
         };
 
     Perl Module checken:
@@ -65,7 +63,6 @@ Typische Einsatzgebiete:
                 '--installdeps' => "$SITEDIR/MyApp",
                 '--mirror' => 'http://cpan.nureg.de', '--mirror-only',
             ],
-            listen => 'website changed',
         };
 
     Datenbank vorbereiten (mit DBIx::Class::Migration)
@@ -79,12 +76,12 @@ Typische Einsatzgebiete:
         };
 
     Daemon für Plack website:
-        -- wie oben, listen auf 'website changed'
+        -- wie oben
 
     Config für nginx:
-        -- wie File, tell 'nginx config changed'
+        -- wie File
 
     Daemon für nginx:
-        -- wie oben, listen auf 'nginx config changed'
+        -- wie oben
 
     evtl. Erzeugung statischer Dateien durch ersten Request.
