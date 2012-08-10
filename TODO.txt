@@ -20,6 +20,9 @@ Execute:
 Perlbrew:
   * beim Installieren: laufen lassen von local/bin/perlbrew self-install
 
+Service:
+  * reload() feststellen. Idee: Prozess-Alter vs. config-file(s)
+
 new Entities:
   * Cron (path, arguments, environment)
   * Perl_Modules (name-->local_lib_dir, perl, cpanm, mirror, installdeps, install)
@@ -33,17 +36,25 @@ Bedingungen:
   * bisher: only_if, not_if. Kein Einfluß auf State, nur Laufzeit
   * besser:
       Entity:
-        when  -- optional
+        state_from -- optional
+        current_if
+        outdated_if
+        missing_if
       
       Condition:
-        Always
-        Never
-        OnDemand
+        Always()
+        Never()
+        OnDemand()
+        ScriptSuccess(script)
         FilePresent(file)
         DirPresent(dir)
         PathPermission(path, perm)
         PathOwner(path, owner)
         PathNewer(path, <dir/*.css>)
+  * ODER ABER: (DSL entity keywords anders handhaben 'wantarray'...)
+      Always Entity ...;
+      Never Entity ...;
+      With ... Entity ...;
        
 Idea:
   * How to handle dir lists?
