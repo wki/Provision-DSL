@@ -17,6 +17,8 @@ Perlbrew {
     wanted  => '5.14.2',
 };
 
+Done;
+
 exit;
 
 Perlbrew sites => {

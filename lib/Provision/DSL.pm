@@ -22,6 +22,12 @@ our @EXPORT = qw(Done done OS Os os Defaults);
 our $app;
 our %default_for_entity;
 
+END {
+    warn "Provision::DSL::END, Exit-Code = $?";
+    say STDERR 'Done() not called or missing. Provisioning failed.'
+        if !$? && !$app->is_running;
+}
+
 sub import {
     my $package = caller;
 
@@ -92,7 +98,10 @@ sub create_and_export_entity_keywords {
                 
                 %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
                     
-                $app->create_entity($entity_name, \%args)->execute;
+                # $app->create_entity($entity_name, \%args)->execute;
+                $app->add_entity_for_execution(
+                    $app->create_entity($entity_name, \%args)
+                );
             }
         };
     }
@@ -142,7 +151,12 @@ sub os {
 
 sub Done { goto &done }
 sub done {
-    say 'Done.';
+    # say 'Done.';
+    $app->is_running(1);
+    
+    ### TODO: check privilege
+    
+    $app->execute_all_entities;
     
     exit;
 }

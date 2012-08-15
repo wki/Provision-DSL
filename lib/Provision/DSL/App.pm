@@ -11,6 +11,16 @@ use Provision::DSL::Types;
 with 'Provision::DSL::Role::CommandlineOptions',
      'Provision::DSL::Role::CommandExecution';
 
+has is_running => (
+    is => 'rw',
+    default => sub { 0 },
+);
+
+has entities_to_execute => (
+    is => 'rw',
+    default => sub { [] },
+);
+
 # Entity => Provision::DSL::Entity::Xxx
 has entity_package_for => (
     is => 'rw',
@@ -46,18 +56,47 @@ sub os {
     return $os;
 }
 
+####################################### User Privilege checking
+
+sub user_has_privilege {
+}
+
+####################################### Execution
+
+sub add_entity_for_execution {
+    my ($self, $entity) = @_;
+
+    push @{$self->entities_to_execute}, $entity;
+}
+
+sub execution_needs_privilege {
+    my $self = shift;
+
+    foreach my $entity (@{$self->entities_to_execute}) {
+        return 1 if $entity->need_privilege;
+    }
+
+    return 0;
+}
+
+sub execute_all_entities {
+    my $self = shift;
+
+    $_->execute for @{$self->entities_to_execute};
+}
+
 ####################################### Entity handling
 
 sub get_or_create_entity {
     my ($self, $entity, $name) = @_;
-    
+
     my $instance;
     try {
         $instance = $self->get_cached_entity($entity, $name);
     } catch {
         $instance = $self->create_entity($entity, { name => $name });
     };
-    
+
     return $instance;
 }
 

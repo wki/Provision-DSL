@@ -17,13 +17,12 @@ has app => (
     ],
 );
 
-has parent => ( is => 'ro', predicate => 'has_parent' );
-
-has wanted  => ( is => 'ro', isa => Str,    default => sub { 1 } );
-has changed => ( is => 'rw', isa => Bool,   default => sub { 0 } );
-has _state  => ( is => 'rw', isa => State,  predicate => 1, clearer => 1 );
-
-has default_state => ( is => 'lazy' );
+has parent          => ( is => 'ro',                predicate => 1 );
+has wanted          => ( is => 'ro', isa => Str,    default => sub { 1 } );
+has changed         => ( is => 'rw', isa => Bool,   default => sub { 0 } );
+has _state          => ( is => 'rw', isa => State,  predicate => 1, clearer => 1 );
+has need_privilege  => ( is => 'rw', isa => Bool,   default => sub { 0 } );
+has default_state   => ( is => 'lazy' );
 sub _build_default_state { 'current' }
 
 sub execute {
