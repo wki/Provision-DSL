@@ -150,14 +150,7 @@ sub os {
 
 sub Done { goto &done }
 sub done {
-    # say 'Done.';
-    $app->is_running(1);
-    
-    ### TODO: check privilege
-    
     $app->execute_all_entities;
-    
-    exit;
 }
 
 sub Defaults {

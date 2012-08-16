@@ -5,14 +5,6 @@ Generell:
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
              Methoden: latest_version, installed_version, install(version)
-  * 3 Benutzer-Qualitäten:
-    - root                  -- alles OK, alles direkt möglich
-    - kann sudo -n -u root  -- alles indirekt möglich
-    - sonst                 -- eingeschränkt
-
-  * App stellt Benutzer-Qualität fest
-
-  * jede Entity/Rolle/Trait meldet benötigte Qualität (normal/su)
 
   * Befehlsausführung
 
@@ -22,17 +14,6 @@ Generell:
     kann sudo         | normal       | sudo -n -u x ... | su - x -c ... / sudo
     root              | normal       | sudo -n -u x ... | normal
 
-  * Ablauf eines Provisioning-Vorganges auf der Ziel-Maschine:
-    - jeder DSL-Befehl fügt sich in Ausführungs-Liste ein
-      --> wenn im void Kontext
-    - Done() initiiert Ablauf.
-      + P::D::END{} check ob Done() aufgerufen, NEIN: Fehler
-      + Benutzer Fähigkeit prüfen
-      + alle Einträge auf notwendige Rechte checken
-        --> Entscheidung ob Ausführung möglich
-      + Einträge der Reihe nach ausführen
-        --> Fehler: Anhalten
-      + Statistik / Erfolgsmeldung ausgeben
 
 _Ubuntu::Package
   * aptitude meldet keine Fehler beim Installieren
@@ -54,6 +35,7 @@ Service:
     problematisch, wenn sich das dahinter sitzende Script geändert habt
 
 new Entities:
+  * Link (path, link_to)
   * Cron (path, arguments, environment)
   * Perl_Modules (name-->local_lib_dir, perl, cpanm, mirror, installdeps, install)
 

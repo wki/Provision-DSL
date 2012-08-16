@@ -26,13 +26,13 @@ sub _build_user_has_privilege {
 
     # be safe: kill the user's password timeout
     $self->run_command('/usr/bin/sudo', '-K');
-    
+
     my $result;
     try {
         $self->run_command_as_superuser('/usr/bin/true');
         $result = 1;
     };
-    
+
     return $result;
 }
 
@@ -97,6 +97,14 @@ sub execution_needs_privilege {
 sub execute_all_entities {
     my $self = shift;
 
+    $self->is_running(1);
+
+    croak 'nothing to provision'
+        unless @{$self->entities_to_execute};
+
+    croak 'Privileged user needed for provisioning'
+        if $self->execution_needs_privilege && !$self->user_has_privilege;
+
     $_->execute for @{$self->entities_to_execute};
 }
 
@@ -118,12 +126,9 @@ sub get_or_create_entity {
 sub create_entity {
     my ($self, $entity, $args) = @_;
 
-    # die "create entity: $entity";
-
     my $class = $self->entity_package_for->{$entity}
         or croak "no class for entity '$entity' found";
 
-    ### FIXME: does "re-create" error make sense?
     croak "cannot re-create entity '$entity' ($args->{name})"
         if exists $self->_entity_cache->{$entity}
            && exists $self->_entity_cache->{$entity}->{$args->{name}};

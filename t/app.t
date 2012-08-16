@@ -29,22 +29,47 @@ use ok 'Provision::DSL::App::Ubuntu';
     }
 }
 
-# entity execution
+# Privilege reporting
 {
+    my $status = system '/usr/bin/sudo -n -u root /usr/bin/false 2>/dev/null';
+    my $is_privileged = ($status >> 8) == 0;
+    
     my $app = Provision::DSL::App->new;
+    if ($is_privileged) {
+        ok $app->user_has_privilege, 'user has privilege';
+    } else {
+        ok !$app->user_has_privilege, 'user does not have privilege';
+    }
+}
+
+# execution
+{
+    my $e = FakeEntity->new;
+    
+    my $app = Provision::DSL::App->new(user_has_privilege => 0);
     is_deeply $app->entities_to_execute, [], 'initially nothing to execute';
     
-    my $e = FakeEntity->new;
+    dies_ok { $app->execute_all_entities } 'execution w/o entities dies';
+    
     $app->add_entity_for_execution($e);
     is scalar @{$app->entities_to_execute}, 1, '1 entity to execute';
     ok !$app->execution_needs_privilege, 'no privilege needed for execution';
-    $e->need_privilege(1);
-    ok $app->execution_needs_privilege, 'privilege needed for execution';
-    ok !$e->executed, 'entity not marked as executed';
+    ok !$e->executed, 'entity not marked as executed 1';
     $app->execute_all_entities;
-    ok $e->executed, 'entity marked as executed';
-    
-    done_testing; exit;
+    ok $e->executed, 'entity marked as executed 1';
+
+    $e->need_privilege(1);
+    $e->executed(0);
+    ok $app->execution_needs_privilege, 'privilege needed for execution';
+    ok !$e->executed, 'entity not marked as executed 2';
+    dies_ok { $app->execute_all_entities } 'execution impossible w/o privileges';
+
+    $app = Provision::DSL::App->new(user_has_privilege => 1);
+    $app->add_entity_for_execution($e);
+
+    ok !$e->executed, 'entity not marked as executed 3';
+    $app->execute_all_entities;
+    ok $e->executed, 'entity marked as executed 2';
 }
 
 # creating entities
