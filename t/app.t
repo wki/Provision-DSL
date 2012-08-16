@@ -6,6 +6,46 @@ use Provision::DSL::Entity::File;
 use Provision::DSL::Entity::TestingOnly;
 
 use ok 'Provision::DSL::App';
+use ok 'Provision::DSL::App::OSX';
+use ok 'Provision::DSL::App::Ubuntu';
+
+{
+    package FakeEntity;
+    use Moo;
+    
+    has executed       => (is => 'rw', default => sub { 0 });
+    has need_privilege => (is => 'rw', default => sub { 0 });
+    sub execute { $_[0]->executed(1) }
+}
+
+# OS reporting
+{
+    my $app = Provision::DSL::App->new;
+    
+    is $app->os, 'Unknown', 'base class reports OS as unknown';
+    foreach my $os (qw(OSX Ubuntu)) {
+        my $os_app = "Provision::DSL::App::$os"->new;
+        is $os_app->os, $os, "os class reports OS as '$os'";
+    }
+}
+
+# entity execution
+{
+    my $app = Provision::DSL::App->new;
+    is_deeply $app->entities_to_execute, [], 'initially nothing to execute';
+    
+    my $e = FakeEntity->new;
+    $app->add_entity_for_execution($e);
+    is scalar @{$app->entities_to_execute}, 1, '1 entity to execute';
+    ok !$app->execution_needs_privilege, 'no privilege needed for execution';
+    $e->need_privilege(1);
+    ok $app->execution_needs_privilege, 'privilege needed for execution';
+    ok !$e->executed, 'entity not marked as executed';
+    $app->execute_all_entities;
+    ok $e->executed, 'entity marked as executed';
+    
+    done_testing; exit;
+}
 
 # creating entities
 {

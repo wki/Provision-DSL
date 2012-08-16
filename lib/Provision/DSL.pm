@@ -23,8 +23,7 @@ our $app;
 our %default_for_entity;
 
 END {
-    warn "Provision::DSL::END, Exit-Code = $?";
-    say STDERR 'Done() not called or missing. Provisioning failed.'
+    say STDERR '"Done()" not called or missing. Provisioning failed.'
         if !$? && !$app->is_running;
 }
 
