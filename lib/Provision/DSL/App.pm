@@ -16,6 +16,26 @@ has is_running => (
     default => sub { 0 },
 );
 
+has user_has_privilege => (
+    is => 'lazy',
+    isa => Bool,
+);
+
+sub _build_user_has_privilege {
+    my $self = shift;
+
+    # be safe: kill the user's password timeout
+    $self->run_command('/usr/bin/sudo', '-K');
+    
+    my $result;
+    try {
+        $self->run_command_as_superuser('/usr/bin/true');
+        $result = 1;
+    };
+    
+    return $result;
+}
+
 has entities_to_execute => (
     is => 'rw',
     default => sub { [] },
@@ -54,11 +74,6 @@ sub os {
         or return 'Unknown';
 
     return $os;
-}
-
-####################################### User Privilege checking
-
-sub user_has_privilege {
 }
 
 ####################################### Execution

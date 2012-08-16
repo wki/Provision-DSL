@@ -12,16 +12,20 @@ has app => (
             verbose dryrun
             log log_dryrun log_debug
             create_entity
+            user_has_privilege
             run_command pipe_into_command command_succeeds
         )
     ],
 );
 
-has parent          => ( is => 'ro',                predicate => 1 );
-has wanted          => ( is => 'ro', isa => Str,    default => sub { 1 } );
-has changed         => ( is => 'rw', isa => Bool,   default => sub { 0 } );
-has _state          => ( is => 'rw', isa => State,  predicate => 1, clearer => 1 );
-has need_privilege  => ( is => 'rw', isa => Bool,   default => sub { 0 } );
+has parent  => ( is => 'ro',                    predicate => 1 );
+has wanted  => ( is => 'ro',   isa => Str,      default => sub { 1 } );
+has changed => ( is => 'rw',   isa => Bool,     default => sub { 0 } );
+has _state  => ( is => 'rw',   isa => State,    predicate => 1, clearer => 1 );
+
+has need_privilege  => ( is => 'lazy', isa => Bool);
+sub _build_need_privilege { 0 }
+
 has default_state   => ( is => 'lazy' );
 sub _build_default_state { 'current' }
 
