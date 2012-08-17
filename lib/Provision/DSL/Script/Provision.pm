@@ -103,10 +103,10 @@ sub run {
         $fh->close;
     }
 
-    my $result = $self->remote_execute;
+    my $result = $self->remote_provision;
 
     $self->log('Finished Provisioning');
-    exit $? >> 8; ### FIXME: get remote execute status somehow.
+    exit $? >> 8; ### FIXME: get remote provision status somehow.
 }
 
 sub prepare_environment {
@@ -315,7 +315,7 @@ sub _tar_content_base64_encoded {
     return encode_base64($buffer);
 }
 
-sub remote_execute {
+sub remote_provision {
     my $self = shift;
 
     my $ssh_config = $self->config->{ssh} // {};
@@ -339,7 +339,7 @@ sub remote_execute {
         "$user_prefix$ssh_config->{hostname}",
 
         #
-        # execute perl running script from stdin (-) with options
+        # provision perl running script from stdin (-) with options
         #
         'perl -'
             . ($self->dryrun  ? ' -n' : '')

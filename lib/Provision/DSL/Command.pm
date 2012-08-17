@@ -109,7 +109,7 @@ sub success {
 
 =head1 Provision::DSL::Command
 
-Provision::DSL::Command - Easy commandline execution
+Provision::DSL::Command - Easy commandline provision
 
 =head1 SYNOPSIS
 

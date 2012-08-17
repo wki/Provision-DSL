@@ -185,7 +185,7 @@ All required modules, resources and the provision script are packed into a tar
 file, the tar file is appended to a extraction script (base-64 encoded, into
 the __DATA__ section, to be precise) and the combination of both is pasted to
 the remote machine's Perl interpreter where it is unpacked into a temporary
-directory and executed. The entire process only requires a single ssh
+directory and provisiond. The entire process only requires a single ssh
 process to run. All other IO-Operations happen entirely on the target machine,
 the ssh connection will compress its payload.
 

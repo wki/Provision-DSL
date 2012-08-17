@@ -7,7 +7,7 @@ has permission => (
     coerce => to_Permission,
 );
 
-before calculate_state => sub {
+before state => sub {
     my $self = shift;
     
     return if !-d $self->path;

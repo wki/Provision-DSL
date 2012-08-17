@@ -36,7 +36,7 @@ sub _build_user_has_privilege {
     return $result;
 }
 
-has entities_to_execute => (
+has entities_to_provision => (
     is => 'rw',
     default => sub { [] },
 );
@@ -78,34 +78,34 @@ sub os {
 
 ####################################### Execution
 
-sub add_entity_for_execution {
+sub add_entity_for_provision {
     my ($self, $entity) = @_;
 
-    push @{$self->entities_to_execute}, $entity;
+    push @{$self->entities_to_provision}, $entity;
 }
 
-sub execution_needs_privilege {
+sub provision_needs_privilege {
     my $self = shift;
 
-    foreach my $entity (@{$self->entities_to_execute}) {
+    foreach my $entity (@{$self->entities_to_provision}) {
         return 1 if $entity->need_privilege;
     }
 
     return 0;
 }
 
-sub execute_all_entities {
+sub provision_all_entities {
     my $self = shift;
 
     $self->is_running(1);
 
     croak 'nothing to provision'
-        unless @{$self->entities_to_execute};
+        unless @{$self->entities_to_provision};
 
     croak 'Privileged user needed for provisioning'
-        if $self->execution_needs_privilege && !$self->user_has_privilege;
+        if $self->provision_needs_privilege && !$self->user_has_privilege;
 
-    $_->execute for @{$self->entities_to_execute};
+    $_->provision for @{$self->entities_to_provision};
 }
 
 ####################################### Entity handling

@@ -97,8 +97,8 @@ sub create_and_export_entity_keywords {
                 
                 %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
                     
-                # $app->create_entity($entity_name, \%args)->execute;
-                $app->add_entity_for_execution(
+                # $app->create_entity($entity_name, \%args)->provision;
+                $app->add_entity_for_provision(
                     $app->create_entity($entity_name, \%args)
                 );
             }
@@ -150,7 +150,7 @@ sub os {
 
 sub Done { goto &done }
 sub done {
-    $app->execute_all_entities;
+    $app->provision_all_entities;
 }
 
 sub Defaults {

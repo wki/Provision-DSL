@@ -13,9 +13,9 @@ use ok 'Provision::DSL::App::Ubuntu';
     package FakeEntity;
     use Moo;
     
-    has executed       => (is => 'rw', default => sub { 0 });
+    has provisioned       => (is => 'rw', default => sub { 0 });
     has need_privilege => (is => 'rw', default => sub { 0 });
-    sub execute { $_[0]->executed(1) }
+    sub provision { $_[0]->provisioned(1) }
 }
 
 # OS reporting
@@ -42,34 +42,34 @@ use ok 'Provision::DSL::App::Ubuntu';
     }
 }
 
-# execution
+# provision
 {
     my $e = FakeEntity->new;
     
     my $app = Provision::DSL::App->new(user_has_privilege => 0);
-    is_deeply $app->entities_to_execute, [], 'initially nothing to execute';
+    is_deeply $app->entities_to_provision, [], 'initially nothing to provision';
     
-    dies_ok { $app->execute_all_entities } 'execution w/o entities dies';
+    dies_ok { $app->provision_all_entities } 'provision w/o entities dies';
     
-    $app->add_entity_for_execution($e);
-    is scalar @{$app->entities_to_execute}, 1, '1 entity to execute';
-    ok !$app->execution_needs_privilege, 'no privilege needed for execution';
-    ok !$e->executed, 'entity not marked as executed 1';
-    $app->execute_all_entities;
-    ok $e->executed, 'entity marked as executed 1';
+    $app->add_entity_for_provision($e);
+    is scalar @{$app->entities_to_provision}, 1, '1 entity to provision';
+    ok !$app->provision_needs_privilege, 'no privilege needed for provision';
+    ok !$e->provisioned, 'entity not marked as provisioned 1';
+    $app->provision_all_entities;
+    ok $e->provisioned, 'entity marked as provisioned 1';
 
     $e->need_privilege(1);
-    $e->executed(0);
-    ok $app->execution_needs_privilege, 'privilege needed for execution';
-    ok !$e->executed, 'entity not marked as executed 2';
-    dies_ok { $app->execute_all_entities } 'execution impossible w/o privileges';
+    $e->provisioned(0);
+    ok $app->provision_needs_privilege, 'privilege needed for provision';
+    ok !$e->provisioned, 'entity not marked as provisioned 2';
+    dies_ok { $app->provision_all_entities } 'provision impossible w/o privileges';
 
     $app = Provision::DSL::App->new(user_has_privilege => 1);
-    $app->add_entity_for_execution($e);
+    $app->add_entity_for_provision($e);
 
-    ok !$e->executed, 'entity not marked as executed 3';
-    $app->execute_all_entities;
-    ok $e->executed, 'entity marked as executed 2';
+    ok !$e->provisioned, 'entity not marked as provisioned 3';
+    $app->provision_all_entities;
+    ok $e->provisioned, 'entity marked as provisioned 2';
 }
 
 # creating entities

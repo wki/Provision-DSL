@@ -165,7 +165,7 @@ my $app = Provision::DSL::App->new();
 
         $testcase->{run_before}->() if $testcase->{run_before};
         test_expectation($e, $testcase, 'before');
-        $e->execute();
+        $e->provision();
         test_expectation($e, $testcase, 'after');
         $testcase->{run_after}->() if $testcase->{run_after};
     }
@@ -193,7 +193,7 @@ my $app = Provision::DSL::App->new();
         is $e1->state, $state, "set state is '$state'";
     }
 
-    # # not using set_state, only add_state --> outdated unless current
+    # # not using set_state, only add_to_state --> outdated unless current
     # foreach my $state (qw(missing outdated current)) {
     #     my $e1 = E1->new(
     #         app  => $app,

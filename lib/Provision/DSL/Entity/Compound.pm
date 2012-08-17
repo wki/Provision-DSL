@@ -22,7 +22,7 @@ sub all_children { @{$_[0]->children} }
 
 sub has_no_children { !scalar @{$_[0]->children} }
 
-before calculate_state => sub {
+before state => sub {
     my $self = shift;
     
     $self->add_to_state($_->is_ok ? 'current' : 'outdated')
@@ -31,9 +31,9 @@ before calculate_state => sub {
 
 # only remove() receives wanted=0, all others use their own wanted attribute
 after ['create', 'change']
-    => sub { $_->execute()  for         $_[0]->all_children };
+    => sub { $_->provision()  for         $_[0]->all_children };
 
 before remove
-    => sub { $_->execute(0) for reverse $_[0]->all_children };
+    => sub { $_->provision(0) for reverse $_[0]->all_children };
 
 1;

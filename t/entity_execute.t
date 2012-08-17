@@ -20,7 +20,7 @@ my $e = Provision::DSL::Entity::Execute->new(
 
 ok !-f $TEMPFILE, 'temp file not present';
 
-$e->execute;
+$e->provision;
 
 ok -f $TEMPFILE, 'temp file has been created';
 

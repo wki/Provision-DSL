@@ -46,9 +46,9 @@ has env => (
 sub _build_env { $_[0]->environment }
 
 # needed to make Execute work like a resource.
-sub content { $_[0]->_execute }
+sub content { $_[0]->_provision }
 
-sub _execute {
+sub _provision {
     my $self = shift;
 
     my $cwd = getcwd;
@@ -70,6 +70,6 @@ sub _execute {
     return $script_output;
 }
 
-after ['create', 'change'] => sub { $_[0]->_execute };
+after ['create', 'change'] => sub { $_[0]->_provision };
 
 1;
