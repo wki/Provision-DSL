@@ -15,6 +15,31 @@ with    'Provision::DSL::Role::CommandExecution',
 
 sub _build_permission { '0755' }
 
+sub _build_need_privilege {
+    my $self = shift;
+    
+    return 1 if $self->has_user && $self->user->uid != $<;
+    return 1 if $self->has_group && $self->group->gid != $(;
+    
+    if (-d $self->path) {
+        return __is_not_mine($self->path);
+    }
+    
+    my $ancestor = $self->path->parent;
+    while (!-d $ancestor && scalar $ancestor->dir_list > 2) {
+        $ancestor = $ancestor->parent;
+    }
+    
+    return __is_not_mine($ancestor);
+}
+
+sub __is_not_mine {
+    my $path = shift;
+
+    my $stat = $path->stat;
+    return $stat->uid != $< || $stat->gid != $(;
+}
+
 has path => (
     is     => 'lazy',
     coerce => to_Dir,

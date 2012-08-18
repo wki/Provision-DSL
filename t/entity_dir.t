@@ -97,11 +97,10 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     }
 }
 
-### TODO: add a tell test.
-
 # permissions and user
 SKIP: {
-    skip 'need root privileges for permission tests', 6 if $<;
+    skip 'need privileged user for permission tests', 6
+        if !$app->user_has_privilege;
 
     my ($user) = grep { getpwnam $_ } qw(www-data _www)
         or skip 'no user found whose name is like "www"', 6;
