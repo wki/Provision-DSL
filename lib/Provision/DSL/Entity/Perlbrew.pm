@@ -97,7 +97,7 @@ before create => sub {
         $installer = Provision::DSL::Source::Bin->new('install.perlbrew.sh');
     } catch {
         # load via $self->http_get('http://install.perlbrew.pl');
-        # needs temp file for provision
+        # needs temp file for install
         die 'loading perlbrew via http: not implemented';
     };
 

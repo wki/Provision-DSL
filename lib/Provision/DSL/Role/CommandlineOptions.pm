@@ -33,7 +33,7 @@ sub options {
     return (
         'help|h      ; this help',
         'verbose|v   ; verbose mode - show messages',
-        'dryrun|n    ; dryrun - do not provision',
+        'dryrun|n    ; dryrun - do not install',
         'debug       ; show debug output',
     );
 }

@@ -29,7 +29,7 @@ sub _build_need_privilege { 0 }
 has default_state   => ( is => 'lazy' );
 sub _build_default_state { 'current' }
 
-sub provision {
+sub install {
     my $self   = shift;
     my $wanted = shift // $self->wanted;
     my $state  = shift // $self->state;

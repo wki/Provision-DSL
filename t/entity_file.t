@@ -28,14 +28,14 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     ok !-f $f->path, 'an unknown file does not exist';
     ok !$f->is_ok, 'an unknown file is not ok';
     
-    lives_ok { $f->provision(1) } 'creating a former unknown file lives';
+    lives_ok { $f->install(1) } 'creating a former unknown file lives';
     ok -f $f->path, 'a former unknown file exists';
     ok $f->is_ok, 'a former unknown file is ok';
     is $f->state, 'current', 'former unknown file is in current state';
     
     is scalar $f->path->slurp, 'foo', 'content is "foo"';
     
-    lives_ok { $f->provision(0) } 'removing a file lives';
+    lives_ok { $f->install(0) } 'removing a file lives';
     ok !-f $f->path, 'a removed file does not exist';
     ok !$f->is_ok, 'a removed file is not ok';
 }
@@ -52,7 +52,7 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     }
     'creating a known file lives';
     
-    lives_ok { $f->provision(1) } 'creating a file from a resource lives';
+    lives_ok { $f->install(1) } 'creating a file from a resource lives';
     is scalar $f->path->slurp, 'foo',
        'file content matches requirement';
 
@@ -76,7 +76,7 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     ok scalar $f->path->slurp ne "FILE:file1\nline2",
        'file content is different from resource';
     ok !$f->is_ok, 'file is reported as not ok';
-    lives_ok { $f->provision(1) } 'updating a file from a resource lives';
+    lives_ok { $f->install(1) } 'updating a file from a resource lives';
     is scalar $f->path->slurp, "FILE:file1\nline2",
        'file content matches resource file';
 }

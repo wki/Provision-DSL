@@ -25,12 +25,12 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     is $d->state, 'missing', 'an unknown dir reports state "missing"';
     ok !$d->is_ok, 'an unknown dir is not ok';
 
-    lives_ok { $d->provision(1) } 'creating a former unknown dir lives';
+    lives_ok { $d->install(1) } 'creating a former unknown dir lives';
     ok -d $d->path, 'a former unknown dir exists';
     is $d->state, 'current', 'an unknown dir reports state "current"';
     ok $d->is_ok, 'a former unknown dir is ok';
 
-    lives_ok { $d->provision(0) } 'removing a dir lives';
+    lives_ok { $d->install(0) } 'removing a dir lives';
     ok !-d $d->path, 'a removed dir does not exist';
     is $d->state, 'missing', 'a removed dir reports state "missing"';
     ok !$d->is_ok, 'a removed dir is not ok';
@@ -77,7 +77,7 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     # warn "BEFORE: ${\ref $_} ${\$_->name} : ${\$_->state}, OK: ${\($_->is_ok?'YES':'NO')}"
     #     for $d->all_children;
 
-    $d->provision(1);
+    $d->install(1);
 
     # warn "AFTER: ${\ref $_} ${\$_->name} : ${\$_->state}, OK: ${\($_->is_ok?'YES':'NO')}"
     #     for $d->all_children;
@@ -125,14 +125,14 @@ SKIP: {
 
     ok !-d "$FindBin::Bin/x/foo", 'dir initially not present';
 
-    $d->provision(1);
+    $d->install(1);
 
     ok -d "$FindBin::Bin/x/foo", 'dir successfully created';
     is +(stat "$FindBin::Bin/x/foo")[2] & 511, 0640, 'permission is 0640';
     is +(stat "$FindBin::Bin/x/foo")[4], $uid, "uid is $uid";
     is +(stat "$FindBin::Bin/x/foo")[5], $gid, "gid is $gid";
 
-    $d->provision(0);
+    $d->install(0);
 
     ok !-d "$FindBin::Bin/x/foo", 'dir finally removed';
 }

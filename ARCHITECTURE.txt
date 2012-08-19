@@ -87,7 +87,7 @@ Entity Funktionsweise:
      + changed                  wird gesetzt, wenn Veränderung erfolgte
 
      ----[ Steuerung ]
-     - provision()                auf Zustand "wanted" bringen
+     - install()                auf Zustand "wanted" bringen
      - create()                 von Kindern zu erweitern, before!
      - change()                 von Kindern zu erweitern, before!
      - remove()                 von Kindern zu erweitern, after!

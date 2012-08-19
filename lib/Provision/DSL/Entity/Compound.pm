@@ -31,9 +31,9 @@ before state => sub {
 
 # only remove() receives wanted=0, all others use their own wanted attribute
 after ['create', 'change']
-    => sub { $_->provision()  for         $_[0]->all_children };
+    => sub { $_->install()  for         $_[0]->all_children };
 
 before remove
-    => sub { $_->provision(0) for reverse $_[0]->all_children };
+    => sub { $_->install(0) for reverse $_[0]->all_children };
 
 1;

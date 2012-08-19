@@ -115,7 +115,7 @@ foreach my $testcase (@testcases) {
     }
     
     test_expectation($c, $testcase, 'before');
-    $c->provision;
+    $c->install;
     test_expectation($c, $testcase, 'after');
 }
 

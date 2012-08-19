@@ -13,9 +13,9 @@ my $p = Parent->new;
 $p->method();
 
 is join(" / ", @{$p->message}),
-   'before P::m / before PR2::m / before PR1::m / '
- . 'in P::m / '
- . 'after PR1::m / after PR2::m / after P::m',
+   'before P::m / before PR2::m / before PR1::m / ' .
+   'in P::m / ' .
+   'after PR1::m / after PR2::m / after P::m',
    'parent calling order is OK';
 
 

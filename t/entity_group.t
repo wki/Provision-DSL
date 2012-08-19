@@ -41,12 +41,12 @@ SKIP: {
     ok !$g->is_ok, "unused group '$unused_group' ($unused_gid) not ok";
     is $g->state, 'missing', 'an known group is missing';
     
-    lives_ok { $g->provision(1) } 'creating a new group lives';
+    lives_ok { $g->install(1) } 'creating a new group lives';
     ok $g->is_ok, "former unused group '$unused_group' ($unused_gid) ok";
     is $g->state, 'current', 'an known group is current';
     is getgrnam($unused_group), $unused_gid, 'group really present';
     
-    lives_ok { $g->provision(0) } 'removing an existing group lives';
+    lives_ok { $g->install(0) } 'removing an existing group lives';
     is $g->state, 'missing', 'an known group is missing';
     
     ### strange: these 2 fail, but remove really works.

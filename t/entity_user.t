@@ -50,12 +50,12 @@ SKIP: {
     my $u = $app->create_entity('User', {name => $unused_user, uid => $unused_uid, group => $group});
     ok !$u->is_present, "unused user '$unused_user' ($unused_uid) not present";
     
-    lives_ok { $u->provision(1) } 'creating a new user lives';
+    lives_ok { $u->install(1) } 'creating a new user lives';
     ok $u->is_ok, "former unused user '$unused_user' ($unused_uid) present";
     is $u->state, 'current', 'a created user is current';
     is getpwnam($unused_user), $unused_uid, 'user really present';
     
-    lives_ok { $u->provision(0) } 'removing an existing user lives';
+    lives_ok { $u->install(0) } 'removing an existing user lives';
     
     ### strange: these 2 fail, but remove really works.
     ok !$u->is_ok, "user '$unused_user' ($unused_uid) removed";

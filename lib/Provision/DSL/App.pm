@@ -36,7 +36,7 @@ sub _build_user_has_privilege {
     return $result;
 }
 
-has entities_to_provision => (
+has entities_to_install => (
     is => 'rw',
     default => sub { [] },
 );
@@ -78,34 +78,34 @@ sub os {
 
 ####################################### Execution
 
-sub add_entity_for_provision {
+sub add_entity_for_install {
     my ($self, $entity) = @_;
 
-    push @{$self->entities_to_provision}, $entity;
+    push @{$self->entities_to_install}, $entity;
 }
 
-sub provision_needs_privilege {
+sub install_needs_privilege {
     my $self = shift;
 
-    foreach my $entity (@{$self->entities_to_provision}) {
+    foreach my $entity (@{$self->entities_to_install}) {
         return 1 if $entity->need_privilege;
     }
 
     return 0;
 }
 
-sub provision_all_entities {
+sub install_all_entities {
     my $self = shift;
 
     $self->is_running(1);
 
-    croak 'nothing to provision'
-        unless @{$self->entities_to_provision};
+    croak 'nothing to install'
+        unless @{$self->entities_to_install};
 
-    croak 'Privileged user needed for provisioning'
-        if $self->provision_needs_privilege && !$self->user_has_privilege;
+    croak 'Privileged user needed for installing'
+        if $self->install_needs_privilege && !$self->user_has_privilege;
 
-    $_->provision for @{$self->entities_to_provision};
+    $_->install for @{$self->entities_to_install};
 }
 
 ####################################### Entity handling

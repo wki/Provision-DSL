@@ -1,4 +1,4 @@
-use Test::More;
+ use Test::More;
 use Test::Exception;
 use FindBin;
 use Path::Class;

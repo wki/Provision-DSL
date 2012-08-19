@@ -165,7 +165,7 @@ my $app = Provision::DSL::App->new();
 
         $testcase->{run_before}->() if $testcase->{run_before};
         test_expectation($e, $testcase, 'before');
-        $e->provision();
+        $e->install();
         test_expectation($e, $testcase, 'after');
         $testcase->{run_after}->() if $testcase->{run_after};
     }

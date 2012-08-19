@@ -19,7 +19,7 @@ my @files = qw(file1.txt file2.txt dir2/file3.txt);
     my $r = new_rsync();
 
     is $r->state, 'outdated', 'outdated before sync into an empty dir';
-    $r->provision;
+    $r->install;
     is $r->state, 'current', 'current after sync into an empty dir';
     
     ok -f $x_dir->file($_), "$_ is present"
@@ -36,7 +36,7 @@ my @files = qw(file1.txt file2.txt dir2/file3.txt);
     close $fh;
     
     is $r->state, 'outdated', 'not ok before sync into a changed dir 1';
-    $r->provision;
+    $r->install;
     is $r->state, 'current', 'current after sync into a changed dir 1';
     
     is scalar $x_dir->file($files[0])->slurp,
@@ -55,7 +55,7 @@ my @files = qw(file1.txt file2.txt dir2/file3.txt);
     close $fh;
     
     is $r->state, 'outdated', 'outdated before sync into a changed dir 2';
-    $r->provision;
+    $r->install;
     is $r->state, 'current', 'current after sync into a changed dir 2';
     
     ok !-f $x_dir->file('file_xx.txt'),
