@@ -1,4 +1,5 @@
 package Provision::DSL::App;
+use feature ':5.10';
 use Moo;
 use Carp;
 use Scalar::Util 'blessed';
@@ -58,6 +59,15 @@ has _trait_package => (
 );
 
 sub _build__trait_package { +{ map { ($_ => 1) } $_[0]->traits } }
+
+####################################### Singleton
+
+sub instance {
+    my $class = shift;
+    state $self = $class->new_with_options(@_);
+    
+    return $self;
+}
 
 sub DEMOLISH {
     my $self = shift;

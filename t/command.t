@@ -11,19 +11,20 @@ use Provision::DSL::App;
 use ok 'Provision::DSL::Entity::User';
 use ok 'Provision::DSL::Entity::Group';
 
-my $app = Provision::DSL::App->new(
-    entity_package_for => {
-        User  => 'Provision::DSL::Entity::User',
-        Group => 'Provision::DSL::Entity::Group',
-    },
-);
-
-{
-    package Provision::DSL;
-
-    no strict 'refs';
-    $Provision::DSL::app = $app;
-}
+# my $app = Provision::DSL::App->new(
+#     entity_package_for => {
+#         User  => 'Provision::DSL::Entity::User',
+#         Group => 'Provision::DSL::Entity::Group',
+#     },
+# );
+# 
+# {
+#     package Provision::DSL;
+# 
+#     # no strict 'refs';
+#     # $Provision::DSL::app = $app;
+#     
+# }
 
 
 my $script_dir = "$FindBin::Bin/bin";

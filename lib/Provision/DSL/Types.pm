@@ -114,7 +114,7 @@ sub to_User {
     return sub {
         blessed $_[0] && $_[0]->isa('Provision::DSL::Entity::User')
             ? $_[0]
-            : $Provision::DSL::app->get_or_create_entity(
+            : Provision::DSL::App->instance->get_or_create_entity(
                 'User',
                 $_[0] =~ m{\D}
                     ? $_[0]
@@ -127,7 +127,7 @@ sub to_Group {
     return sub {
         blessed $_[0] && $_[0]->isa('Provision::DSL::Entity::Group')
             ? $_[0]
-            : $Provision::DSL::app->get_or_create_entity(
+            : Provision::DSL::App->instance->get_or_create_entity(
                 'Group',
                 $_[0] =~ m{\D}
                     ? $_[0]

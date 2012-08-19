@@ -18,13 +18,15 @@ See L<Provision::DSL::Manual> for a comprehensive description
 
 =cut
 
-our @EXPORT = qw(Done done OS Os os Defaults);
-our $app;
+our @EXPORT = qw(Done done OS Os os Defaults app);
+# our $app;
 our %default_for_entity;
+
+sub app;
 
 END {
     say STDERR '"Done()" not called or missing. Provisioning failed.'
-        if !$? && !$app->is_running;
+        if !$? && !app->is_running;
 }
 
 sub import {
@@ -40,7 +42,7 @@ sub import {
     export_symbols($package);
     turn_on_autoflush($package);
     
-    $app->log_debug('init done');
+    app->log_debug('init done');
 }
 
 sub instantiate_app {
@@ -50,8 +52,11 @@ sub instantiate_app {
     my $app_package = "Provision::DSL::App::$os";
     load $app_package;
 
-    $app = $app_package->new_with_options(os => $os, @argv);
+    # $app = $app_package->new_with_options(os => $os, @argv);
+    $app_package->instance(@argv);
 }
+
+sub app { Provision::DSL::App->instance }
 
 sub create_and_export_entity_keywords {
     my $package = shift;
@@ -78,7 +83,7 @@ sub create_and_export_entity_keywords {
         #         via { $entity_package->new({app => $app, name => $_}) };
         # }
     }
-    $app->entity_package_for(\%package_for);
+    app->entity_package_for(\%package_for);
 
     while (my ($entity_name, $entity_package) = each %package_for) {
         load $entity_package;
@@ -87,19 +92,18 @@ sub create_and_export_entity_keywords {
         no warnings 'redefine';
         *{"${package}::${entity_name}"} = sub {
             if (defined wantarray) {
-                return $app->get_cached_entity($entity_name, @_);
+                return app->get_cached_entity($entity_name, @_);
             } else {
                 my %args = exists $default_for_entity{$entity_name}
                     ? %{$default_for_entity{$entity_name}}
                     : ();
-                $args{app} = $app;
+                $args{app} = app;
                 $args{name} = shift if !ref $_[0];
                 
                 %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
                     
-                # $app->create_entity($entity_name, \%args)->install;
-                $app->add_entity_for_install(
-                    $app->create_entity($entity_name, \%args)
+                app->add_entity_for_install(
+                    app->create_entity($entity_name, \%args)
                 );
             }
         };
@@ -150,7 +154,7 @@ sub os {
 
 sub Done { goto &done }
 sub done {
-    $app->install_all_entities;
+    app->install_all_entities;
 }
 
 sub Defaults {
