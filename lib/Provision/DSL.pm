@@ -19,7 +19,6 @@ See L<Provision::DSL::Manual> for a comprehensive description
 =cut
 
 our @EXPORT = qw(Done done OS Os os Defaults app);
-# our $app;
 our %default_for_entity;
 
 sub app;
@@ -97,7 +96,6 @@ sub create_and_export_entity_keywords {
                 my %args = exists $default_for_entity{$entity_name}
                     ? %{$default_for_entity{$entity_name}}
                     : ();
-                $args{app} = app;
                 $args{name} = shift if !ref $_[0];
                 
                 %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);

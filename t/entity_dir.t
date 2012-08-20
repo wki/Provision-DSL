@@ -5,7 +5,7 @@ use Test::Exception;
 use Path::Class;
 use FindBin;
 
-my $app = require "$FindBin::Bin/inc/prepare_app.pl";
+require "$FindBin::Bin/inc/prepare_app.pl";
 my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
 
 # creating and removing a non-existing directory
@@ -16,7 +16,6 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     lives_ok {
         $d = Provision::DSL::Entity::Dir->new(
             name => "$FindBin::Bin/x/y",
-            app => $app,
         )
     }
     'creating a named but unknown dir entity lives';
@@ -45,7 +44,6 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     lives_ok {
         $d = Provision::DSL::Entity::Dir->new(
             name => "$FindBin::Bin/x",
-            app => $app,
         )
     }
     'creating a named and existing dir entity lives';
@@ -64,7 +62,6 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     lives_ok {
         $d = Provision::DSL::Entity::Dir->new(
             name => "$FindBin::Bin/x/foo",
-            app => $app,
             mkdir => [qw(abc def ghi/jkl)],
             rmdir => [qw(zz)],
             content => "$FindBin::Bin/resources/dir1",
@@ -100,7 +97,7 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
 # permissions and user
 SKIP: {
     skip 'need privileged user for permission tests', 6
-        if !$app->user_has_privilege;
+        if !Provision::DSL::App->instance->user_has_privilege;
 
     my ($user) = grep { getpwnam $_ } qw(www-data _www)
         or skip 'no user found whose name is like "www"', 6;
@@ -115,7 +112,6 @@ SKIP: {
     lives_ok {
         $d = Provision::DSL::Entity::Dir->new(
             name       => "$FindBin::Bin/x/foo",
-            app        => $app,
             user       => $user,
             group      => $group,
             permission => '0640',

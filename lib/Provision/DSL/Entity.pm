@@ -1,12 +1,12 @@
 package Provision::DSL::Entity;
 use Moo;
+use Provision::DSL::App;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Base';
 
 has app => (
-    is       => 'ro',
-    required => 1,
+    is       => 'lazy',
     handles  => [
         qw(
             verbose dryrun
@@ -17,6 +17,8 @@ has app => (
         )
     ],
 );
+
+sub _build_app { Provision::DSL::App->instance }
 
 has parent  => ( is => 'ro',                    predicate => 1 );
 has wanted  => ( is => 'ro',   isa => Str,      default => sub { 1 } );
