@@ -62,6 +62,22 @@ sub _build__trait_package { +{ map { ($_ => 1) } $_[0]->traits } }
 
 ####################################### Singleton
 
+around new => sub {
+    my ($orig, $class, @args) = @_;
+    
+    ### is it clean to check for instance() in call hierarchy?
+    for (my $i = 0; $i < 10; $i++) {
+        my ($package, $filename, $line, $sub) = caller($i);
+        
+        next if ($sub !~ m{:: instance \z}xms);
+
+        return $class->$orig(@args);
+    }
+    
+    die 'Singleton-App: calling new directly is forbidden';
+    # warn "CALLING App->new. caller = $sub : $filename($line)";
+};
+
 sub instance {
     my $class = shift;
     state $self = $class->new_with_options(@_);
@@ -86,7 +102,7 @@ sub os {
     return $os;
 }
 
-####################################### Execution
+####################################### Installation
 
 sub add_entity_for_install {
     my ($self, $entity) = @_;

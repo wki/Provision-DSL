@@ -53,7 +53,7 @@ use ok 'Provision::DSL::Entity';
     };
 }
 
-my $app = Provision::DSL::App->new();
+my $app = Provision::DSL::App->instance();
 
 
 # check if create, change and remove are called right
@@ -158,7 +158,6 @@ my $app = Provision::DSL::App->new();
 
     foreach my $testcase (@testcases) {
         my $e = E1->new(
-            app  => $app,
             name => $testcase->{name},
             %{$testcase->{attributes}},
         );
@@ -175,7 +174,6 @@ my $app = Provision::DSL::App->new();
 {
     # default state is echoed if no other state set
     my $e1 = E1->new(
-        app  => $app,
         name => 'foo',
         default_state => 'outdated',
     );
@@ -184,7 +182,6 @@ my $app = Provision::DSL::App->new();
     # using a single state
     foreach my $state (qw(missing outdated current)) {
         my $e1 = E1->new(
-            app  => $app,
             name => 'outdated',
             default_state => 'outdated',
         );
@@ -196,7 +193,6 @@ my $app = Provision::DSL::App->new();
     # # not using set_state, only add_to_state --> outdated unless current
     # foreach my $state (qw(missing outdated current)) {
     #     my $e1 = E1->new(
-    #         app  => $app,
     #         name => 'foo',
     #         default_state => 'current',
     #     );
@@ -213,7 +209,6 @@ my $app = Provision::DSL::App->new();
     foreach my $set_state (qw(missing outdated current)) {
         foreach my $state (qw(missing outdated current)) {
             my $e1 = E1->new(
-                app  => $app,
                 name => 'foo',
                 default_state => 'current',
             );
@@ -255,7 +250,6 @@ my $app = Provision::DSL::App->new();
         my ($e2_state, $r2_state) = @{$testcase->{states}};
 
         my $e2 = E2->new(
-            app  => $app,
             name => $testcase->{name},
             ($e2_state ? (e2_state => $e2_state) : ()),
             ($r2_state ? (r2_state => $r2_state) : ()),
