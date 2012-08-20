@@ -69,13 +69,12 @@ around new => sub {
     for (my $i = 0; $i < 10; $i++) {
         my ($package, $filename, $line, $sub) = caller($i);
         
-        next if ($sub !~ m{:: instance \z}xms);
+        next if !$sub || $sub !~ m{:: instance \z}xms;
 
         return $class->$orig(@args);
     }
     
     die 'Singleton-App: calling new directly is forbidden';
-    # warn "CALLING App->new. caller = $sub : $filename($line)";
 };
 
 sub instance {

@@ -6,35 +6,30 @@ use Provision::DSL::Entity::File;
 use Provision::DSL::Entity::TestingOnly;
 
 use ok 'Provision::DSL::App';
-use ok 'Provision::DSL::App::OSX';
-use ok 'Provision::DSL::App::Ubuntu';
 
+# singleton
 {
-    package FakeEntity;
-    use Moo;
+    dies_ok { Provision::DSL::App->new } 'calling new dies';
     
-    has installed       => (is => 'rw', default => sub { 0 });
-    has need_privilege => (is => 'rw', default => sub { 0 });
-    sub install { $_[0]->installed(1) }
+    my $app1 = Provision::DSL::App->instance;
+    my $app2 = Provision::DSL::App->instance;
+    
+    is "$app1", "$app2", 'instance() repeatedly delivers same value';
 }
 
 # OS reporting
 {
-    my $app = Provision::DSL::App->new;
-    
-    is $app->os, 'Unknown', 'base class reports OS as unknown';
-    foreach my $os (qw(OSX Ubuntu)) {
-        my $os_app = "Provision::DSL::App::$os"->new;
-        is $os_app->os, $os, "os class reports OS as '$os'";
-    }
+    my $app = Provision::DSL::App->instance;
+    is $app->os, 'Unknown',
+        'base class reports OS as unknown';
 }
 
 # Privilege reporting
 {
+    my $app = Provision::DSL::App->instance;
     my $status = system '/usr/bin/sudo -n -u root /usr/bin/false 2>/dev/null';
     my $is_privileged = ($status >> 8) == 0;
     
-    my $app = Provision::DSL::App->new;
     if ($is_privileged) {
         ok $app->user_has_privilege, 'user has privilege';
     } else {
@@ -42,40 +37,9 @@ use ok 'Provision::DSL::App::Ubuntu';
     }
 }
 
-# install
-{
-    my $e = FakeEntity->new;
-    
-    my $app = Provision::DSL::App->new(user_has_privilege => 0);
-    is_deeply $app->entities_to_install, [], 'initially nothing to install';
-    
-    dies_ok { $app->install_all_entities } 'install w/o entities dies';
-    
-    $app->add_entity_for_install($e);
-    is scalar @{$app->entities_to_install}, 1, '1 entity to install';
-    ok !$app->install_needs_privilege, 'no privilege needed for install';
-    ok !$e->installed, 'entity not marked as installed 1';
-    $app->install_all_entities;
-    ok $e->installed, 'entity marked as installed 1';
-
-    $e->need_privilege(1);
-    $e->installed(0);
-    ok $app->install_needs_privilege, 'privilege needed for install';
-    ok !$e->installed, 'entity not marked as installed 2';
-    dies_ok { $app->install_all_entities } 'install impossible w/o privileges';
-
-    $app = Provision::DSL::App->new(user_has_privilege => 1);
-    $app->add_entity_for_install($e);
-
-    ok !$e->installed, 'entity not marked as installed 3';
-    $app->install_all_entities;
-    ok $e->installed, 'entity marked as installed 2';
-}
-
 # creating entities
 {
-    my $app = Provision::DSL::App->new;
-    
+    my $app = Provision::DSL::App->instance;
     foreach my $class (qw(TestingOnly File)) {
         $app->entity_package_for->{$class} = "Provision::DSL::Entity::$class";
     }

@@ -2,7 +2,6 @@ use strict;
 use warnings;
 use FindBin;
 use Test::More;
-use Provision::DSL::App;
 
 do "$FindBin::Bin/inc/entity_expectation.pl";
 
@@ -106,12 +105,10 @@ my @testcases = (
 );
 
 foreach my $testcase (@testcases) {
-    my $app = Provision::DSL::App->new();
-    
-    my $c = C->new({app => $app, name => $testcase->{name}, %{$testcase->{attributes}}});
+    my $c = C->new({name => $testcase->{name}, %{$testcase->{attributes}}});
     my $i = 1;
     for my $state (@{$testcase->{child_states}}) {
-        $c->add_child(E->new({app => $app, name => "child_${\$i++}", parent => $c, %$state}));
+        $c->add_child(E->new({name => "child_${\$i++}", parent => $c, %$state}));
     }
     
     test_expectation($c, $testcase, 'before');

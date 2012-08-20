@@ -8,7 +8,6 @@ use FindBin;
 use ok 'Provision::DSL::Entity::Rsync';
 
 my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
-my $app = require "$FindBin::Bin/inc/prepare_app.pl";
 
 clear_directory_content($x_dir);
 
@@ -71,7 +70,6 @@ done_testing;
 sub new_rsync {
     Provision::DSL::Entity::Rsync->new(
         name => "$FindBin::Bin/x",
-        app => $app,
         content => "$FindBin::Bin/resources/dir1",
         exclude => ['dir3'],
     );

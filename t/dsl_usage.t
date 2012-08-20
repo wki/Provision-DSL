@@ -35,4 +35,7 @@ is TestingOnly('cccc')->foo,  'cccc', 'cccc: foo is taken from name';
 is TestingOnly('cccc')->bar, 'zz', 'cccc: bar taken from creation';
 is TestingOnly('cccc')->baz, 'b', 'cccc: baz taken from default';
 
+# prevent error message in Provision::DSL::END{} from firing
+Provision::DSL::App->instance->is_running(1);
+
 done_testing;

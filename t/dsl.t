@@ -49,6 +49,7 @@ foreach my $source (qw(resource url)) {
     can_ok 'main', $source, lcfirst $source;
 }
 
-
+# prevent error message in Provision::DSL::END{} from firing
+Provision::DSL::App->instance->is_running(1);
 
 done_testing;

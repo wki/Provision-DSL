@@ -7,15 +7,15 @@ use FindBin;
 
 use ok 'Provision::DSL::Entity::Group';
 
-my $app = require "$FindBin::Bin/inc/prepare_app.pl";
+require "$FindBin::Bin/inc/prepare_app.pl";
 
 my $current_group = getgrgid($();
 
 # basic behavior
 {
+    my $app = Provision::DSL::App->instance;
+
     my $g;
-    
-    undef $g;
     lives_ok { $g = $app->create_entity('Group', {name => 'frodo_strange_hopefully'}) }
              'creating a named but unknown group entity lives';
     ok !$g->is_ok, 'an unknown group is not ok';
@@ -34,6 +34,8 @@ my $current_group = getgrgid($();
 SKIP: {
     skip 'root privileges required for creating groups', 8 if $<;
     
+    my $app = Provision::DSL::App->instance;
+
     my $unused_gid   = find_unused_gid();
     my $unused_group = find_unused_group();
 
