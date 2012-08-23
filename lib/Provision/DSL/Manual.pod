@@ -51,7 +51,7 @@ and your provisioning script could be
 
     # get perlbrew running for user 'sites'
     Perlbrew sites => {
-        wanted => '5.14.2',
+        wanted         => '5.14.2',
         install_cpanm  => 1,
     };
 

@@ -18,7 +18,7 @@ sub _build_permission { '0755' }
 sub _build_need_privilege {
     my $self = shift;
     
-    return 1 if $self->has_user && $self->user->uid != $<;
+    return 1 if $self->has_user  && $self->user->uid  != $<;
     return 1 if $self->has_group && $self->group->gid != $(;
     
     if (-d $self->path) {

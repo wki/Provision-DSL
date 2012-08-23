@@ -24,13 +24,13 @@ with 'Provision::DSL::Role::CommandlineOptions',
      'Provision::DSL::Role::HTTP';
 
 has config => (
-    is => 'ro',
+    is       => 'ro',
     required => 1,
-    coerce => sub { do $_[0] },
+    coerce   => sub { do $_[0] },
 );
 
 has root_dir => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_ExistingDir,
 );
 
@@ -50,7 +50,7 @@ sub _build_root_dir {
 }
 
 has temp_lib_dir => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_ExistingDir,
 );
 

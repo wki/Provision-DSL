@@ -5,7 +5,7 @@ use Provision::DSL::Types;
 extends 'Provision::DSL::Base';
 
 has content => (
-    is => 'lazy',
+    is  => 'lazy',
     isa => Str,
 );
 

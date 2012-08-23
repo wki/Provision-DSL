@@ -9,6 +9,8 @@ system behind working you need to know a few things:
 
 =over
 
+FIXME: wrong! before calculate_state => sub { ... }
+
 =item state
 
 Every Entity must be able to report its state. The state is represented by one

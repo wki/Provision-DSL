@@ -5,20 +5,20 @@ use Provision::DSL::Types;
 extends 'Provision::DSL::Entity';
 
 has path => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_Dir,
 );
 sub _build_path { $_[0]->name }
 
 has content => (
-    is => 'ro',
-    coerce => to_ExistingDir,
+    is       => 'ro',
+    coerce   => to_ExistingDir,
     required => 1,
 );
 
 has exclude => (
-    is => 'ro',
-    # coerce => to_DirList, ### FIXME: create me
+    is      => 'ro',
+  # coerce  => to_DirList, ### FIXME: create me
     default => sub { [] },
 );
 

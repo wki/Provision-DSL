@@ -5,7 +5,7 @@ use Template::Simple;
 extends 'Provision::DSL::Source::Resource';
 
 has vars => (
-    is => 'ro',
+    is      => 'ro',
     default => sub { {} },
 );
 

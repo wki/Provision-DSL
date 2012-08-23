@@ -11,12 +11,12 @@ our $START_UID = 1000;
 our $MAX_ID    = 2000;
 
 has uid => (
-    is => 'lazy',
+    is  => 'lazy',
     isa => Int,
 );
 
 has home_dir => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_Dir,
 );
 

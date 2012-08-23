@@ -17,9 +17,9 @@ has install_cpanm => (
 );
 
 has install_perl => (
-    is  => 'lazy',
-    isa => PerlVersion,
-    coerce => to_PerlVersion,
+    is       => 'lazy',
+    isa      => PerlVersion,
+    coerce   => to_PerlVersion,
     required => 1,
 );
 
@@ -30,28 +30,28 @@ sub _build_name { scalar getpwuid($<) }
 sub _build_user { $_[0]->name }
 
 has perlbrew_dir => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_Dir,
 );
 
 sub _build_perlbrew_dir { $_[0]->user->home_dir->subdir('perl5/perlbrew') }
 
 has perlbrew => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_File,
 );
 
 sub _build_perlbrew { $_[0]->perlbrew_dir->file('bin/perlbrew') }
 
 has perl => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_File,
 );
 
 sub _build_perl { $_[0]->bin('perl') }
 
 has cpanm => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_File,
 );
 
@@ -80,7 +80,7 @@ sub _build_children {
     return [
         $self->create_entity(
             Perlbrew_Perl => {
-                name => join('_', $self->name, 'perl'),
+                name    => join('_', $self->name, 'perl'),
                 parent  => $self,
                 install => $self->install_perl
             }

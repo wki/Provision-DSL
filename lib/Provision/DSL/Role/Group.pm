@@ -3,7 +3,7 @@ use Moo::Role;
 use Provision::DSL::Types;
 
 has group => (
-    is => 'lazy',
+    is     => 'lazy',
     coerce => to_Group,
 );
 
