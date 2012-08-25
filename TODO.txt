@@ -15,6 +15,11 @@ Generell:
     root              | normal       | sudo -n -u x ... | normal
 
 
+Erweiterbarkeit:
+  Perl->Xxx( ...)
+    * zur Laufzeit via AUTOLOAD Modul Perl::Xxx nachladen
+    * als Kind zu Perl hinzufügen
+
 _Ubuntu::Package
   * aptitude meldet keine Fehler beim Installieren
   * --> Test nach der Installation erforderlich.

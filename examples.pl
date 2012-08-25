@@ -13,9 +13,19 @@ File "$SITE_DIR/testfile" => {
 };
 
 Perlbrew {
+    user => 'sites',
     install_cpanm => 1,
     wanted  => '5.14.2',
+    
+    ### maybe this is an alternative to Perlbrew_Install below...
+    add => [
+        [ Install => 'whatever', { ... } ],
+        ...
+    ],
 };
+
+# Perlbrew->Install -- requires () around args, so we only can use:
+Perlbrew_Install 'asdf';
 
 Done;
 
@@ -24,7 +34,6 @@ exit;
 Perlbrew sites => {
     install_cpanm => 1,
     wanted        => '5.14.2',
-    switch_perl   => '5.14.2',
 };
 
 File '/path/to/file.ext' => {

@@ -29,9 +29,19 @@ Bestandteile:
           + mkdir: DirList
           + rmdir: DirList
           + content: ExistingDir
-      * Perlbrew                Kinder: perl
-          !! InstallCpanm::install_cpanm: Bool
-          + switch_to_perl: Str
+      * Perl
+          - bin
+          - cpanm
+          * Trait --> Perl::Brew, verändert "bin"
+              - brew
+              - user, group (optional)
+          * Perl::Modules --> als Kind eintragen
+              - module_dir
+              - install_deps
+              - ... cpanm optionen
+    # * Perlbrew                Kinder: perl
+    #     !! InstallCpanm::install_cpanm: Bool
+    #     + switch_to_perl: Str
       * _XXX::User              Kinder: Dir (=home), Group
           + uid: Int
           + home: Dir
@@ -104,6 +114,13 @@ Entity Erweiterung:
      * Methode
      * Rollen, dann Klasse (around, after)
      * Kind-Rollen, dann Kind-Klasse (around, after)
+  - Traits werden automatisch gesucht über Attribut bei Entity
+      Xxx asdf => { foo_bar => 123 }
+        # suche Trait wegen unbekannter methode 'foo_bar'
+        # Reihenfolge: OS::Xxx::FooBar, Xxx::FooBar, OS::FooBar, FooBar
+  - Kinder hinzufügen:
+      Xxx->Yyy( ... )
+        # fügt Kind Xxx::Yyy hinzu.
 
 
 Datenstruktur zum Deployment (gepackt als .tar.gz):

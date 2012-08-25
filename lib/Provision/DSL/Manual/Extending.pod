@@ -9,39 +9,27 @@ system behind working you need to know a few things:
 
 =over
 
-FIXME: wrong! before calculate_state => sub { ... }
+FIXME: wrong! before calculate_state => sub { ... }, add_state!!!
 
 =item state
 
 Every Entity must be able to report its state. The state is represented by one
 of three words: C<missing>, C<outdated> or C<current>. An entity derived from
-L<Entity|Provision::DSL::Entity> or
+L<Entity|Provision::DSL::Entity>, Role, Trait or
 L<Entity::Compound|Provision::DSL::Entity::Compound> must report its state
-using C<<< $self->set_state('outdated') >>>. 
+using C<<< $self->add_to_state('outdated') >>>. 
 A typical state routine looks like this:
 
-    before state => sub {
+    before calculate_state => sub {
         my $self = shift;
 
         # conditions, conditions, conditions
-        $self->set_state('missing');
+        $self->add_to__state('missing');
     };
 
-If a Role or Trait does a state-check it must report its state using
-C<<< $self->set_state('missing') >>>.
-
-    before state => sub {
-        my $self = shift;
-    
-        # conditions, conditions, conditions
-        $self->add_to_state('missing');
-    };
-
-The reason for this is the weight of a state depending on the origin. The
-Entity object has more weight. If the main entity reports a C<missing> state,
-it will remain and can never get improved by a role or other depending entity.
-Otherwise depending roles may degrade a C<current> entity to C<outdated> if
-any of them is not current.
+If the main entity reports a C<missing> state, it will remain and can never
+get improved by a role or other depending entity. Otherwise depending roles
+may degrade a C<current> entity to C<outdated> if any of them is not current.
 
 =item name
 

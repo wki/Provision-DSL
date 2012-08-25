@@ -1,9 +1,31 @@
 package Provision::DSL::Entity;
 use Moo;
+use Module::Load;
+use Try::Tiny;
 use Provision::DSL::App;
 use Provision::DSL::Types;
+use vars '$AUTOLOAD';
 
 extends 'Provision::DSL::Base';
+
+sub AUTOLOAD {
+    my $self = shift;
+    
+    my $sub_name = $AUTOLOAD;
+    $sub_name =~ s{\A .* ::}{}xms;
+    return if $sub_name =~ m{\A [A-Z]+ \z}xms;
+    
+    use feature ':5.10';
+    my $package = "${\ref $self}::$sub_name";
+    say "trying to call $package(${\join(', ', @_)})";
+    
+    try {
+        load $package;
+        # TODO: add as child
+    } catch {
+        say "could not load Module '$package'";
+    };
+}
 
 has app => (
     is       => 'lazy',
@@ -21,9 +43,9 @@ has app => (
 sub _build_app { Provision::DSL::App->instance }
 
 has parent  => ( is => 'ro',                    predicate => 1 );
-has wanted  => ( is => 'ro',   isa => Str,      default => sub { 1 } );
-has changed => ( is => 'rw',   isa => Bool,     default => sub { 0 } );
-has _state  => ( is => 'rw',   isa => State,    predicate => 1, clearer => 1 );
+has wanted  => ( is => 'ro',    isa => Str,     default => sub { 1 } );
+has changed => ( is => 'rw',    isa => Bool,    default => sub { 0 } );
+has _state  => ( is => 'rw',    isa => State,   predicate => 1, clearer => 1 );
 
 has need_privilege  => ( is => 'lazy', isa => Bool);
 sub _build_need_privilege { 0 }
