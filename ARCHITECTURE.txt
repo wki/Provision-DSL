@@ -4,6 +4,19 @@ Grundideen zur Architektur.
 not intended for publishing, therefore language is german, sorry.
 nicht zum Weitergeben gedacht, daher in deutsch.
 
+Entity Syntax:
+  Entity;
+  Entity 'name';
+  Entity 'name', arg1 => 'v1', ...;
+  Entity name => { ... args ... };
+  Entity { ... args ... };
+  
+  # nur bei Compound, $self->add() for @{...} nach Initialisierung
+  Entity [ ... ];
+  Entity 'name', [ ... ];
+  Entity name => { ... args ... }, [ ... ];
+  Entity { ... args ... }, [ ... ];
+
 
 
 Bestandteile:
