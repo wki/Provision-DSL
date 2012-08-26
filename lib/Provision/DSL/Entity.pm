@@ -1,31 +1,10 @@
 package Provision::DSL::Entity;
 use Moo;
-use Module::Load;
-use Try::Tiny;
 use Provision::DSL::App;
 use Provision::DSL::Types;
 use vars '$AUTOLOAD';
 
 extends 'Provision::DSL::Base';
-
-sub AUTOLOAD {
-    my $self = shift;
-    
-    my $sub_name = $AUTOLOAD;
-    $sub_name =~ s{\A .* ::}{}xms;
-    return if $sub_name =~ m{\A [A-Z]+ \z}xms;
-    
-    use feature ':5.10';
-    my $package = "${\ref $self}::$sub_name";
-    say "trying to call $package(${\join(', ', @_)})";
-    
-    try {
-        load $package;
-        # TODO: add as child
-    } catch {
-        say "could not load Module '$package'";
-    };
-}
 
 has app => (
     is       => 'lazy',

@@ -22,12 +22,16 @@ Entity Syntax:
 Bestandteile:
  (+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
 
- * script                       enthält DSL Befehle
+ * Script                       enthält DSL Befehle
+    * Provision                 remote laufendes script
  * DSL                          pro DSL Befehl eine sub
  * App                          zentrale Ablaufsteuerung
     ----[ logging ]
     ----[ entity creation + caching ]
     ----[ command execution ]
+    * OSX
+    * Ubuntu
+ * Base                         Basisklasse constructor, name-handling
  * Entity                       Basisklasse von Entities
     * Compound
         + children: Entity[]
@@ -42,19 +46,19 @@ Bestandteile:
           + mkdir: DirList
           + rmdir: DirList
           + content: ExistingDir
-      * Perl
-          - bin
-          - cpanm
-          * Trait --> Perl::Brew, verändert "bin"
-              - brew
-              - user, group (optional)
-          * Perl::Modules --> als Kind eintragen
-              - module_dir
-              - install_deps
-              - ... cpanm optionen
-    # * Perlbrew                Kinder: perl
-    #     !! InstallCpanm::install_cpanm: Bool
-    #     + switch_to_perl: Str
+    # * Perl
+    #     - bin
+    #     - cpanm
+    #     * Trait --> Perl::Brew, verändert "bin"
+    #         - brew
+    #         - user, group (optional)
+    #     * Perl::Modules --> als Kind eintragen
+    #         - module_dir
+    #         - install_deps
+    #         - ... cpanm optionen
+      * Perlbrew                Kinder: perl
+          !! InstallCpanm::install_cpanm: Bool
+          + switch_to_perl: Str
       * _XXX::User              Kinder: Dir (=home), Group
           + uid: Int
           + home: Dir
@@ -98,10 +102,13 @@ Entity Funktionsweise:
      + app                      ->P::DSL::App
      + parent                   ->P::DSL::Entity, wenn compound
      + wanted                   bool oder Version [1]
+     + need_privilege           gesetzt wenn root-Recht erforderlich
      + ...                      weitere Angaben bei Kind-Klassen
 
      ----[ Bestimmen des Status ]
+     + default_state
      - add_to_state             Beisteuern von Zuständen durch Kind/Rolle/...
+     - calculate_state          Auslösen der Status-Berechnung
      - state                    missing / outdated / current
      - is_ok()                  wenn Endzustand "wanted" erreicht
                                 normalerweise abgeleitet aus state/wanted
@@ -132,9 +139,20 @@ Entity Erweiterung:
         # suche Trait wegen unbekannter methode 'foo_bar'
         # Reihenfolge: OS::Xxx::FooBar, Xxx::FooBar, OS::FooBar, FooBar
   - Kinder hinzufügen:
-      Xxx->Yyy( ... )
+      Xxx ... [ [ Yyy => ... ] ]
         # fügt Kind Xxx::Yyy hinzu.
 
+
+Condition Funktionsweise:
+(+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
+  + entity                  Entity die verglichen wird
+  + attribute               Attribut der Entity
+  + value                   Wert(e) mit denen Verglichen wird
+  - state                   ermitteln des Status
+
+Entity::add_condition(Condition => 'attribute', ...)
+Entity::conditions ['DirPresent']
+  
 
 Datenstruktur zum Deployment (gepackt als .tar.gz):
 

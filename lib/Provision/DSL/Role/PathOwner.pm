@@ -5,7 +5,7 @@ use Provision::DSL::Types;
 with 'Provision::DSL::Role::User',
      'Provision::DSL::Role::Group';
 
-before state => sub {
+before calculate_state => sub {
     my $self = shift;
 
     return if !-d $self->path;
