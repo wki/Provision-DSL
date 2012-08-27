@@ -1,7 +1,7 @@
-package Provision::DSL::Condition::ScriptSuccess;
+package Provision::DSL::Inspector::ScriptSuccess;
 use Moo;
 
-extends 'Provision::DSL::Condition';
+extends 'Provision::DSL::Inspector';
 with 'Provision::DSL::Role::CommandExecution';
 
 sub state {

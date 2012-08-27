@@ -1,8 +1,8 @@
-package Provision::DSL::Condition::FileAge;
+package Provision::DSL::Inspector::FileAge;
 use Moo;
 use Path::Class;
 
-extends 'Provision::DSL::Condition';
+extends 'Provision::DSL::Inspector';
 
 sub state {
     my $self = shift;

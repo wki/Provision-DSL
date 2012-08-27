@@ -1,7 +1,7 @@
-package Provision::DSL::Condition::FilePresent;
+package Provision::DSL::Inspector::FilePresent;
 use Moo;
 
-extends 'Provision::DSL::Condition';
+extends 'Provision::DSL::Inspector';
 
 sub state {
     my $self = shift;

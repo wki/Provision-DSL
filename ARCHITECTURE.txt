@@ -144,7 +144,6 @@ Entity Erweiterung:
 
 
 Condition Funktionsweise:
-(+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
   + entity                  Entity die verglichen wird
   + attribute               Attribut der Entity
   + value                   Wert(e) mit denen Verglichen wird
@@ -152,7 +151,43 @@ Condition Funktionsweise:
 
 Entity::add_condition(Condition => 'attribute', ...)
 Entity::conditions ['DirPresent']
-  
+
+besser als Condition: Inspector
+(+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
+  + entity
+  + attribute
+  + expected_value
+  + state (lazy + clearer)
+  - need_proívilege
+  - is_current
+  - is_outdated
+  - is_missing
+
+--> viele Dinge werden compound 
+    C=Children, I=Inspectors, CI=Child Inspectors
+    * = mögliche Code-Verdoppelung
+    
+    COMPOUND:
+    Dir 
+        C: PathPermission, PathOwner, Rsync*, Dir
+        I: DirPresent
+        CI: PathPermission, PathOwner, Rsync*
+    
+    File
+        C: PathPermission, PathOwner, FileContent | FilePatch
+        I: FilePresent
+        
+    Perlbrew
+        C: Cpanm, Perl, Modules
+        I: Perlbrew
+        CI: Cpanm, Perl, Modules
+    
+    SINGLE ENTITY:
+    Execute, I: Always
+    Group, I: Group
+    Package, I: Package
+    Rsync*, I:Rsync*
+    Service, I:Service
 
 Datenstruktur zum Deployment (gepackt als .tar.gz):
 
