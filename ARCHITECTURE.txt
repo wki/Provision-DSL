@@ -158,6 +158,7 @@ besser als Condition: Inspector
   + attribute
   + expected_value
   + state (lazy + clearer)
+  - inspect
   - need_proívilege
   - is_current
   - is_outdated

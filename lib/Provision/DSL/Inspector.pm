@@ -37,6 +37,12 @@ has state => (
 
 sub _build_state { croak '_build_state must be defined in implementation' }
 
+sub inspect {
+    my $self = shift;
+    
+    $self->entity->add_to_state($self->state);
+}
+
 sub need_privilege { 0 }
 
 sub is_current  { $_[0]->state eq 'current' }
