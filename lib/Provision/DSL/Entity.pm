@@ -61,14 +61,14 @@ sub install {
     $self->log(@log, "$state => $action");
 
     $self->$action();
-    
+
     $self->_clear_state;
 }
 
 sub add_to_state {
     my $self  = shift;
     my $state = shift or return;
-    
+
     if (!$self->_has_state) {
         $self->_state($state);
     } elsif ($self->_state ne 'missing' && $self->_state ne $state) {
@@ -78,20 +78,18 @@ sub add_to_state {
 
 sub calculate_state {
     my $self = shift;
-    
-    # child classes and roles already ran their before methods if we are here
-    ### TODO: call state_from->... hooks also
+
     $self->inspector->inspect;
-    
+
     $self->add_to_state($_->is_ok ? 'current' : 'outdated')
         for $self->all_children;
-    
+
     $self->_state($self->default_state) if !$self->_has_state;
 }
 
 sub state {
     my $self = shift;
-    
+
     $self->calculate_state if !$self->_has_state;
 
     return $self->_state;

@@ -2,16 +2,13 @@ package Provision::DSL::Entity::Dir;
 use Moo;
 use Try::Tiny;
 use Provision::DSL::Types;
-# use Provision::DSL::Util 'remove_recursive';
 
-sub path;    # must forward-declare
-
-extends 'Provision::DSL::Entity::Compound';
+extends 'Provision::DSL::Entity';
 with    'Provision::DSL::Role::CommandExecution',
         'Provision::DSL::Role::User',
-        'Provision::DSL::Role::Group',
-        'Provision::DSL::Role::PathPermission',
-        'Provision::DSL::Role::PathOwner';
+        'Provision::DSL::Role::Group';
+        # 'Provision::DSL::Role::PathPermission',
+        # 'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0755' }
 
