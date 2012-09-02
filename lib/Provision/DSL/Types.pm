@@ -17,6 +17,7 @@ our @EXPORT = qw(
     to_Dir to_ExistingDir to_File
     to_User to_Group
     to_Permission to_PerlVersion
+    to_Class
 );
 
 sub Str {
@@ -146,6 +147,16 @@ sub to_Permission {
 
 sub to_PerlVersion {
     return sub { "perl-$_[0]" };
+}
+
+sub to_Class {
+    my $prefix = shift || 'Provision::DSL';
+    
+    return sub {
+        $_[0] =~ m{\A[+]}xms 
+            ? $_[0] 
+            : "$prefix\::$_[0]"
+    }
 }
 
 1;

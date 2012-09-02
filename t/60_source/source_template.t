@@ -6,7 +6,7 @@ use FindBin;
 
 use ok 'Provision::DSL::Source::Template';
 
-my $root_dir = "$FindBin::Bin/resources";
+my $root_dir = "$FindBin::Bin/../resources";
 
 my $t = Provision::DSL::Source::Template->new(
     { 

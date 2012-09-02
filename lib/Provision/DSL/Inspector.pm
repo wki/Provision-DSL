@@ -1,37 +1,37 @@
 package Provision::DSL::Inspector;
 use Moo;
 use Carp;
+use Provision::DSL::Types;
 
-has entity => (
-    is => 'ro',
-    required => 1,
-);
+with 'Provision::DSL::Role::Entity';
 
 has attribute => (
-    is => 'lazy',
+    is        => 'lazy',
+    predicate => 1,
 );
 
 # must be present in implementation if attribute is needed
 # sub _build_attribute { }
 
 has expected_value => (
-    is => 'ro',
+    is        => 'ro',
     predicate => 1,
 );
 
 # return values as list
 sub expected_values {
     my $self = shift;
-    
+
     my $value = $self->expected_value;
 
     return ref $value eq 'ARRAY'
-        ? @$value
-        : $value;
+      ? @$value
+      : $value;
 }
 
 has state => (
-    is => 'lazy',
+    is      => 'lazy',
+    isa     => State,
     clearer => 1,
 );
 
@@ -39,8 +39,8 @@ sub _build_state { croak '_build_state must be defined in implementation' }
 
 sub inspect {
     my $self = shift;
-    
-    $self->entity->add_to_state($self->state);
+
+    $self->entity->add_to_state( $self->state );
 }
 
 sub need_privilege { 0 }

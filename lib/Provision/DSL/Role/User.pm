@@ -2,9 +2,9 @@ package Provision::DSL::Role::User;
 use Moo::Role;
 use Provision::DSL::Types;
 
-has user => (
+has uid => (
     is        => 'ro',
-    coerce    => to_User,
+    # coerce    => to_User,
     predicate => 1,
 );
 

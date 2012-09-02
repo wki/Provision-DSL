@@ -27,7 +27,7 @@ use ok 'Provision::DSL::Entity::Group';
 # }
 
 
-my $script_dir = "$FindBin::Bin/bin";
+my $script_dir = "$FindBin::Bin/../bin";
 
 # erroneous cases
 {

@@ -18,3 +18,4 @@ local/
 Provision-DSL-*/
 Provision-DSL-*.tar.gz
 .provision_lib/
+.DS_Store
