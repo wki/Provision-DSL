@@ -20,12 +20,14 @@ sub need_privilege {
     return 1 if $self->entity->has_uid && $self->entity->uid != $<;
     return 1 if $self->entity->has_gid && $self->entity->gid != $(;
 
-    if (-d $self->path) {
-        return __is_not_mine($self->path);
+    my $dir = $self->value;
+    
+    if (-d $dir) {
+        return __is_not_mine($dir);
     }
 
-    my $ancestor = $self->path->parent;
-    while (!-d $ancestor && scalar $ancestor->dir_list > 2) {
+    my $ancestor = $dir->parent;
+    while (!-d $ancestor && scalar $ancestor->dir_list > 1) {
         $ancestor = $ancestor->parent;
     }
 

@@ -97,9 +97,10 @@ Bestandteile:
 Entity Funktionsweise:
 
    * P::DSL::Entity
+     (+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
      ----[ identifikation, Wunsch ]
      + name                     Pflicht, wird evtl. nach ??? kopiert
-     + app                      ->P::DSL::App
+     - app                      ->P::DSL::App
      + parent                   ->P::DSL::Entity, wenn compound
      + wanted                   bool oder Version [1]
      + need_privilege           gesetzt wenn root-Recht erforderlich

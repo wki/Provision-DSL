@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use Path::Class;
 use FindBin;
 require "$FindBin::Bin/../inc/mock_entity.pm";
 
@@ -14,7 +15,7 @@ my @testcases = (
 );
 
 foreach my $testcase (@testcases) {
-    my $e = E->new(path => $testcase->{path});
+    my $e = E->new(path => dir($testcase->{path}));
     my $i = Provision::DSL::Inspector::DirPresent->new(entity => $e);
     
     is $i->state, $testcase->{state}, 

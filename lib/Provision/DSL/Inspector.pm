@@ -13,6 +13,13 @@ has attribute => (
 # must be present in implementation if attribute is needed
 # sub _build_attribute { }
 
+sub value {
+    my $self = shift;
+    
+    my $attribute = $self->attribute;
+    return $self->entity->$attribute;
+}
+
 has expected_value => (
     is        => 'ro',
     predicate => 1,

@@ -7,35 +7,8 @@ extends 'Provision::DSL::Entity';
 with    'Provision::DSL::Role::CommandExecution',
         'Provision::DSL::Role::User',
         'Provision::DSL::Role::Group';
-        # 'Provision::DSL::Role::PathPermission',
-        # 'Provision::DSL::Role::PathOwner';
 
 sub _build_permission { '0755' }
-
-sub _build_need_privilege {
-    my $self = shift;
-    
-    return 1 if $self->has_user  && $self->user->uid  != $<;
-    return 1 if $self->has_group && $self->group->gid != $(;
-    
-    if (-d $self->path) {
-        return __is_not_mine($self->path);
-    }
-    
-    my $ancestor = $self->path->parent;
-    while (!-d $ancestor && scalar $ancestor->dir_list > 2) {
-        $ancestor = $ancestor->parent;
-    }
-    
-    return __is_not_mine($ancestor);
-}
-
-sub __is_not_mine {
-    my $path = shift;
-
-    my $stat = $path->stat;
-    return $stat->uid != $< || $stat->gid != $(;
-}
 
 has path => (
     is     => 'lazy',
@@ -56,44 +29,12 @@ has rmdir => (
 has content => (
     is        => 'ro',
     coerce    => to_ExistingDir,
-    predicate => 'has_content',
+    predicate => 1,
 );
 
-before calculate_state => sub {
-    $_[0]->add_to_state(-d $_[0]->path ? 'current' : 'missing')
-};
+sub _build_inspector_class { 'DirPresent' }
 
-before create => sub {
-    my $self = shift;
-    
-    try {
-        $self->run_command_as_user(
-            '/bin/mkdir',
-            '-p', $self->path,
-        );
-    } catch {
-        $self->run_command_as_superuser(
-            '/bin/mkdir',
-            '-p', $self->path,
-        );
-    };
-};
-
-after remove => sub {
-    my $self = shift;
-
-    try {
-        $self->run_command_as_user(
-            '/bin/rm',
-            '-rf', $self->path,
-        );
-    } catch {
-        $self->run_command_as_superuser(
-            '/bin/rm',
-            '-rf', $self->path,
-        );
-    };
-};
+sub _build_installer_class { 'MkDir' }
 
 sub _build_children {
     my $self = shift;
