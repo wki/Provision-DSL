@@ -4,7 +4,7 @@ use Try::Tiny;
 use Provision::DSL::Types;
 use Provision::DSL::Source::Bin;
 
-extends 'Provision::DSL::Entity::Compound';
+extends 'Provision::DSL::Entity';
 with    'Provision::DSL::Role::CommandExecution',
         'Provision::DSL::Role::User',
         'Provision::DSL::Role::Group',

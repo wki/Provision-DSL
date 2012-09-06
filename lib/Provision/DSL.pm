@@ -51,7 +51,6 @@ sub instantiate_app {
     my $app_package = "Provision::DSL::App::$os";
     load $app_package;
 
-    # $app = $app_package->new_with_options(os => $os, @argv);
     $app_package->instance(@argv);
 }
 

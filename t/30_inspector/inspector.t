@@ -8,7 +8,7 @@ require "$FindBin::Bin/../inc/mock_entity.pm";
 use ok 'Provision::DSL::Inspector';
 
 dies_ok { Provision::DSL::Inspector->new }
-'inspector creation without entity dies';
+        'inspector creation without entity dies';
 
 my $e = E->new;
 my $i = Provision::DSL::Inspector->new( entity => $e );

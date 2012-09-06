@@ -3,6 +3,9 @@ use warnings;
 use Test::More;
 use Test::Exception;
 use FindBin;
+use Path::Class;
+
+my $t_dir = dir($FindBin::Bin)->parent;
 
 {
     package C;
@@ -68,14 +71,14 @@ my $c = C->new();
 # Files and Dirs
 {
     dies_ok  { $c->efile('/path/to/nothing') } 'nonsense path is not existing';
-    lives_ok { $c->efile("$FindBin::Bin/resources/dir1/file1.txt") } 'file1 exists';
+    lives_ok { $c->efile("$t_dir/resources/dir1/file1.txt") } 'file1 exists';
     
     dies_ok  { $c->bfile('/path/to/nothing') } 'nonsense path is not executable';
-    dies_ok  { $c->bfile("$FindBin::Bin/resources/dir1/file1.txt") } 'file1 not executable';
-    lives_ok { $c->bfile("$FindBin::Bin/bin/args.sh") } 'args.sh is executable';
+    dies_ok  { $c->bfile("$t_dir/resources/dir1/file1.txt") } 'file1 not executable';
+    lives_ok { $c->bfile("$t_dir/bin/args.sh") } 'args.sh is executable';
     
     dies_ok  { $c->edir('/path/to/nothing') } 'nonsense dir is not existing';
-    lives_ok { $c->edir("$FindBin::Bin/resources/dir1") } 'dir1 exists';
+    lives_ok { $c->edir("$t_dir/resources/dir1") } 'dir1 exists';
 }
 
 # Perl version

@@ -1,5 +1,6 @@
 package Provision::DSL::Entity;
 use Moo;
+use Module::Load;
 use Provision::DSL::App;
 use Provision::DSL::Types;
 use Provision::DSL::Inspector::Never;
