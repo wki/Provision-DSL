@@ -44,14 +44,45 @@ Provision:
   * --debug pass thru oder --trace ?
   * bei -v: stdout bei Execute mit anzeigen?
 
-Bedingungen:
-  * bisher: only_if, not_if. Kein Einfluß auf State, nur Laufzeit
-  * besser:
-      Entity:
-        state_from -- optional
-        current_if
-        outdated_if
-        missing_if
+Installer:
+  Suchreihenfolge: Installer::_OX::Xxx, Installer::Xxx
+  * Null
+  * MkDir
+  * Touch
+  * Link
+  * Chown
+  * Chmod
+  * InstallPerlbrew
+  * Rsync
+  * Xxx::User
+  * Xxx::Group
+  * Ubuntu::Aptitude
+  * OSX::Macport
+  * Xxx::Service
+  * Execute
+
+Inspector:
+  Suchreihenfolge: Inspector::_OX::Xxx, Inspector::Xxx
+  * Always
+  * Never
+  * PathExists --> entity->path
+  *   DirExists
+  *   FileExists
+  *   LinkExists
+  * PathPermission --> entity->path, entity->permission
+  * PathOwner -->entity->path, entity->user/group
+  * PathAge -->entity->path, timestamp/other files
+  * ProcessAge -->entity->pid, timestamp/other files
+  * ExecuteSuccess -->entity->path
+  * PatchNeeded
+  * ContentEqual
+  * Rsync
+  * XXX::UserExists
+  * XXX::GroupExists
+  * Ubuntu::Dpkg
+  * OSX::Macport
+  * XXX::Service
+  * 
 
       Condition:
         Always()
@@ -63,12 +94,3 @@ Bedingungen:
         PathPermission(path, perm)
         PathOwner(path, owner)
         PathNewer(path, <dir/*.css>)
-  * ODER ABER: (DSL entity keywords anders handhaben 'wantarray'...)
-      Always Entity ...;
-      Never Entity ...;
-      With ... Entity ...;
-
-Idea:
-  * How to handle dir lists?
-      - { path, permission, user, group }
-      - Object ???
