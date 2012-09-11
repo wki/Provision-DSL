@@ -6,7 +6,8 @@ use Provision::DSL::Types;
 use Provision::DSL::Inspector::Never;
 
 extends 'Provision::DSL::Base';
-with 'Provision::DSL::Role::App';
+with 'Provision::DSL::Role::App',
+     'Provision::DSL::Role::User';
 
 # if we are a child:
 has parent => (
@@ -44,7 +45,7 @@ sub calculate_state {
     $self->inspector->inspect;
 
     $self->add_to_state( $_->is_ok ? 'current' : 'outdated' )
-      for $self->all_children;
+        for $self->all_children;
 
     $self->_state( $self->default_state ) if !$self->_has_state;
 }
@@ -65,6 +66,8 @@ sub _build_need_privilege {
 
     my $need_privilege = $self->inspector->need_privilege;
     $need_privilege ||= $_->need_privilege for $self->all_children;
+    
+    ### TODO: if user/group given but different from current
 
     return $need_privilege;
 }

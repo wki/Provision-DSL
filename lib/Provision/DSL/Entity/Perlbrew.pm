@@ -6,8 +6,6 @@ use Provision::DSL::Source::Bin;
 
 extends 'Provision::DSL::Entity';
 with    'Provision::DSL::Role::CommandExecution',
-        'Provision::DSL::Role::User',
-        'Provision::DSL::Role::Group',
         'Provision::DSL::Role::HTTP';
 
 # has install_cpanm => (

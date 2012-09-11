@@ -3,7 +3,7 @@ use Moo;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity';
-with 'Provision::DSL::Role::Group';
+# with 'Provision::DSL::Role::Group';
 
 ### FIXME: how do we ensure group existence?
 

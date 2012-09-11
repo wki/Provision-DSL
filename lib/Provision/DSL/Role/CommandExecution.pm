@@ -1,26 +1,16 @@
 package Provision::DSL::Role::CommandExecution;
 use Moo::Role;
-use Try::Tiny;
 use Carp;
 use Provision::DSL::Command;
 
 # all commands: $executable [, \%options] , @args
 
 sub command_succeeds {
-    my $self       = shift;
-    my $executable = shift;
-    my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
-    my @args       = @_;
+    my $self = shift;
 
     my $result;
-    try {
-        Provision::DSL::Command->new(
-            {
-                name => $executable,
-                args => \@args,
-                %options
-            }
-        )->run;
+    eval {
+        $self->run_command(@_);
         $result = 1;
     };
 

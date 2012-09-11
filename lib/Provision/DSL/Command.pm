@@ -5,19 +5,8 @@ use Provision::DSL::Types;
 use Carp;
 
 extends 'Provision::DSL::Base';
+with 'Provision::DSL::Role::User';
 # we do not use the user roles, we only need a string as user/group
-
-has user => (
-    is => 'ro',
-    coerce => to_Str,
-    predicate => 1,
-);
-
-has group => (
-    is => 'ro',
-    coerce => to_Str,
-    predicate => 1,
-);
 
 has command => (
     is => 'lazy',
@@ -60,12 +49,12 @@ sub run {
     my $self = shift;
     
     my @sudo;
-    if ($self->has_user || $self->has_group) {
+    if ($self->is_other_user_or_group) {
         @sudo = (
             '/usr/bin/sudo',
             '-n',
-            ($self->has_user  ? (-u => $self->user)  : ()),
-            ($self->has_group ? (-g => $self->group) : ()),
+            ($self->is_other_user  ? (-u => $self->user)  : ()),
+            ($self->is_other_group ? (-g => $self->group) : ()),
             '--'
         );
     }

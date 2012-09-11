@@ -34,15 +34,24 @@ Service:
     Idee: Prozess-Alter vs. config-file(s)
     problematisch, wenn sich das dahinter sitzende Script geändert habt
 
-new Entities: (entities immer Plattformunabhängig)
+Entities: (entities immer Plattformunabhängig)
+  * Dir (path)
+    DirExists --> Dir --> MkDir, Chown, Chmod, Rsync, Dir*
+  * Execute (path, arguments)
+    Always --> Execute --> Execute
+  * File (path)
+    FileExists --> File --> Touch, Chown, Chmod, Content, Patch
   * Link (path, link_to)
+    LinkExists --> Link --> Link
   * Cron (path, arguments, environment)
+    PatchNeeded --> Cron --> Patch
   * Perl_Modules (name-->local_lib_dir, perl, cpanm, mirror, installdeps, install)
 
 Provision:
   * -f switch: alle Entities sind outdated
   * --debug pass thru oder --trace ?
   * bei -v: stdout bei Execute mit anzeigen?
+  * logging in ~/.provision/log/...
 
 Installer:
   Suchreihenfolge: Installer::_OX::Xxx, Installer::Xxx
@@ -51,10 +60,11 @@ Installer:
   * MkDir
   * Touch
   * Link
-  * Chown
-  * Chmod
+  * Privileged::Chown
+  * Privileged::Chmod
   * InstallPerlbrew
   * Rsync
+  * Patch
   * Xxx::User
   * Xxx::Group
   * Ubuntu::Aptitude
@@ -83,7 +93,6 @@ Inspector:
   * Ubuntu::Dpkg
   * OSX::Macport
   * XXX::Service
-  * 
 
       Condition:
         Always()

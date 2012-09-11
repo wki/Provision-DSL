@@ -2,7 +2,6 @@ package E;
 use Moo;
 
 with 'Provision::DSL::Role::User';
-with 'Provision::DSL::Role::Group';
 
 has state => (
     is      => 'rw',

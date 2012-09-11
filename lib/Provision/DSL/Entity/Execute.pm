@@ -4,9 +4,7 @@ use Cwd;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity';
-with 'Provision::DSL::Role::User',
-     'Provision::DSL::Role::Group',
-     'Provision::DSL::Role::CommandExecution';
+with 'Provision::DSL::Role::CommandExecution';
 
 has path => (
     is => 'lazy',

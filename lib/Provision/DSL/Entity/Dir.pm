@@ -4,9 +4,7 @@ use Try::Tiny;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity';
-with    'Provision::DSL::Role::CommandExecution',
-        'Provision::DSL::Role::User',
-        'Provision::DSL::Role::Group';
+with    'Provision::DSL::Role::CommandExecution';
 
 sub _build_permission { '0755' }
 

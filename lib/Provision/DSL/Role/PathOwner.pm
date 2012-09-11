@@ -2,9 +2,6 @@ package Provision::DSL::Role::PathOwner;
 use Moo::Role;
 use Provision::DSL::Types;
 
-with 'Provision::DSL::Role::User',
-     'Provision::DSL::Role::Group';
-
 before calculate_state => sub {
     my $self = shift;
 
