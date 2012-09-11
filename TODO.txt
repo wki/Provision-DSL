@@ -34,7 +34,7 @@ Service:
     Idee: Prozess-Alter vs. config-file(s)
     problematisch, wenn sich das dahinter sitzende Script geändert habt
 
-new Entities:
+new Entities: (entities immer Plattformunabhängig)
   * Link (path, link_to)
   * Cron (path, arguments, environment)
   * Perl_Modules (name-->local_lib_dir, perl, cpanm, mirror, installdeps, install)
@@ -46,6 +46,7 @@ Provision:
 
 Installer:
   Suchreihenfolge: Installer::_OX::Xxx, Installer::Xxx
+  bzw: Installer::_OX::Privileged::Xxx, Installer::Privileged::Xxx
   * Null
   * MkDir
   * Touch
@@ -69,9 +70,9 @@ Inspector:
   *   DirExists
   *   FileExists
   *   LinkExists
-  * PathPermission --> entity->path, entity->permission
-  * PathOwner -->entity->path, entity->user/group
-  * PathAge -->entity->path, timestamp/other files
+  *   PathPermission --> entity->path, entity->permission
+  *   PathOwner -->entity->path, entity->user/group
+  *   PathAge -->entity->path, timestamp/other files
   * ProcessAge -->entity->pid, timestamp/other files
   * ExecuteSuccess -->entity->path
   * PatchNeeded

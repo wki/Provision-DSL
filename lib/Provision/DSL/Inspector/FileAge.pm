@@ -4,6 +4,8 @@ use Path::Class;
 
 extends 'Provision::DSL::Inspector';
 
+sub _build_attribute { 'path' }
+
 sub state {
     my $self = shift;
     

@@ -1,18 +1,11 @@
-package Provision::DSL::Inspector::DirPresent;
+package Provision::DSL::Inspector::PathExists;
 use Moo;
 
 extends 'Provision::DSL::Inspector';
 
 sub _build_attribute { 'path' }
 
-sub state {
-    my $self = shift;
-    
-    my $attribute = $self->attribute;
-    return -d $self->entity->$attribute
-        ? 'current'
-        : 'missing';
-}
+sub state { -e $_[0]->value ? 'current' : 'missing' }
 
 sub need_privilege {
     my $self = shift;
@@ -20,13 +13,13 @@ sub need_privilege {
     return 1 if $self->entity->has_uid && $self->entity->uid != $<;
     return 1 if $self->entity->has_gid && $self->entity->gid != $(;
 
-    my $dir = $self->value;
+    my $path = $self->value;
     
-    if (-d $dir) {
-        return __is_not_mine($dir);
+    if (-e $path) {
+        return __is_not_mine($path);
     }
 
-    my $ancestor = $dir->parent;
+    my $ancestor = $path->parent;
     while (!-d $ancestor && scalar $ancestor->dir_list > 1) {
         $ancestor = $ancestor->parent;
     }
