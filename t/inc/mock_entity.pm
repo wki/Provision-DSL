@@ -3,6 +3,8 @@ use Moo;
 
 with 'Provision::DSL::Role::User';
 
+has name => ( is => 'rw' );
+
 has state => (
     is      => 'rw',
     default => sub { '' },

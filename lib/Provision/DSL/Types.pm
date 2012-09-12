@@ -1,7 +1,11 @@
 package Provision::DSL::Types;
+use strict;
+use warnings;
 use Path::Class;
 use Scalar::Util 'blessed';
 use Carp;
+use Provision::DSL::Util 'os';
+use Module::Load;
 use base 'Exporter';
 
 our @EXPORT = qw(
@@ -18,7 +22,7 @@ our @EXPORT = qw(
     to_User to_Group
     to_Permission to_PerlVersion
     to_Class
-    to_Instance
+    to_ClassAndArgs
 );
 
 sub Str {
@@ -150,26 +154,30 @@ sub to_PerlVersion {
     return sub { "perl-$_[0]" };
 }
 
+# convert a string fragment to an existing class name
 sub to_Class {
     my @prefixes = @_;
 
     return sub {
-        foreach my $prefix (@prefixes) {
+        my $os = os;
+        foreach my $prefix (map { ("$_\::_$os", $_) } @prefixes) {
             my $class = "$prefix\::$_[0]";
             eval { load $class; 1; } and return $class;
         }
-        die "Class '$class' not found";
+        die "Class '$_[0]' not found";
     }
 }
 
-sub to_Instance {
+# instance or [ class => {args} ]
+sub to_ClassAndArgs {
     my @prefixes = @_;
     
     return sub {
-        blessed $_[0]
-            ? $_[0]
-            : to_Class(@prefixes)->($_[0])
-                ->new(ref $_[0] eq 'ARRAY' ? @{$_[0]} : $_[0])
+        my ($class, @args) = ref $_[0] eq 'ARRAY' ? @{$_[0]} : $_[0];
+        
+        blessed $class
+            ? $class
+            : [ to_Class(@prefixes)->($class), { @args } ];
     }
 }
 

@@ -1,6 +1,7 @@
 package Provision::DSL::Entity;
 use Moo;
 use Module::Load;
+use Scalar::Util 'blessed';
 use Provision::DSL::App;
 use Provision::DSL::Types;
 use Provision::DSL::Inspector::Never;
@@ -42,7 +43,7 @@ sub add_to_state {
 sub calculate_state {
     my $self = shift;
 
-    $self->inspector->inspect;
+    $self->inspect;
 
     $self->add_to_state( $_->is_ok ? 'current' : 'outdated' )
         for $self->all_children;
@@ -75,25 +76,46 @@ sub _build_need_privilege {
 # inspector
 has inspector => (
     is     => 'lazy',
-    coerce => to_Instance(
-        'Provision::DSL::Inspector::_' . Provision::DSL::App->instance->os,
-        'Provision::DSL::Inspector'
-    ),
+    coerce => to_ClassAndArgs('Provision::DSL::Inspector'),
 );
 
-sub _build_inspector { 'Always' }
+sub _build_inspector { 'Never' }
 
-# installer
+has _inspector => (
+    is => 'lazy',
+    handles => [qw(inspect)],
+);
+
+sub _build__inspector {
+    my $self = shift;
+    
+    return $self->inspector if blessed $self->inspector;
+    
+    my ($class, $args) = @{$self->inspector};
+    return $class->new(entity => $self, %$args);
+}
+
+# installer and args
 has installer => (
     is      => 'lazy',
-    coerce  => to_Instance(
-        'Provision::DSL::Installer::_' . Provision::DSL::App->instance->os,
-        'Provision::DSL::Installer'
-    ),
-    handles => [qw(create change remove)],
+    coerce  => to_ClassAndArgs('Provision::DSL::Installer'),
 );
 
 sub _build_installer { 'Null' }
+
+has _installer => (
+    is => 'lazy',
+    handles => [qw(create change remove)],
+);
+
+sub _build__installer {
+    my $self = shift;
+    
+    return $self->installer if blessed $self->installer;
+    
+    my ($class, $args) = @{$self->installer};
+    return $class->new(entity => $self, %$args);
+}
 
 # children
 has children => ( is => 'lazy' );

@@ -10,8 +10,8 @@ sub state { -e $_[0]->value ? 'current' : 'missing' }
 sub need_privilege {
     my $self = shift;
 
-    return 1 if $self->entity->has_uid && $self->entity->uid != $<;
-    return 1 if $self->entity->has_gid && $self->entity->gid != $(;
+    return 1 if $self->entity->has_user  && $self->entity->uid != $<;
+    return 1 if $self->entity->has_group && $self->entity->gid != $(;
 
     my $path = $self->value;
     

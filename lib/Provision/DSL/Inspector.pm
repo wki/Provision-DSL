@@ -11,7 +11,7 @@ has attribute => (
 );
 
 # must be present in implementation if attribute is needed
-# sub _build_attribute { }
+sub _build_attribute { 'name' }
 
 sub value {
     my $self = shift;
@@ -20,20 +20,19 @@ sub value {
     return $self->entity->$attribute;
 }
 
+# return values as list
+sub values {
+    map { ref $_ eq 'ARRAY' ? @$_ : $_ } $_[0]->value;
+}
+
 has expected_value => (
     is        => 'ro',
     predicate => 1,
 );
 
-# return values as list
+# return expected values as list
 sub expected_values {
-    my $self = shift;
-
-    my $value = $self->expected_value;
-
-    return ref $value eq 'ARRAY'
-      ? @$value
-      : $value;
+    map { ref $_ eq 'ARRAY' ? @$_ : $_ } $_[0]->expected_value;
 }
 
 has state => (

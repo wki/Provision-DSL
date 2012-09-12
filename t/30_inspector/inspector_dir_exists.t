@@ -5,7 +5,7 @@ use Path::Class;
 use FindBin;
 require "$FindBin::Bin/../inc/mock_entity.pm";
 
-use ok 'Provision::DSL::Inspector::DirPresent';
+use ok 'Provision::DSL::Inspector::DirExists';
 
 my @testcases = (
     { path => '/not/existing/path',     state => 'missing',  need_privilege => 1 },
@@ -16,7 +16,7 @@ my @testcases = (
 
 foreach my $testcase (@testcases) {
     my $e = E->new(path => dir($testcase->{path}));
-    my $i = Provision::DSL::Inspector::DirPresent->new(entity => $e);
+    my $i = Provision::DSL::Inspector::DirExists->new(entity => $e);
     
     is $i->state, $testcase->{state}, 
         "$testcase->{path}: state is $testcase->{state}";

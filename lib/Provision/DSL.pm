@@ -8,6 +8,7 @@ use Module::Pluggable search_path => 'Provision::DSL::Source',
                       sub_name => 'sources';
 use Module::Load;
 use Path::Class;
+use Provision::DSL::Util;
 
 =head1 NAME
 
@@ -142,13 +143,6 @@ sub turn_on_autoflush {
 
 sub OS { goto &os }
 sub Os { goto &os }
-sub os {
-    if ($^O eq 'darwin') {
-        return 'OSX';
-    } else {
-        return 'Ubuntu'; ### FIXME: maybe wrong!
-    }
-}
 
 sub Done { goto &done }
 sub done {
