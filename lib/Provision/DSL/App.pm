@@ -3,8 +3,6 @@ use feature ':5.10';
 use Moo;
 use Carp;
 use Scalar::Util 'blessed';
-use Module::Pluggable search_path => 'Provision::DSL::TraitFor',
-                      sub_name => 'traits';
 use Role::Tiny ();
 use Try::Tiny;
 use Provision::DSL::Types;
@@ -53,12 +51,6 @@ has _entity_cache => (
     is => 'rw',
     default => sub { {} },
 );
-
-has _trait_package => (
-    is => 'lazy',
-);
-
-sub _build__trait_package { +{ map { ($_ => 1) } $_[0]->traits } }
 
 ####################################### Singleton
 
@@ -160,34 +152,6 @@ sub create_entity {
 
     my $instance = $class->new({ app => $self, %$args });
     my $name = $instance->name;
-
-    my $os = $self->os;
-    my @unknown_attributes;
-
-    foreach my $attribute (keys %$args) {
-        next if $instance->can($attribute);
-        push @unknown_attributes, $attribute;
-
-        my $class = ucfirst lc $attribute;
-        $class =~ s{_}{\u}xmsg;
-
-        foreach my $trait ("$entity\::$os\::$attribute", "$entity\::$attribute",
-                           "$os\::$attribute",           $attribute)
-        {
-            my $package = "Provision::DSL::TraitFor::$trait";
-            next if !exists $self->_trait_package->{$package};
-
-            $self->log_debug("Applying Trait '$package' for attribute '$attribute'");
-
-            Role::Tiny->apply_roles_to_object($instance, $package);
-            last;
-        }
-    }
-
-    foreach my $attribute (@unknown_attributes) {
-        $instance->$attribute($args->{$attribute})
-            if $instance->can($attribute);
-    }
 
     $self->log_debug("create_entity $entity($name) from", $args);
     return $self->_entity_cache->{$entity}->{$name} = $instance;

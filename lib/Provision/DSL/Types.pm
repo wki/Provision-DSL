@@ -18,6 +18,7 @@ our @EXPORT = qw(
     to_User to_Group
     to_Permission to_PerlVersion
     to_Class
+    to_Instance
 );
 
 sub Str {
@@ -150,12 +151,25 @@ sub to_PerlVersion {
 }
 
 sub to_Class {
-    my $prefix = shift || 'Provision::DSL';
+    my @prefixes = @_;
+
+    return sub {
+        foreach my $prefix (@prefixes) {
+            my $class = "$prefix\::$_[0]";
+            eval { load $class; 1; } and return $class;
+        }
+        die "Class '$class' not found";
+    }
+}
+
+sub to_Instance {
+    my @prefixes = @_;
     
     return sub {
-        $_[0] =~ m{\A[+]}xms 
-            ? $_[0] 
-            : "$prefix\::$_[0]"
+        blessed $_[0]
+            ? $_[0]
+            : to_Class(@prefixes)->($_[0])
+                ->new(ref $_[0] eq 'ARRAY' ? @{$_[0]} : $_[0])
     }
 }
 

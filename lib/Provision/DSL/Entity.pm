@@ -73,60 +73,29 @@ sub _build_need_privilege {
 }
 
 # inspector
-has inspector_class => (
+has inspector => (
     is     => 'lazy',
-    coerce => to_Class('Provision::DSL::Inspector')
+    coerce => to_Instance(
+        'Provision::DSL::Inspector::_' . Provision::DSL::App->instance->os,
+        'Provision::DSL::Inspector'
+    ),
 );
-sub _build_inspector_class { 'Always' }
 
-has inspector_args => ( is => 'lazy' );
-sub _build_inspector_args { +{} }
-
-has inspector => ( is => 'lazy' );
-
-sub _build_inspector {
-    my $self = shift;
-
-    my $class = $self->inspector_class;
-    load $class;
-
-    return $class->new( entity => $self, %{ $self->inspector_args } );
-}
+sub _build_inspector { 'Always' }
 
 # installer
-has installer_class => (
-    is     => 'lazy',
-    coerce => to_Class('Provision::DSL::Installer')
-);
-
-sub _build_installer_class { 'Null' }
-
-around _build_installer_class => sub {
-    my ( $orig, $self ) = @_;
-
-    join '::', ( $self->need_privilege ? 'Privileged' : () ), $self->$orig();
-};
-
-has installer_args => ( is => 'lazy' );
-
-sub _build_installer_args { +{} }
-
 has installer => (
     is      => 'lazy',
+    coerce  => to_Instance(
+        'Provision::DSL::Installer::_' . Provision::DSL::App->instance->os,
+        'Provision::DSL::Installer'
+    ),
     handles => [qw(create change remove)],
 );
 
-sub _build_installer {
-    my $self = shift;
-
-    my $class = $self->installer_class;
-    load $class;
-
-    return $class->new( entity => $self, %{ $self->installer_args } );
-}
+sub _build_installer { 'Null' }
 
 # children
-
 has children => ( is => 'lazy' );
 
 sub _build_children { [] }
@@ -144,7 +113,6 @@ sub all_children { @{ $_[0]->children } }
 sub has_no_children { !scalar @{ $_[0]->children } }
 
 # installation
-
 has wanted => (
     is      => 'ro',
     isa     => Str,
