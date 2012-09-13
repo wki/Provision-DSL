@@ -65,7 +65,7 @@ has need_privilege => ( is => 'lazy', isa => Bool );
 sub _build_need_privilege {
     my $self = shift;
 
-    my $need_privilege = $self->inspector->need_privilege;
+    my $need_privilege = $self->inspector_instance->need_privilege;
     $need_privilege ||= $_->need_privilege for $self->all_children;
     
     ### TODO: if user/group given but different from current
@@ -81,12 +81,12 @@ has inspector => (
 
 sub _build_inspector { 'Never' }
 
-has _inspector => (
+has inspector_instance => (
     is => 'lazy',
     handles => [qw(inspect)],
 );
 
-sub _build__inspector {
+sub _build_inspector_instance {
     my $self = shift;
     
     return $self->inspector if blessed $self->inspector;
@@ -103,12 +103,12 @@ has installer => (
 
 sub _build_installer { 'Null' }
 
-has _installer => (
+has installer_instance => (
     is => 'lazy',
     handles => [qw(create change remove)],
 );
 
-sub _build__installer {
+sub _build_installer_instance {
     my $self = shift;
     
     return $self->installer if blessed $self->installer;
