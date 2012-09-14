@@ -35,7 +35,7 @@ sub run_command_as_user {
     ATTRIBUTE:
     foreach my $attribute (qw(user group)) {
         my $predicate = "has_$attribute";
-        my $entity = $self->can('entity') ? $self->entity : $self;
+        my $entity = $self;
         while ($entity) {
             if ($entity->can($attribute)) {
                 if ($entity->$predicate) {

@@ -55,11 +55,12 @@ Provision:
 
 Installer:
   Suchreihenfolge: Installer::_OX::Xxx, Installer::Xxx
-  Privileged wird über Role::CommandExecution geregelt
-  * Null
-  * MkDir
-  * Touch
-  * Link
+  Privileged wird über Role::CommandExecution geregelt. entity->user/group testen
+  * Null - ok
+  * PathBase - ok
+  *   MkDir - ok
+  *   Touch - ok
+  *   Link - ok
   * Chown
   * Chmod
   * InstallPerlbrew
@@ -74,15 +75,15 @@ Installer:
 
 Inspector:
   Suchreihenfolge: Inspector::_OX::Xxx, Inspector::Xxx
-  * Always
-  * Never
-  * PathExists --> entity->path
-  *   DirExists
-  *   FileExists
-  *   LinkExists
+  * Always - ok
+  * Never - ok
+  * PathExists --> entity->path - ok
+  *   DirExists - ok
+  *   FileExists - ok
+  *   LinkExists - ok
   *   PathPermission --> entity->path, entity->permission
   *   PathOwner -->entity->path, entity->user/group
-  *   PathAge -->entity->path, timestamp/other files
+  *   PathAge -->entity->path, timestamp/other files - ok
   * ProcessAge -->entity->pid, timestamp/other files
   * ExecuteSuccess -->entity->path
   * PatchNeeded

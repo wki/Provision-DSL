@@ -1,4 +1,4 @@
-package Provision::DSL::Installer::MkDir;
+package Provision::DSL::Installer::Link;
 use Moo;
 
 extends 'Provision::DSL::Installer::PathBase';
@@ -7,8 +7,8 @@ sub create {
     my $self = shift;
     
     $self->run_command_maybe_privileged(
-        '/bin/mkdir',
-        '-p', $self->entity->path,
+        '/bin/ln',
+        '-s', $self->entity->path, $self->entity->link_to
     );
 }
 
