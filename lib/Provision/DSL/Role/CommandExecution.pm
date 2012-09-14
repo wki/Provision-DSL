@@ -22,14 +22,9 @@ sub run_command_as_superuser {
     my $executable = shift;
     my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
 
-    $self->pipe_into_command(
-        undef,
-        '/usr/bin/sudo',
-        \%options,
-        '-n',
-        '-u' => 'root',
-        $executable,
-        @_);
+    $options{user} = 'root';
+    
+    $self->run_command($executable, \%options, @_);
 }
 
 sub run_command_as_user {
@@ -40,7 +35,7 @@ sub run_command_as_user {
     ATTRIBUTE:
     foreach my $attribute (qw(user group)) {
         my $predicate = "has_$attribute";
-        my $entity = $self;
+        my $entity = $self->can('entity') ? $self->entity : $self;
         while ($entity) {
             if ($entity->can($attribute)) {
                 if ($entity->$predicate) {
@@ -53,7 +48,7 @@ sub run_command_as_user {
         }
     }
 
-    $self->pipe_into_command(undef, $executable, \%options, @_);
+    $self->run_command($executable, \%options, @_);
 }
 
 sub run_command {

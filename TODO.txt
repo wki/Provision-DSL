@@ -55,13 +55,13 @@ Provision:
 
 Installer:
   Suchreihenfolge: Installer::_OX::Xxx, Installer::Xxx
-  bzw: Installer::_OX::Privileged::Xxx, Installer::Privileged::Xxx
+  Privileged wird über Role::CommandExecution geregelt
   * Null
   * MkDir
   * Touch
   * Link
-  * Privileged::Chown
-  * Privileged::Chmod
+  * Chown
+  * Chmod
   * InstallPerlbrew
   * Rsync
   * Patch
