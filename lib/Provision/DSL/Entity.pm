@@ -60,7 +60,10 @@ sub state {
 }
 
 # privilege aggregation
-has need_privilege => ( is => 'lazy', isa => Bool );
+has need_privilege => (
+    is => 'lazy',
+    isa => Bool,
+);
 
 sub _build_need_privilege {
     my $self = shift;
@@ -118,15 +121,13 @@ sub _build_installer_instance {
 }
 
 # children
-has children => ( is => 'lazy' );
+has children => (
+    is => 'lazy',
+);
 
 sub _build_children { [] }
 
-sub add_child {
-    my $self = shift;
-
-    push @{ $self->children }, @_;
-}
+sub add_child { push @{ $_[0]->children }, @_[1..$#_] }
 
 sub nr_children { scalar @{ $_[0]->children } }
 
@@ -153,10 +154,9 @@ sub install {
         return;
     }
 
-    my $action =
-      $wanted
-      ? ( $state eq 'missing' ? 'create' : 'change' )
-      : 'remove';
+    my $action = $wanted
+        ? ( $state eq 'missing' ? 'create' : 'change' )
+        : 'remove';
 
     $self->log_dryrun( @log, "would $action" ) and return;
     $self->log( @log, "$state => $action" );
@@ -171,7 +171,8 @@ sub is_ok {
     my $wanted = shift // $self->wanted;
     my $state  = shift // $self->state;
 
-    return ( $state eq 'current' && $wanted )
+    return
+         ( $state eq 'current' &&  $wanted )
       || ( $state eq 'missing' && !$wanted );
 }
 

@@ -40,7 +40,7 @@ use ok 'Provision::DSL::Entity';
     # no strict 'refs';
     no warnings 'redefine';
     local *Provision::DSL::Inspector::Never::need_privilege = sub { 1 };
-    
+
     ok +Provision::DSL::Entity->new(name => 'bla')->need_privilege,
         'privilege needed when inspector requests it';
 }
@@ -48,26 +48,42 @@ use ok 'Provision::DSL::Entity';
 # states/privilege depending on parent/child
 {
     my @testcases = (
-        # parent        child          expect
-        [ 'missing', 0, 'outdated', 0, 'missing', 0 ],
+        # parent         child          expect
+        [ 'missing',  0, 'current',  0, 'missing',  0 ],
+        [ 'missing',  0, 'outdated', 0, 'missing',  0 ],
+        [ 'missing',  0, 'missing',  0, 'missing',  0 ],
+        
+        [ 'outdated', 0, 'current',  0, 'outdated', 0 ],
+        [ 'outdated', 0, 'outdated', 0, 'outdated', 0 ],
+        [ 'outdated', 0, 'missing',  0, 'outdated', 0 ],
+        
+        [ 'current',  1, 'current',  0, 'current',  1 ],
+        [ 'current',  0, 'outdated', 1, 'outdated', 1 ],
+        [ 'current',  1, 'missing',  1, 'outdated', 1 ],
     );
-    
+
     foreach my $testcase (@testcases) {
         my ($pstate, $ppriv,
             $cstate, $cpriv,
             $estate, $epriv) = @$testcase;
         my $name = join ',', @$testcase;
-        
-        my $pe = Provision::DSL::Entity->new(name => 'bla');
-        my $pi = Provision::DSL::Inspector->new(entity => $pe, state => $pstate);
-        $pe->inspector_instance($pi);
 
-        my $ce = Provision::DSL::Entity->new(name => 'bla1', parent => $pe);
-        my $ci = Provision::DSL::Inspector->new(entity => $ce, state => $pstate);
-        $ce->inspector_instance($ci);
-        
+        my $pe = Provision::DSL::Entity->new(
+            name           => 'parent',
+            inspector      => [ 'Always', state => $pstate, need_privilege => $ppriv ],
+        );
+
+        my $ce = Provision::DSL::Entity->new(
+            name           => 'child',
+            parent         => $pe,
+            inspector      => [ 'Always', state => $cstate, need_privilege => $cpriv ],
+        );
+
         $pe->add_child($ce);
-        
+        is $pe->nr_children, 1, "$name: parent has 1 child";
+        is_deeply $pe->children, [$ce], "$name: child array-ref looks good";
+        is_deeply [ $pe->all_children ], [$ce], "$name: child array looks good";
+
         is $pe->state, $estate, "$name: state is '$estate'";
         if ($epriv) {
             ok $pe->need_privilege, "$name: need privilege";
@@ -75,6 +91,43 @@ use ok 'Provision::DSL::Entity';
             ok !$pe->need_privilege, "$name: do not need privilege";
         }
     }
+}
+
+# check is_ok depending on wanted/state
+{
+    my @testcases = (
+        # state         wanted  is_ok
+        [ 'missing',    0,      1],
+        [ 'missing',    1,      0],
+        [ 'outdated',   0,      0],
+        [ 'outdated',   1,      0],
+        [ 'current',    0,      0],
+        [ 'current',    1,      1],
+    );
+    
+    foreach my $testcase (@testcases) {
+        my ($state, $wanted, $is_ok) = @$testcase;
+        my $name = join ',', @$testcase;
+        
+        my $e = Provision::DSL::Entity->new(
+            name      => 'entity',
+            wanted    => $wanted,
+            inspector => [ 'Always', state => $state ],
+        );
+
+        if ($is_ok) {
+            ok $e->is_ok, "$name: is ok";
+        } else {
+            ok !$e->is_ok, "$name: is not ok";
+        }
+    }
+}
+
+# check calling installer methods
+{
+    my @testcases = (
+        # ...
+    );
 }
 
 done_testing;

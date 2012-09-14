@@ -49,7 +49,12 @@ sub inspect {
     $self->entity->add_to_state( $self->state );
 }
 
-sub need_privilege { 0 }
+has need_privilege => (
+    is => 'lazy',
+    isa => Bool,
+);
+
+sub _build_need_privilege { 0 }
 
 sub is_current  { $_[0]->state eq 'current' }
 sub is_missing  { $_[0]->state eq 'missing' }
