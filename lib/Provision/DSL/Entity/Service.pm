@@ -1,46 +1,12 @@
 package Provision::DSL::Entity::Service;
 use Moo;
 
-extends 'Provision::DSL::Entity::File';
+extends 'Provision::DSL::Entity';
 
-# sub BUILD {
-#     my $self = shift;
-#     
-#     warn 'Service::BUILD';
-#     
-#     # avoid exception in File
-#     if (!$self->has_patches) {
-#         $self->patches([]);
-#     }
-# }
+### TODO: vorher war Service ein File. 
+###       Wir brauchen nun ein (config) File, das mit uns assoziiert ist
 
-sub _allow_remove { 0 }
-sub _strict_args  { 0 }
-
-before calculate_state => sub {
-    my $self = shift;
-    
-    if ($self->_service_running) {
-        $self->add_to_state('missing');
-    } else {
-        $self->add_to_state('current');
-    }
-};
-
-# start service after a possible file creation
-after ['create', 'change'] => sub {
-    my $self = shift;
-    
-    $self->_stop_service;
-    $self->_install_service;
-    $self->_start_service;
-};
-
-# stop service before a possible file removal
-before remove => sub {
-    my $self = shift;
-    
-    $self->_stop_service;
-};
+sub _build_inspector { 'Service' }
+sub _build_installer { 'Service' }
 
 1;

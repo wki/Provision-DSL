@@ -59,6 +59,9 @@ sub state {
     return $self->_state;
 }
 
+# called from Inspector::Self. Override if all-in-one class wanted
+sub self_calculate_state { 'current' }
+
 # privilege aggregation
 has need_privilege => (
     is => 'lazy',
@@ -75,6 +78,9 @@ sub _build_need_privilege {
 
     return $need_privilege;
 }
+
+# called from Inspector::Self. Override if all-in-one class wanted
+sub self_calculate_need_privilege { 0 }
 
 # inspector
 has inspector => (
@@ -119,6 +125,11 @@ sub _build_installer_instance {
     my ($class, $args) = @{$self->installer};
     return $class->new(entity => $self, %$args);
 }
+
+# called from Installer::Self
+sub self_create {}
+sub self_change {}
+sub self_remove {}
 
 # children
 has children => (

@@ -30,7 +30,7 @@ has content => (
     predicate => 1,
 );
 
-sub _build_inspector_class { 'DirPresent' }
+sub _build_inspector_class { 'DirExists' }
 
 sub _build_installer_class { 'MkDir' }
 

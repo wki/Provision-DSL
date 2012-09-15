@@ -22,27 +22,33 @@ has exclude => (
     default => sub { [] },
 );
 
-before calculate_state => sub {
+# act as inspector and installer myself
+# Reason: _rsync command and other attributes needed
+sub _build_inspector { 'Self' }
+sub _build_installer { 'Self' }
+
+sub self_determine_state {
     my $self = shift;
     
-    my $state = 'current';
-
-    if (!-d $self->path) {
-        $state = 'missing';
-    } else {
-        $state =
-            $self->_rsync_command(
-                    '--dry-run',
-                    '--out-format' => 'copying %n',
-            ) =~ m{^(?:deleting|copying)\s}xms
+    my $state = 'missing';
+    if (-d $self->path) {
+        my $result = $self->_run_rsync_command(
+            '--dry-run',
+            '--out-format' => 'copying %n',
+        );
+        
+        $state = $result =~ m{^(?:deleting|copying)\s}xms
         ? 'outdated'
         : 'current';
     }
     
-    $self->add_to_state($state);
-};
+    return $state;
+}
 
-sub _rsync_command {
+sub self_create { $_[0]->_run_rsync_command }
+sub self_change { $_[0]->_run_rsync_command }
+
+sub _run_rsync_command {
     my $self = shift;
 
     my @args = (
@@ -75,7 +81,5 @@ sub _exclude_list {
 
     return @exclude_list;
 }
-
-after ['create', 'change'] => sub { $_[0]->_rsync_command };
 
 1;

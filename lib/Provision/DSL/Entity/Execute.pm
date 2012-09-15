@@ -68,6 +68,9 @@ sub _install {
     return $script_output;
 }
 
-after ['create', 'change'] => sub { $_[0]->_install };
+sub _build_installer { 'Self' }
+
+sub self_create { $_[0]->_install }
+sub self_change { $_[0]->_install }
 
 1;
