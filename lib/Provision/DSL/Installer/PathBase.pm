@@ -3,7 +3,8 @@ use Moo;
 
 extends 'Provision::DSL::Installer';
 
-before create => sub {
+# before 'create' does not work in parent class
+sub prepare_for_creation {
     my $self = shift;
 
     if (-e $self->entity->path) {
