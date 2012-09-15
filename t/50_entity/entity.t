@@ -93,26 +93,27 @@ use ok 'Provision::DSL::Entity';
     }
 }
 
-# check is_ok depending on wanted/state
+# check is_ok and action depending on wanted/state
 {
     my @testcases = (
-        # state         wanted  is_ok
-        [ 'missing',    0,      1],
-        [ 'missing',    1,      0],
-        [ 'outdated',   0,      0],
-        [ 'outdated',   1,      0],
-        [ 'current',    0,      0],
-        [ 'current',    1,      1],
+        # state         wanted  is_ok  action
+        [ 'missing',    0,      1,     ''],
+        [ 'missing',    1,      0,     'create'],
+        [ 'outdated',   0,      0,     'remove'],
+        [ 'outdated',   1,      0,     'change'],
+        [ 'current',    0,      0,     'remove'],
+        [ 'current',    1,      1,     ''],
     );
     
     foreach my $testcase (@testcases) {
-        my ($state, $wanted, $is_ok) = @$testcase;
+        my ($state, $wanted, $is_ok, $action) = @$testcase;
         my $name = join ',', @$testcase;
         
         my $e = Provision::DSL::Entity->new(
             name      => 'entity',
             wanted    => $wanted,
             inspector => [ 'Always', state => $state ],
+            installer => 'Debug',
         );
 
         if ($is_ok) {
@@ -120,14 +121,11 @@ use ok 'Provision::DSL::Entity';
         } else {
             ok !$e->is_ok, "$name: is not ok";
         }
+        
+        $e->install;
+        is $e->installer_instance->debug_info, $action,
+            "$name: called action was '$action'";
     }
-}
-
-# check calling installer methods
-{
-    my @testcases = (
-        # ...
-    );
 }
 
 done_testing;
