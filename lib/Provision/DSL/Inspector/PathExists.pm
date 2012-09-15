@@ -5,7 +5,7 @@ extends 'Provision::DSL::Inspector';
 
 sub _build_attribute { 'path' }
 
-sub state { -e $_[0]->value ? 'current' : 'missing' }
+sub _build_state { -e $_[0]->value ? 'current' : 'missing' }
 
 sub need_privilege {
     my $self = shift;

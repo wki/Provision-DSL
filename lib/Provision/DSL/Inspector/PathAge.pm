@@ -6,7 +6,7 @@ extends 'Provision::DSL::Inspector';
 
 sub _build_attribute { 'path' }
 
-sub state {
+sub _build_state {
     my $self = shift;
     
     my $destination_file = $self->value;

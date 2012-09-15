@@ -3,6 +3,6 @@ use Moo;
 
 extends 'Provision::DSL::Inspector::PathExists';
 
-sub state { -d $_[0]->value ? 'current' : 'missing' }
+sub _build_state { -d $_[0]->value ? 'current' : 'missing' }
 
 1;

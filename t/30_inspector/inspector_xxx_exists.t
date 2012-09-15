@@ -53,7 +53,7 @@ use ok 'Provision::DSL::Inspector::LinkExists';
     my @testcases = (
         { path => "$FindBin::Bin/xxx/foo", state => 'missing' },
         { path => "$FindBin::Bin/xxx/bar", state => 'missing' },
-        { path => "$FindBin::Bin/xxx/baz", state => 'current' },
+        { path => "$FindBin::Bin/xxx/baz", state => 'current', link_to => "$FindBin::Bin/xxx/bar"},
     );
     
     prepare_dir();
@@ -78,7 +78,9 @@ sub run_testcases {
     my $class_name = shift;
     
     foreach my $testcase (@_) {
-        my $e = E->new(path => dir($testcase->{path}));
+        my $e = E->new(
+            path => dir($testcase->{path}),
+            ($testcase->{link_to} ? (link_to => dir($testcase->{link_to})): ()));
         my $class = "Provision::DSL::Inspector::$class_name";
         my $i = $class->new(entity => $e);
 

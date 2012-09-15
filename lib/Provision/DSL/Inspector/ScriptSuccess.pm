@@ -4,7 +4,9 @@ use Moo;
 extends 'Provision::DSL::Inspector';
 with 'Provision::DSL::Role::CommandExecution';
 
-sub state {
+sub _build_attribute { 'path' }
+
+sub _build_state {
     $_[0]->command_succeeds($_[0]->values)
         ? 'current'
         : 'outdated';

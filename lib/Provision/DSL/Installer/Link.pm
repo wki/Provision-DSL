@@ -10,7 +10,7 @@ sub create {
     
     $self->run_command_maybe_privileged(
         '/bin/ln',
-        '-s', $self->entity->path, $self->entity->link_to
+        '-s', $self->entity->link_to, $self->entity->path
     );
 }
 

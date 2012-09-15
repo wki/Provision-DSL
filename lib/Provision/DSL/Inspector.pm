@@ -10,15 +10,11 @@ has attribute => (
     predicate => 1,
 );
 
-# must be present in implementation if attribute is needed
+# may get changed in derieved classes if attribute is different
 sub _build_attribute { 'name' }
 
-sub value {
-    my $self = shift;
-    
-    my $attribute = $self->attribute;
-    return $self->entity->$attribute;
-}
+# retrieve value from entitie's attribute given above
+sub value { $_[0]->entity->${\$_[0]->attribute} }
 
 # return values as list
 sub values {

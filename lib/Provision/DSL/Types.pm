@@ -164,7 +164,7 @@ sub to_Class {
             my $class = "$prefix\::$_[0]";
             eval { load $class; 1; } and return $class;
         }
-        die "Class '$_[0]' not found";
+        die "Class '$_[0]' not found ($@)";
     }
 }
 

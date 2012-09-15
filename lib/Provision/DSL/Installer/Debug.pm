@@ -1,6 +1,5 @@
 package Provision::DSL::Installer::Debug;
-use Moose;
-use namespace::autoclean;
+use Moo;
 
 extends 'Provision::DSL::Installer';
 

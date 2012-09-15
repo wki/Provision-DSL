@@ -85,14 +85,13 @@ Inspector:
   *   PathOwner -->entity->path, entity->user/group
   *   PathAge -->entity->path, timestamp/other files - ok
   * ProcessAge -->entity->pid, timestamp/other files
-  * ExecuteSuccess -->entity->path
+  * ScriptSuccess -->entity->path
   * PatchNeeded
   * ContentEqual
   * Rsync
   * XXX::UserExists
   * XXX::GroupExists
-  * Ubuntu::Dpkg
-  * OSX::Macport
+  * XXX::Package
   * XXX::Service
 
       Condition:
