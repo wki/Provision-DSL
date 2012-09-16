@@ -77,9 +77,9 @@ sub _build_need_privilege {
     return $need_privilege;
 }
 
-# inspector
+# inspector and args -- use a BUILD method to populate
 has inspector => (
-    is        => 'ro',
+    is        => 'rw',
     coerce    => to_ClassAndArgs('Provision::DSL::Inspector'),
     predicate => 1,
 );
@@ -104,9 +104,9 @@ sub _build_inspector_instance {
 # must get overloaded if we are inspecting ourselves
 sub inspect {}
 
-# installer and args
+# installer and args -- use a BUILD method to populate
 has installer => (
-    is        => 'lazy',
+    is        => 'rw',
     coerce    => to_ClassAndArgs('Provision::DSL::Installer'),
     predicate => 1,
 );
