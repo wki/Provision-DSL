@@ -59,9 +59,6 @@ sub state {
     return $self->_state;
 }
 
-# called from Inspector::Self. Override if all-in-one class wanted
-sub self_calculate_state { 'current' }
-
 # privilege aggregation
 has need_privilege => (
     is => 'lazy',
@@ -71,6 +68,7 @@ has need_privilege => (
 sub _build_need_privilege {
     my $self = shift;
 
+    ### FIXME: will trigger a loop if $self is instance
     my $need_privilege = $self->inspector_instance->need_privilege;
     $need_privilege ||= $_->need_privilege for $self->all_children;
     
@@ -79,16 +77,14 @@ sub _build_need_privilege {
     return $need_privilege;
 }
 
-# called from Inspector::Self. Override if all-in-one class wanted
-sub self_calculate_need_privilege { 0 }
-
 # inspector
 has inspector => (
-    is     => 'lazy',
-    coerce => to_ClassAndArgs('Provision::DSL::Inspector'),
+    is        => 'ro',
+    coerce    => to_ClassAndArgs('Provision::DSL::Inspector'),
+    predicate => 1,
 );
 
-sub _build_inspector { 'Never' }
+# sub _build_inspector { 'Never' }
 
 has inspector_instance => (
     is => 'lazy',
@@ -98,19 +94,22 @@ has inspector_instance => (
 sub _build_inspector_instance {
     my $self = shift;
     
+    return $self            if !$self->has_inspector;
     return $self->inspector if blessed $self->inspector;
     
     my ($class, $args) = @{$self->inspector};
     return $class->new(entity => $self, %$args);
 }
 
+# must get overloaded if we are inspecting ourselves
+sub inspect {}
+
 # installer and args
 has installer => (
-    is      => 'lazy',
-    coerce  => to_ClassAndArgs('Provision::DSL::Installer'),
+    is        => 'lazy',
+    coerce    => to_ClassAndArgs('Provision::DSL::Installer'),
+    predicate => 1,
 );
-
-sub _build_installer { 'Null' }
 
 has installer_instance => (
     is => 'lazy',
@@ -120,16 +119,17 @@ has installer_instance => (
 sub _build_installer_instance {
     my $self = shift;
     
+    return $self            if !$self->has_installer;
     return $self->installer if blessed $self->installer;
     
     my ($class, $args) = @{$self->installer};
     return $class->new(entity => $self, %$args);
 }
 
-# called from Installer::Self
-sub self_create {}
-sub self_change {}
-sub self_remove {}
+# must get overloaded if we are handling ourselves
+sub create {}
+sub change {}
+sub remove {}
 
 # children
 has children => (
