@@ -4,6 +4,7 @@ use Moo;
 extends 'Provision::DSL::Inspector';
 
 sub _build_state {
+    my $self = shift;
     
     my $state = 'missing';
     try {

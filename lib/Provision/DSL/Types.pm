@@ -168,7 +168,7 @@ sub to_Class {
     }
 }
 
-# instance or [ class => {args} ]
+# undef, instance or [ class => {args} ]
 sub to_ClassAndArgs {
     my @prefixes = @_;
     
@@ -177,7 +177,9 @@ sub to_ClassAndArgs {
         
         blessed $class
             ? $class
-            : [ to_Class(@prefixes)->($class), { @args } ];
+      : defined $class && $class
+            ? [ to_Class(@prefixes)->($class), { @args } ]
+            : undef
     }
 }
 

@@ -21,6 +21,7 @@ use ok 'Provision::DSL::Types';
     
     dies_ok { $c->('NotExistingClass') } 'coercing a not existing class dies';
     
+    # fails but should work:
     is $c->('Package'), 'Provision::DSL::Inspector::_OSX::Package',
         'a OS-specific Class is found';
     
@@ -38,6 +39,9 @@ use ok 'Provision::DSL::Types';
     
     is_deeply $c->('Never'), [ 'Provision::DSL::Inspector::Never', {} ],
         'string instantiation works';
+    
+    ok !defined $c->(), 'empty class coercion gives undef';
+    ok !defined $c->(''), 'empty string class coercion gives undef';
 }
 
 done_testing;

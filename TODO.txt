@@ -104,3 +104,36 @@ Inspector:
         PathPermission(path, perm)
         PathOwner(path, owner)
         PathNewer(path, <dir/*.css>)
+
+----
+
+state: lazy, clearer
+_build_state: <== calculate_state // _state beeinflussen, dann return _state
+
+_state: rw, predicate, clearer
+
+inspect() // return 'state'
+Inspector::inspect() // return state
+
+-----------
+
+need_privilege: lazy
+_build_privilege: return inspector *OR* all_children
+
+-----------
+
+create() // nur aufrufen wenn kein installer
+change()
+remove()
+
+------------
+
+inspector: lazy, coerce
+_build_inspector: return undef
+has_inspector: return defined inspector()
+
+inspector_instance: lazy
+_build_inspector_instance: undef durchreichen, sonst instance bauen
+
+--- installer ditto
+
