@@ -35,17 +35,36 @@ Service:
     problematisch, wenn sich das dahinter sitzende Script geändert habt
 
 Entities: (entities immer Plattformunabhängig)
-  * Dir (path)
-    DirExists --> Dir --> MkDir, Chown, Chmod, Rsync, Dir*
+    (inspector --> entity --> installer [children])
+    
   * Execute (path, arguments)
     Always --> Execute --> Execute
+    
+  * Dir (path)
+    DirExists --> Dir --> MkDir, [Chown, Chmod, Rsync, Dir*]
+    
   * File (path)
-    FileExists --> File --> Touch, Chown, Chmod, Content, Patch
+    FileExists --> File --> Touch, [Chown, Chmod, Content, Patch]
+    
   * Link (path, link_to)
     LinkExists --> Link --> Link
+    
+  * Rsync
+    Rsync* --> Rsync --> Rsync* // *: zusätzliche Rolle: Rsync
+    
+  * Patch
+    PatchNeeded --> Patch --> Patch
+    
   * Cron (path, arguments, environment)
-    PatchNeeded --> Cron --> Patch
-  * Perl_Modules (name-->local_lib_dir, perl, cpanm, mirror, installdeps, install)
+    CronExists --> Cron --> Cron [Patch]
+
+  * Perlbrew (perl, cpanm)
+    Perlbrew --> Perlbrew --> Perlbrew [Cpanm, PerlModules]
+
+  * Cpanm
+    Cpanm --> Cpanm --> Cpanm
+    
+  * PerlModules (name-->local_lib_dir, perl, cpanm, mirror, installdeps, install)
 
 Provision:
   * -f switch: alle Entities sind outdated
