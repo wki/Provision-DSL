@@ -16,11 +16,13 @@ where a minimal configuration file might look like
         name           => 'a descriptive name',
         provision_file => 'path/to/provisioning_script.pl',
         
+        # details of the ssh connection
         ssh => {
             hostname => 'your_server.domain.de',
             user     => 'websites',
         },
         
+        # files accessible via Resource(...) in provisioning-script
         resources => [
             {
                 source      => 'root',
@@ -117,11 +119,16 @@ to get it into the wanted state.
 
 =back
 
+Additionally every entity observes if root-privileges are needed in order
+to get the entity installed and verifies if the current user can easily
+obtain root-privileges by prefixing a command by C<<<sudo -n>>>. If at least
+one entity would need root-privileges but the user cannot provide this
+capability, the entire provisioning will abort.
+
 Usually, entities are simply processed in source order without knowing
-each other. If changes in one entity should influence another entity,
-the originating entity could C<talk> a special word, a dependent entity
-could C<listen> to. If en entity hears a word, is listens to, it will
-change to the outdated state.
+each other. Every entity must act on its own without any reference to other
+entities. This ensures, that a provisioning process can continue whatever
+a point of interruption might be.
 
 =head2 Types of entities
 

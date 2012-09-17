@@ -168,16 +168,14 @@ sub to_Class {
     }
 }
 
-# undef, instance or [ class => {args} ]
+# undef or [ class => {args} ]
 sub to_ClassAndArgs {
     my @prefixes = @_;
     
     return sub {
         my ($class, @args) = ref $_[0] eq 'ARRAY' ? @{$_[0]} : $_[0];
         
-        blessed $class
-            ? $class
-      : defined $class && $class
+        defined $class && $class
             ? [ to_Class(@prefixes)->($class), { @args } ]
             : undef
     }

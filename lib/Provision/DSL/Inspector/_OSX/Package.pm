@@ -1,5 +1,6 @@
 package Provision::DSL::Inspector::_OSX::Package;
 use Moo;
+use Try::Tiny;
 
 extends 'Provision::DSL::Inspector';
 

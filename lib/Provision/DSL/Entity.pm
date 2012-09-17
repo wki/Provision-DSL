@@ -17,6 +17,28 @@ has parent => (
 );
 
 # state management
+has state => (
+    is => 'lazy',
+    clearer => 1,
+);
+
+sub _build_state {
+    my $self = shift;
+
+    $self->_clear_state; # clears _state (!)
+
+    $self->add_to_state($self->inspect);
+    $self->add_to_state($self->inspector_instance->inspect)
+        if $self->has_inspector;
+
+    $self->add_to_state( $_->is_ok ? 'current' : 'outdated' )
+        for $self->all_children;
+
+    $self->_state( $self->default_state ) if !$self->_has_state;
+
+    return $self->_state;
+}
+
 has _state => (
     is        => 'rw',
     isa       => State,
@@ -24,7 +46,9 @@ has _state => (
     clearer   => 1,
 );
 
-has default_state => ( is => 'lazy' );
+has default_state => (
+    is => 'lazy',
+);
 
 sub _build_default_state { 'current' }
 
@@ -40,26 +64,7 @@ sub add_to_state {
     }
 }
 
-sub calculate_state {
-    my $self = shift;
-
-    $self->inspect;
-
-    $self->add_to_state( $_->is_ok ? 'current' : 'outdated' )
-        for $self->all_children;
-
-    $self->_state( $self->default_state ) if !$self->_has_state;
-}
-
-sub state {
-    my $self = shift;
-
-    $self->calculate_state if !$self->_has_state;
-
-    return $self->_state;
-}
-
-# privilege aggregation
+# privilege aggregation - overload accessor if needed.
 has need_privilege => (
     is => 'lazy',
     isa => Bool,
@@ -68,35 +73,43 @@ has need_privilege => (
 sub _build_need_privilege {
     my $self = shift;
 
-    ### FIXME: will trigger a loop if $self is instance
-    my $need_privilege = $self->inspector_instance->need_privilege;
-    $need_privilege ||= $_->need_privilege for $self->all_children;
-    
+    my $need_privilege = 0;
+
+    $need_privilege ||= $self->inspector_instance->need_privilege
+        if $self->has_inspector;
+
+    $need_privilege ||= $_->need_privilege
+        for $self->all_children;
+
     ### TODO: if user/group given but different from current
 
     return $need_privilege;
 }
 
-# inspector and args -- use a BUILD method to populate
+# inspector and args -- set attribute or overload accessor to change
 has inspector => (
-    is        => 'rw',
-    coerce    => to_ClassAndArgs('Provision::DSL::Inspector'),
-    predicate => 1,
+    is      => 'ro',
+    default => sub { undef },
 );
 
-# sub _build_inspector { 'Never' }
+sub has_inspector { defined $_[0]->inspector }
+
+has inspector_class => (
+    is     => 'lazy'
+    coerce => to_ClassAndArgs('Provision::DSL::Inspector'),
+);
+
+sub _build_inspector_class { $_[0]->inspector }
 
 has inspector_instance => (
     is => 'lazy',
-    handles => [qw(inspect)],
 );
 
 sub _build_inspector_instance {
     my $self = shift;
-    
-    return $self            if !$self->has_inspector;
-    return $self->inspector if blessed $self->inspector;
-    
+
+    return if !$self->has_inspector;
+
     my ($class, $args) = @{$self->inspector};
     return $class->new(entity => $self, %$args);
 }
@@ -106,22 +119,28 @@ sub inspect {}
 
 # installer and args -- use a BUILD method to populate
 has installer => (
-    is        => 'rw',
-    coerce    => to_ClassAndArgs('Provision::DSL::Installer'),
-    predicate => 1,
+    is      => 'ro',
+    default => sub { undef },
+};
+
+sub has_installer { defined $_[0]->installer }
+
+has installer_class => (
+    is     => 'lazy',
+    coerce => to_ClassAndArgs('Provision::DSL::Installer'),
 );
+
+has _build_installer_class { $_[0]->installer }
 
 has installer_instance => (
     is => 'lazy',
-    handles => [qw(create change remove)],
 );
 
 sub _build_installer_instance {
     my $self = shift;
-    
-    return $self            if !$self->has_installer;
-    return $self->installer if blessed $self->installer;
-    
+
+    return if !$self->has_installer;
+
     my ($class, $args) = @{$self->installer};
     return $class->new(entity => $self, %$args);
 }
@@ -173,8 +192,9 @@ sub install {
     $self->log( @log, "$state => $action" );
 
     $self->$action();
+    $self->installer->$action() if $self->has_installer;
 
-    $self->_clear_state;
+    $self->clear_state;
 }
 
 sub is_ok {
@@ -186,6 +206,11 @@ sub is_ok {
          ( $state eq 'current' &&  $wanted )
       || ( $state eq 'missing' && !$wanted );
 }
+
+# implement if self-action is wanted
+sub create {}
+sub change {}
+sub remove {}
 
 after [ 'create', 'change' ] => sub { $_->install() for $_[0]->all_children };
 

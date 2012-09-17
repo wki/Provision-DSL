@@ -5,19 +5,24 @@ Provision::DSL::Manual::Extending - how to extend Provision::DSL
 =head1 ENTITIES
 
 Creating new entities can be very simple. In order to maintain the whole
-system behind working you need to know a few things:
+system behind working you need to know a few things.
+
+### inspectors, installers or do-it-myself
+
+### how to influence state-calculation
+
+### need_privilege
+
+### installer methods
 
 =over
 
-FIXME: wrong! before calculate_state => sub { ... }, add_state!!!
-
-=item state
+=item calculating state
 
 Every Entity must be able to report its state. The state is represented by one
 of three words: C<missing>, C<outdated> or C<current>. An entity derived from
-L<Entity|Provision::DSL::Entity>, Role, Trait or
-L<Entity::Compound|Provision::DSL::Entity::Compound> must report its state
-using C<<< $self->add_to_state('outdated') >>>. 
+L<Entity|Provision::DSL::Entity> must report its state using 
+C<<< $self->add_to_state('outdated') >>>. 
 A typical state routine looks like this:
 
     before calculate_state => sub {
