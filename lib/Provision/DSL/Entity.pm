@@ -95,7 +95,7 @@ has inspector => (
 sub has_inspector { defined $_[0]->inspector }
 
 has inspector_class => (
-    is     => 'lazy'
+    is     => 'lazy',
     coerce => to_ClassAndArgs('Provision::DSL::Inspector'),
 );
 
@@ -110,18 +110,18 @@ sub _build_inspector_instance {
 
     return if !$self->has_inspector;
 
-    my ($class, $args) = @{$self->inspector};
+    my ($class, $args) = @{$self->inspector_class};
     return $class->new(entity => $self, %$args);
 }
 
 # must get overloaded if we are inspecting ourselves
 sub inspect {}
 
-# installer and args -- use a BUILD method to populate
+# installer and args -- set attribute or overload accessor to change
 has installer => (
     is      => 'ro',
     default => sub { undef },
-};
+);
 
 sub has_installer { defined $_[0]->installer }
 
@@ -130,7 +130,7 @@ has installer_class => (
     coerce => to_ClassAndArgs('Provision::DSL::Installer'),
 );
 
-has _build_installer_class { $_[0]->installer }
+sub _build_installer_class { $_[0]->installer }
 
 has installer_instance => (
     is => 'lazy',
@@ -141,7 +141,7 @@ sub _build_installer_instance {
 
     return if !$self->has_installer;
 
-    my ($class, $args) = @{$self->installer};
+    my ($class, $args) = @{$self->installer_class};
     return $class->new(entity => $self, %$args);
 }
 
@@ -192,7 +192,7 @@ sub install {
     $self->log( @log, "$state => $action" );
 
     $self->$action();
-    $self->installer->$action() if $self->has_installer;
+    $self->installer_instance->$action() if $self->has_installer;
 
     $self->clear_state;
 }
@@ -203,15 +203,11 @@ sub is_ok {
     my $state  = shift // $self->state;
 
     return
-         ( $state eq 'current' &&  $wanted )
-      || ( $state eq 'missing' && !$wanted );
+         ($state eq 'current' &&  $wanted)
+      || ($state eq 'missing' && !$wanted);
 }
 
-# implement if self-action is wanted
-sub create {}
-sub change {}
-sub remove {}
-
+# child handling
 after [ 'create', 'change' ] => sub { $_->install() for $_[0]->all_children };
 
 before remove => sub { $_->install(0) for reverse $_[0]->all_children };

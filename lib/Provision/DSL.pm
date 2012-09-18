@@ -8,7 +8,7 @@ use Module::Pluggable search_path => 'Provision::DSL::Source',
                       sub_name => 'sources';
 use Module::Load;
 use Path::Class;
-use Provision::DSL::Util;
+use Provision::DSL::Util 'os';
 
 =head1 NAME
 

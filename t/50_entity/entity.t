@@ -23,7 +23,7 @@ use ok 'Provision::DSL::Entity';
     is $entity->state, 'outdated',
         'Always changes state to "outdated"';
 
-    is_deeply $entity->inspector, ['Provision::DSL::Inspector::Always', {}],
+    is_deeply $entity->inspector_class, ['Provision::DSL::Inspector::Always', {}],
         'inspector class and args look good';
 
     isa_ok $entity->inspector_instance, 'Provision::DSL::Inspector::Always',
@@ -35,13 +35,15 @@ use ok 'Provision::DSL::Entity';
     ok !$entity->need_privilege, 'no privilege needed';
 }
 
+# installer -- same as inspector above
+
 # privilege
 {
     # no strict 'refs';
     no warnings 'redefine';
     local *Provision::DSL::Inspector::Never::need_privilege = sub { 1 };
 
-    ok +Provision::DSL::Entity->new(name => 'bla')->need_privilege,
+    ok +Provision::DSL::Entity->new(name => 'bla', inspector => 'Never')->need_privilege,
         'privilege needed when inspector requests it';
 }
 
