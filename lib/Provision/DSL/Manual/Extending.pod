@@ -7,34 +7,46 @@ Provision::DSL::Manual::Extending - how to extend Provision::DSL
 Creating new entities can be very simple. In order to maintain the whole
 system behind working you need to know a few things.
 
-### inspectors, installers or do-it-myself
+The basic principle of an entity is 
+L<Idempotence|http://en.wikipedia.org/wiki/Idempotence>. In short, an entity
+will be responsible for getting itself into a desired state. If an entity
+alread is in this state, nothing will happen.
 
-### how to influence state-calculation
-
-### need_privilege
-
-### installer methods
+Three things will influence if and how an entity will operate:
 
 =over
 
-=item calculating state
+=item state
 
-Every Entity must be able to report its state. The state is represented by one
-of three words: C<missing>, C<outdated> or C<current>. An entity derived from
-L<Entity|Provision::DSL::Entity> must report its state using 
-C<<< $self->add_to_state('outdated') >>>. 
-A typical state routine looks like this:
+At a given time, an entity is in one of three states: C<missing>,
+C<outdated> or C<current>. The state can get obtained by an entity itself,
+a child of the entity or by an inspector made responsible for this task.
 
-    before calculate_state => sub {
-        my $self = shift;
+=item wanted
 
-        # conditions, conditions, conditions
-        $self->add_to__state('missing');
-    };
+The C<wanted> flag contains either a boolean reflecting the wanted state
+C<missing> or C<current> or in some rare cases a special word like a
+version number.
 
-If the main entity reports a C<missing> state, it will remain and can never
-get improved by a role or other depending entity. Otherwise depending roles
-may degrade a C<current> entity to C<outdated> if any of them is not current.
+=item need_privilege
+
+Some operations require the installing user to be able to gain administrator
+(root) privileges. Every entity knows if such a privilege is needed and keeps
+track about this fact. If the user doing the install is not capable of
+getting privileges, no installation will happen at all.
+
+=item install
+
+Installing an entity will bring it to the desired state unless already there.
+Installation of an entity can get done by the entity itself, will be
+assisted by all of its children or can get delegated to an installer which
+can get established specially for this job.
+
+=back
+
+=head2 Common things among all entities
+
+=over
 
 =item name
 
@@ -49,71 +61,81 @@ this mechanism to happen, you will need to define one attribute like this:
     has foo => ( is => 'lazy' );
     sub _build_foo { $_[0]->name }
 
-=item create, change, remove
+=item children
 
-depending on the entity's state and the content of the C<wanted> flag,
-one of these 3 methods will get called. A typical implementation might look
-like this:
+Many entities do more or less complicated jobs. By splitting the job into
+smaller pieces, the entire code-base can be easier to understand and
+maintain.
 
-    before create => sub { ... };
-    before change => sub { ... };
-    after  remove => sub { ... };
+Additional parts will get delegated to the children of an entity. Technically,
+a child is an entity of its own. It does its own decisions, keeps track
+of its own state and may have children.
+
+The state of children will influence the parent's state by forcing the
+parent's state from C<current> to C<outdated> if a child is not in its
+desired state.
+
+=item optional inspector
+
+If calculating the entity's state is either depending on a platform or
+complicated, it can get delegated to an inspector.
+
+=item optional installer
+
+When doing the installation of an entity is depending on a platform or
+is complicated, it can get delegated to an installer.
 
 =back
 
-=head2 Simple entities
+=head2 Calculating state
 
-### inherit from Provision::DSL::Entity
+Every Entity must be able to report its state. The state is represented by one
+of three words: C<missing>, C<outdated> or C<current>.
 
-=head2 Entities with roles
+If an entity class implements the C<inspect()> method, this method can
+return one of the possible states or a false value. The returned value will
+get added to the state if true.
 
-### add as many roles as you like
-### role may have attributes
-### role may expand state and merge role-state with object-state
-### after create/change, before remove
+If an inspector is present, it will also get asked by calling its C<inspect()>
+method. Again, the returned value will get added to the overall state.
 
-=head2 Compound entities
+Next, every child will get asked if in desired state. Depending on the
+child state, C<current> or C<outdated> will get added to the overall state.
 
-### inherit from Provision::DSL::Entity::Compound
-### dynamic list of children
-### state is determined automatically by accumulating childrens' states
-### state may be overloaded: around state
-### Roles may be used
+Finally, if nothing yet has beed added to the state, the entitie's
+C<default_state> attribute will get applied to the overall state.
 
-=head2 Different operating systems
+If the main entity reports a C<missing> state, it will remain and can never
+get improved by a role or other depending entity. Otherwise during the process
+of state calculation, an entity, inspector or child may degrade a C<current>
+entity to C<outdated> if any of them is not current.
 
-### create Provision::DSL::Entity::_((OS))::YourEntity
+=head2 Installing
 
-=head2 Individual entities
-
-Each single entity may be extended with a trait. Simply add a new attribute
-which is typically not supported by the entity.
-
-    Dir '/path/to/x' => (
-        restore => 'ftp://user:pass@ftp.domain.com/foo',
-    );
-
-Next, define a trait "Restore" in one of the namespaces. (Replace "Attribute")
-with "Restore", "Entity" with "Dir" and set your OS right. The following
-namespaces are checked in this order where the first match begins. This allows
-os-dependent, entity-dependent or universal traits, just as you like.
+depending on the entity's state and the content of the C<wanted> flag,
+one of these 3 methods will get called.
 
 =over
 
-=item Provision::DSL::TraitFor::((Entity))::_((OS))::((Attribute))
+=item create
 
-=item Provision::DSL::TraitFor::((Entity))::((Attribute))
+If the item is C<missing> and must get created from scratch, the C<create>
+method is called.
 
-=item Provision::DSL::TraitFor::_((OS))::((Attribute))
+=item change
 
-=item Provision::DSL::TraitFor::((Attribute))
+If the item is C<outdated> and is wanted, the C<change> method is responsible
+for "updating" the entity.
+
+=item remove
+
+if the item is not wanted, C<remove>'s job is to delete everything around
+the entity.
 
 =back
 
-The trait can handle thing in a similar way as a role but is applied to
-the instance of the Dir-Object in the moment the provision is running. After
-applying all traits, every superfluous attribute value is handed over
-to a equal-named accessor method, if possible.
+Depending on complexitiy or the platform, these methods may exist inside
+the entity's class or delegated to an installer.
 
 =head1 RESOURCES
 
