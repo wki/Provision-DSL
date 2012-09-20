@@ -191,6 +191,8 @@ sub install {
     $self->log_dryrun( @log, "would $action" ) and return;
     $self->log( @log, "$state => $action" );
 
+    ### FIXME: is this wise? would it be better to let only one
+    ###        action run? Either installer *OR* self
     $self->$action();
     $self->installer_instance->$action() if $self->has_installer;
 
