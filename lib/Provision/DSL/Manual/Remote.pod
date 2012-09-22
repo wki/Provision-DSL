@@ -1,0 +1,44 @@
+=head1 NAME
+
+Provision::DSL::Manual::Remote - what happens at the remote machine
+
+=head1 METHOD OF EXECUTION
+
+Using a single ssh connection, the remote machine's perl interpreter is
+started and waits for a command on its STDIN. It is something like:
+
+    ssh remote_host perl -
+
+Then, a huge file containing a simple script and a base-64 encoded tar archive
+is copied to the remote machine's STDIN where it is executed as soon as
+STDIN is closed. The file contains a simple logic which creates a temporary
+directory into which the contents of the tar archive will get extracted.
+
+On the top level of the extracted tar archive, a script named "provision.pl"
+is run. It contains the provisioning script and cares for the process
+of installing the remote machine. All modules in the namespace 
+"Provision::DSL" and all dependencies will also be contained in the tar
+archive. Before running "provision.pl", the remote perl interpreter will
+get a library-search-path added in order to find all required modules.
+
+Every output (STDOUT in green, STDERR in red) is displayed on the local
+terminal.
+
+=head1 TAR LAYOUT
+
+    provision.pl        -- the script running on the remote site
+    local/
+      lib/
+        perl5/          -- perl modules for running provision.pl
+    resources/          -- optional resources for provisioning
+
+=head1 AUTHOR
+
+Wolfgang Kinkeldei, E<lt>wolfgang@kinkeldei.deE<gt>
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

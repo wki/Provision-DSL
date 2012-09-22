@@ -3,14 +3,14 @@
     name           => 'test config',
     
     # the file to run on the controlled machine
-    provision_file => 'examples.pl',
+    provision_file => 'list_files.pl',
 
     # ssh connection details
     #  - only hostname is mandatory, all others are optional
     #  - options are added to the ssh commandline as-is
     ssh => {
         hostname      => 'localhost',
-        user          => 'wolfgang',
+        user          => 'nobody',
         identity_file => 'id_rsa',
         # options     => '--foo 42 --bar zzz',
     },

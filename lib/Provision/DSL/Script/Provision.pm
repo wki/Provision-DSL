@@ -97,11 +97,8 @@ sub run {
 
     $self->pack_requisites;
 
-    if ($self->debug) {
-        my $fh = file('/tmp/provision.pl')->openw;
-        print $fh $self->script;
-        $fh->close;
-    }
+    file('/tmp/provision.pl')->spew($self->script)
+        if ($self->debug);
 
     my $result = $self->remote_provision;
 
@@ -142,10 +139,7 @@ sub ensure_perlbrew_installer_loaded {
     try {
         $installer_file->dir->mkpath;
         my $installer = $self->http_get(PERLBREW_INSTALLER_URL);
-        my $fh = $installer_file->openw;
-        print $fh $installer;
-        $fh->close;
-        
+        $installer_file->spew($installer);
         chmod 0755, $installer_file;
     } catch {
         die 'Could not load Perlbrew installer. Are you online?';

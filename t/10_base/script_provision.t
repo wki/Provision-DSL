@@ -5,7 +5,7 @@ use Path::Class;
 
 use ok 'Provision::DSL::Script::Provision';
 
-# some basic things
+# packing a script from a config
 {
     my $s = Provision::DSL::Script::Provision->new(
         config => "$FindBin::Bin/../conf/test_config.pl",
@@ -48,6 +48,18 @@ use ok 'Provision::DSL::Script::Provision';
     foreach my $key (qw(foo bar)) {
         ok exists $ENV{$key}, "env key '$key' exists";
     }
+}
+
+# pack a few things and run the script
+{
+    my $s = Provision::DSL::Script::Provision->new(
+        config => "$FindBin::Bin/../conf/test_config.pl",
+        root_dir => "$FindBin::Bin/../conf",
+    );
+    
+    # idea: provision script lists all files in its current dir.
+    
+    
 }
 
 ### TODO: more test:
