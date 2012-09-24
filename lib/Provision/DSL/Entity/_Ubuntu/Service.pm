@@ -11,6 +11,28 @@ sub _build_path       { "/etc/init.d/${\$_[0]->name}" }
 sub _build_user       { 'root' }
 sub _build_group      { 'root' }
 
+sub inspect {
+    my $self = shift;
+    
+    my $service_script = "/etc/init.d/${\$_[0]->value}";
+    
+    my $state = 'missing';
+    
+    if (-f $service_script) {
+        my $result = $self->run_command($service_script, 'status');
+        $state = $result =~ m{running}xms
+            ? 'current'
+            : 'outdated';
+    }
+    
+    return $state;
+}
+
+sub _build_need_privilege { 1 }
+
+
+
+
 sub _service_running {
     my $self = shift;
     
@@ -23,7 +45,7 @@ sub _service_running {
 sub _install_service {
     my $self = shift;
     
-    $self->run_command_as_user(
+    $self->run_command_as_superuser(
         $UPDATE_RCD,
         '-f',
         $self->name, 'defaults',
@@ -36,7 +58,7 @@ sub _start_service { $_->__service('start') }
 sub __service {
     my ($self, $action) = @_;
     
-    $self->run_command_as_user(
+    $self->run_command_as_superuser(
         $SERVICE,
         $self->name, $action,
     );

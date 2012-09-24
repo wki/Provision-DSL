@@ -28,7 +28,7 @@
         # ... more rules
     ],
     
-    # install a cpan mirror for target machine
+    # on my wishlist: install a cpan mirror for target machine
     cpan_mirror => {
         root => "$ENV{HOME}/minicpan",
         port => 8080,

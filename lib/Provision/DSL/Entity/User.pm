@@ -44,15 +44,15 @@ sub _build_uid {
     die 'could not create a unique UID';
 }
 
-before calculate_state => sub {
-    my $self = shift;
-    
-    $self->add_to_state(
-        defined getpwnam($self->name)
-            ? 'current'
-            : 'missing'
-    );
-};
+# before calculate_state => sub {
+#     my $self = shift;
+#     
+#     $self->add_to_state(
+#         defined getpwnam($self->name)
+#             ? 'current'
+#             : 'missing'
+#     );
+# };
 
 # creation/removal is OS-dependent
 

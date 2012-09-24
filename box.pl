@@ -5,7 +5,11 @@ my $SITE_DIR    = "$WEB_DIR/www.mysite.de";
 
 Package 'build-essential';
 
-Service 'nginx';
+# Service 'nginx';
+
+Done;
+
+__END__
 
 Perlbrew {
     install_cpanm => 1,
@@ -55,28 +59,13 @@ Dir '/path/to/website' => {
     mkdir => [qw(
         logs
         pid
-        MyApp/local
-        MyApp/root/cache
-        MyApp/root/files
-        MyApp/root/static/_css
-        MyApp/root/static/_js
+        app/local
+        app/root/cache
+        app/root/files
+        app/root/static/_css
+        app/root/static/_js
     )],
-    
-    tell => 'source_changed',
 };
-
-#### BAD, because not idempotent
-# Execute install_cpan_modules => {
-#     path => Perlbrew('sites')->cpanm,
-#     cwd => '/path/to/website/MyApp',
-#     arguments => [
-#         '-L'            => 'local',
-#         '--installdeps' => '.',
-#     ],
-#     
-#     # too dangerous because a deletion in local is not discovered.
-#     # listen => Dir('/path/to/website/MyApp'),
-# };
 
 ### BETTER:
 Perl_Modules '/path/to/website/MyApp/local' => {
@@ -99,7 +88,6 @@ Perl_Modules '/path/to/website/MyApp/local' => {
 
 File '/path/to/website/MyApp/static/_css/site.css' => {
     content => Execute('/path/to/binary'),
-    only_if => FileNewer('/path/to/website/MyApp/static/css/*.css'),
 },
 
 Execute db_migration => {
@@ -110,14 +98,12 @@ Service plack_server => {
     user => 'sites',
     runlevel => [2,3],
     copy => Resource('...'),
-    listen => 'source_changed',
 };
 
 Service thumbnail_hotfolder => {
     user => 'sites',
     runlevel => [2,3],
     copy => Resource('...'),
-    listen => 'source_changed',
 };
 
 

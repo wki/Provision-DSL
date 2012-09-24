@@ -31,15 +31,15 @@ sub _build_gid {
     die 'could not create a unique GID';
 }
 
-before calculate_state => sub {
-    my $self = shift;
-    
-    $self->add_to_state(
-        defined getgrnam($self->name)
-            ? 'current'
-            : 'missing'
-    );
-};
+# before calculate_state => sub {
+#     my $self = shift;
+#     
+#     $self->add_to_state(
+#         defined getgrnam($self->name)
+#             ? 'current'
+#             : 'missing'
+#     );
+# };
 
 # creation/removal is OS-dependent
 

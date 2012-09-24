@@ -8,37 +8,39 @@ with 'Provision::DSL::Role::CommandExecution';
 our $DPKG_QUERY = '/usr/bin/dpkg-query';
 our $APTITUDE   = '/usr/bin/aptitude';
 
-before ['create','change'] => sub {
+sub change { goto \&create }
+sub create {
     my $self = shift;
 
-    $self->run_command($APTITUDE,
-                       { user => 'root' },
-                       '--assume-yes',
-                       install => $self->name);
+    $self->run_command_as_superuser(
+        $APTITUDE,
+        '--assume-yes',
+        install => $self->name,
+    );
     $self->clear_installed_version;
-};
+}
 
-after remove => sub {
+sub remove {
     my $self = shift;
 
-    $self->run_command($APTITUDE,
-                       { user => 'root' },
-                       purge => $self->name);
+    $self->run_command_as_superuser(
+        $APTITUDE,
+        purge => $self->name,
+    );
     $self->clear_installed_version;
-};
+}
 
 sub _build_installed_version {
     my $self = shift;
 
-    my ($name, $version, $dummy);
-    try {
-        ($name, $version, $dummy) =
-            split qr/\s+/,
-                  $self->run_command($DPKG_QUERY, '--show' => $self->name);
-        # warn "INSTALLED: $name VERSION: $version";
-    } catch {
-        $version = 0;
-    };
+    my $result = $self->run_command(
+        $DPKG_QUERY,
+        '--show',
+        '--showformat', '${Package}\\t${Version}\\t${Status}',
+        $self->name,
+    );
+
+    my ($package, $version, $status) = split qr{\t}, $result;
 
     return $version;
 }
@@ -47,27 +49,25 @@ sub _build_latest_version {
     my $self = shift;
 
     my $result = 
-        $self->run_command($APTITUDE, 
-                           '--group-by' => 'none',
-                           'versions'   => $self->name);
+        $self->run_command(
+            $APTITUDE, 
+            '--group-by' => 'none',
+            '--disable-columns',
+            '--display-format', '%p',
+            'versions' => sprintf('?name(%s)', quotemeta($self->name))
+        );
     
-    my $last_prio = -1;
     my $latest_version = '';
     foreach my $line (split /\n/, $result) {
-        next if ($line !~ m{\A (.+?) \s+ 
-                               (\Q${\$self->name}\E .*?) \s+
-                               (\S+) \s+
-                               (\S+) \s+
+        next if ($line !~ m{\A (\Q${\$self->name}\E) \s+
                                (\S+)}xms);
-        my ($status, $name, $version, $release, $prio) = ($1, $2, $3, $4, $5);
+        my ($name, $version) = ($1, $2);
         
-        if ($prio > $last_prio || $version gt $latest_version) {
+        if ($version gt $latest_version) {
             $latest_version = $version;
-            $last_prio = $prio;
         }
     }
     
-    # warn "LATEST: $latest_version";
     die "package '${\$self->{name}}' not found" if !$latest_version;
     
     return $latest_version;

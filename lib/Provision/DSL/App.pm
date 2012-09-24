@@ -28,10 +28,16 @@ sub _build_user_has_privilege {
 
     my $result;
     try {
-        $self->run_command_as_superuser('/usr/bin/true');
+        my ($true_command) =
+            grep { -x $_ }
+            qw(/bin/true /usr/bin/true);
+        
+        $self->run_command_as_superuser($true_command);
         $result = 1;
+    # } catch {
+    #     warn "Caught: $_";
     };
-
+    
     return $result;
 }
 

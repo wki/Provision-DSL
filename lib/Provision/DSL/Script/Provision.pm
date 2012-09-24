@@ -136,18 +136,25 @@ sub ensure_perlbrew_installer_loaded {
 
     $self->log_debug('loading perlbrew installer');
     
+    ### FIXME: does not work.
+    # alternative:
+    # curl -L http://install.perlbrew.pl -o .provision_lib/bin/install.perlbrew.sh
+    
     try {
         $installer_file->dir->mkpath;
         my $installer = $self->http_get(PERLBREW_INSTALLER_URL);
         $installer_file->spew($installer);
         chmod 0755, $installer_file;
     } catch {
-        die 'Could not load Perlbrew installer. Are you online?';
+        die 'Could not load Perlbrew installer. ' .
+            'Are you online? Is IO::Socket::SSL installed?';
     };
 }
 
 sub pack_dependent_libs {
     my $self = shift;
+
+    $self->log_debug('packing dependent libs');
 
     my @install_libs = qw(
         autodie Moo Role::Tiny Try::Tiny
@@ -176,6 +183,8 @@ sub pack_dependent_libs {
 
 sub pack_provision_libs {
     my $self = shift;
+
+    $self->log_debug('packing provision libs');
 
     # Provision::DSL libs are collected manually for two reasons:
     #   - we do not catch dependencies for the controlling machine
@@ -268,6 +277,8 @@ sub pack_provision_script {
 
 sub pack_resources {
     my $self = shift;
+
+    $self->log_debug('packing resources');
 
     my $resources = $self->config->{resources}
         or return;
