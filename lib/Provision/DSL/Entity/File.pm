@@ -3,19 +3,19 @@ use Moo;
 # use Carp;
 use Provision::DSL::Types;
 
-extends 'Provision::DSL::Entity::FileBase';
+extends 'Provision::DSL::Entity::Base::File';
 
 sub _build_permission { '0644' }
 
 has content => (
-    is => 'ro',
-    isa => Str,
-    coerce => to_Content,
+    is        => 'ro',
+    isa       => Str,
+    coerce    => to_Content,
     predicate => 1,
 );
 
 has patch => (
-    is => 'ro',
+    is        => 'ro',
     predicate => 1,
 );
  

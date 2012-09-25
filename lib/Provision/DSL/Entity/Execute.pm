@@ -68,9 +68,7 @@ sub _install {
     return $script_output;
 }
 
-sub _build_installer { 'Self' }
-
-sub self_create { $_[0]->_install }
-sub self_change { $_[0]->_install }
+sub create { $_[0]->_install }
+sub change { $_[0]->_install }
 
 1;

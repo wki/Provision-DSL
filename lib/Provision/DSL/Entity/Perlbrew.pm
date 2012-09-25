@@ -67,9 +67,7 @@ sub bin {
          ->file($binary);
 }
 
-before state => sub {
-    $_[0]->add_to_state(-f $_[0]->perlbrew ? 'current' : 'missing');
-};
+sub inspect { -f $_[0]->perlbrew ? 'current' : 'missing' }
 
 sub _build_children {
     my $self = shift;
@@ -85,7 +83,7 @@ sub _build_children {
     ];
 }
 
-before create => sub {
+sub create {
     my $self = shift;
 
     # find or get perlbrew installer
@@ -95,10 +93,11 @@ before create => sub {
     } catch {
         # load via $self->http_get('http://install.perlbrew.pl');
         # needs temp file for install
-        die 'loading perlbrew via http: not implemented';
+        die 'loading perlbrew via http: not implemented, ' .
+            'IO::Socket::SSL probably not installed';
     };
 
     $self->run_command_as_user('/bin/sh', $installer);
-};
+}
 
 1;
