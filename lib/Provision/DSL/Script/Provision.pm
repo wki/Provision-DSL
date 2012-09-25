@@ -136,7 +136,8 @@ sub ensure_perlbrew_installer_loaded {
 
     $self->log_debug('loading perlbrew installer');
     
-    ### FIXME: does not work.
+    ### FIXME: does not work. 
+    ### HTTP::Tiny version 0.017 works when IO::Socket::SSL is installed
     # alternative:
     # curl -L http://install.perlbrew.pl -o .provision_lib/bin/install.perlbrew.sh
     

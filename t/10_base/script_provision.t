@@ -84,8 +84,25 @@ use ok 'Provision::DSL::Script::Provision';
         'resources/dirx files excluded';
 }
 
-### TODO: more test:
 # ensure_perlbrew_installer_loaded
+{
+    my $s = Provision::DSL::Script::Provision->new(
+        config => "$FindBin::Bin/../conf/test_config.pl",
+        root_dir => "$FindBin::Bin/../..",
+        temp_lib_dir => '/tmp',
+    );
+    
+    system '/bin/rm', '-rf', '/tmp/bin';
+    
+    $s->ensure_perlbrew_installer_loaded;
+    
+    ok -d '/tmp/bin', 'bin directory created';
+    ok -f '/tmp/bin/install.perlbrew.sh', 'perlbrew installer loaded';
+    ok -s '/tmp/bin/install.perlbrew.sh' > 500,
+        'perlbrew installer size looks good';
+}
+
+### TODO: more test:
 # pack_dependent_libs
 
 done_testing;
