@@ -194,7 +194,7 @@ sub pack_provision_libs {
 
     $self->_pack_dir(
         $provision_dsl_install_dir,
-        'Provision' => 'local/lib/perl5',
+        'Provision' => 'local/lib/perl5/Provision',
         
         [ '*.pod' ], # exclude documentation
     );
@@ -232,7 +232,7 @@ sub _pack_dir {
     $subdir->traverse( sub {
         my ($child, $cont) = @_;
 
-        my $relative_file_name = $child->relative($root_dir)->stringify;
+        my $relative_file_name = $child->relative($subdir)->stringify;
         my $dest_file = $target_subdir_name
             ? "$target_subdir_name/$relative_file_name"
             : $relative_file_name;

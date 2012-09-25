@@ -3,7 +3,7 @@
     name           => 'test config',
     
     # the file to run on the controlled machine
-    provision_file => 'list_files.pl',
+    provision_file => 't/conf/list_files.pl',
 
     # ssh connection details
     #  - only hostname is mandatory, all others are optional
