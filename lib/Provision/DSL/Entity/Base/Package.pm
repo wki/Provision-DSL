@@ -1,4 +1,4 @@
-package Provision::DSL::Entity::Package;
+package Provision::DSL::Entity::Base::Package;
 use Moo;
 
 extends 'Provision::DSL::Entity';

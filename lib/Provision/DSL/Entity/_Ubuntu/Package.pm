@@ -2,7 +2,7 @@ package Provision::DSL::Entity::_Ubuntu::Package;
 use Moo;
 use Try::Tiny;
 
-extends 'Provision::DSL::Entity::Package';
+extends 'Provision::DSL::Entity::Base::Package';
 with 'Provision::DSL::Role::CommandExecution';
 
 our $DPKG_QUERY = '/usr/bin/dpkg-query';

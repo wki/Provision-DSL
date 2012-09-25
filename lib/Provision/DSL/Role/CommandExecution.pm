@@ -17,6 +17,18 @@ sub command_succeeds {
     return $result;
 }
 
+sub run_command_maybe_privileged {
+    my $self       = shift;
+    my $executable = shift;
+    my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
+
+    $options{user} = 'root'
+        if $self->can('need_privilege')
+           && $self->need_privilege;
+
+    $self->run_command($executable, \%options, @_);
+}
+
 sub run_command_as_superuser {
     my $self       = shift;
     my $executable = shift;

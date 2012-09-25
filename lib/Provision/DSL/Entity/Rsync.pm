@@ -2,13 +2,7 @@ package Provision::DSL::Entity::Rsync;
 use Moo;
 use Provision::DSL::Types;
 
-extends 'Provision::DSL::Entity';
-
-has path => (
-    is     => 'lazy',
-    coerce => to_Dir,
-);
-sub _build_path { $_[0]->name }
+extends 'Provision::DSL::Entity::Base::Dir';
 
 has content => (
     is       => 'ro',
@@ -22,12 +16,7 @@ has exclude => (
     default => sub { [] },
 );
 
-# act as inspector and installer myself
-# Reason: _rsync command and other attributes needed
-sub _build_inspector { 'Self' }
-sub _build_installer { 'Self' }
-
-sub self_determine_state {
+sub inspect {
     my $self = shift;
     
     my $state = 'missing';
@@ -45,8 +34,8 @@ sub self_determine_state {
     return $state;
 }
 
-sub self_create { $_[0]->_run_rsync_command }
-sub self_change { $_[0]->_run_rsync_command }
+sub create { $_[0]->_run_rsync_command }
+sub change { $_[0]->_run_rsync_command }
 
 sub _run_rsync_command {
     my $self = shift;

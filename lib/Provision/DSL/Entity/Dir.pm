@@ -3,16 +3,9 @@ use Moo;
 use Try::Tiny;
 use Provision::DSL::Types;
 
-extends 'Provision::DSL::Entity';
-with    'Provision::DSL::Role::CommandExecution';
+extends 'Provision::DSL::Entity::Base::Dir';
 
 sub _build_permission { '0755' }
-
-has path => (
-    is     => 'lazy',
-    coerce => to_Dir,
-);
-sub _build_path { $_[0]->name }
 
 has mkdir => (
     is      => 'rw',
@@ -30,14 +23,27 @@ has content => (
     predicate => 1,
 );
 
-sub _build_inspector_class { 'DirExists' }
+sub inspect { -d $_[0]->path ? 'current' : 'missing' }
 
-sub _build_installer_class { 'MkDir' }
+# sub change {} not needed
+# sub remove {} in base class
+sub create {
+    my $self = shift;
+    
+    $self->prepare_for_creation;
+    
+    $self->run_command_maybe_privileged(
+        '/bin/mkdir',
+        '-p', $self->path,
+    );
+}
 
 sub _build_children {
     my $self = shift;
 
     return [
+        ### TODO: Privilege
+        ### TODO: Owner
         $self->__as_entities( $self->mkdir, 1 ),
         $self->__as_entities( $self->rmdir, 0 ),
 

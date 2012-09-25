@@ -1,7 +1,7 @@
 package Provision::DSL::Entity::_OSX::Package;
 use Moo;
 
-extends 'Provision::DSL::Entity::Package';
+extends 'Provision::DSL::Entity::Base::Package';
 # 
 # my $PORT = '/opt/local/bin/port';
 # 

@@ -11,27 +11,7 @@ sub _build_path       { "/etc/init.d/${\$_[0]->name}" }
 sub _build_user       { 'root' }
 sub _build_group      { 'root' }
 
-sub inspect {
-    my $self = shift;
-    
-    my $service_script = "/etc/init.d/${\$_[0]->value}";
-    
-    my $state = 'missing';
-    
-    if (-f $service_script) {
-        my $result = $self->run_command($service_script, 'status');
-        $state = $result =~ m{running}xms
-            ? 'current'
-            : 'outdated';
-    }
-    
-    return $state;
-}
-
 sub _build_need_privilege { 1 }
-
-
-
 
 sub _service_running {
     my $self = shift;
@@ -62,6 +42,17 @@ sub __service {
         $SERVICE,
         $self->name, $action,
     );
+}
+
+around _build_children => sub {
+    my $orig = shift;
+    my $self = shift;
+    
+    my $children = $self->$orig();
+    
+    # TODO: push @$children, 'Daemon';
+
+    return $children;
 }
 
 #

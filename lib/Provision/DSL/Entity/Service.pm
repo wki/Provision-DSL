@@ -1,7 +1,7 @@
 package Provision::DSL::Entity::Service;
 use Moo;
 
-extends 'Provision::DSL::Entity';
+extends 'Provision::DSL::Entity::File';
 
 ### TODO: vorher war Service ein File. 
 ###       Wir brauchen nun ein (config) File, das mit uns assoziiert ist
