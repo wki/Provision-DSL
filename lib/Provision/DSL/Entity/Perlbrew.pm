@@ -31,7 +31,7 @@ has perlbrew_dir => (
     coerce => to_Dir,
 );
 
-sub _build_perlbrew_dir { $_[0]->user->home_dir->subdir('perl5/perlbrew') }
+sub _build_perlbrew_dir { $_[0]->home_dir->subdir('perl5/perlbrew') }
 
 has perlbrew => (
     is     => 'lazy',

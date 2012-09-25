@@ -53,7 +53,7 @@ around _build_children => sub {
     # TODO: push @$children, 'Daemon';
 
     return $children;
-}
+};
 
 #
 # /etc/init.d --> service-datei falls gewuenscht.

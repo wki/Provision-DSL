@@ -7,12 +7,8 @@ Package 'build-essential';
 
 # Service 'nginx';
 
-Done;
-
-__END__
-
 Perlbrew {
-    install_cpanm => 1,
+    # install_cpanm => 1,
     # wanted  => '5.14.2',
     wanted  => '5.16.0',
 };
@@ -21,6 +17,12 @@ Dir $WEB_DIR => {
     user => 'root',
     permission => '0755',
 };
+
+Done;
+
+__END__
+
+
 
 __END__
 

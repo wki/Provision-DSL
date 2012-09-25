@@ -14,8 +14,19 @@ has group => (
     predicate => 1,
 );
 
+has home_dir => (
+    is => 'lazy',
+    coerce => to_Dir,
+);
+
 sub has_uid { $_[0]->has_user }
 sub uid { getpwnam($_[0]->user) }
+
+sub _build_home_dir { 
+    $_[0]->has_user 
+        ? (getpwnam($_[0]->user))[7]
+        : (getpwuid($<))[7]
+}
 
 sub has_gid { $_[0]->has_group }
 sub gid { getgrnam($_[0]->group) }
