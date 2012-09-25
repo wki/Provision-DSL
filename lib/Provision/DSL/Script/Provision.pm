@@ -177,7 +177,7 @@ sub pack_dependent_libs {
     $self->_pack_dir(
         $self->temp_lib_dir,
         '.' => "local",
-        $Config{archname}
+        [ $Config{archname}, '*.pod' ], # exclude binary-dir and documentation
     );
 }
 
@@ -195,6 +195,8 @@ sub pack_provision_libs {
     $self->_pack_dir(
         $provision_dsl_install_dir,
         'Provision' => 'local/lib/perl5',
+        
+        [ '*.pod' ], # exclude documentation
     );
 }
 
@@ -354,9 +356,9 @@ sub remote_provision {
     $self->log_debug('Executing:', @command_and_args);
 
     IPC::Run::run \@command_and_args,
-                  \$self->script,
-                  \&_print_stdout_in_green,
-                  \&_print_stderr_in_red;
+                  \$self->script,               # STDIN
+                  \&_print_stdout_in_green,     # STDOUT
+                  \&_print_stderr_in_red;       # STDERR
 }
 
 sub _print_stdout_in_green {
