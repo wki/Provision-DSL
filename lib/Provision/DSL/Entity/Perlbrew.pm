@@ -97,7 +97,7 @@ sub create {
             'IO::Socket::SSL probably not installed';
     };
 
-    $self->run_command_as_user('/bin/sh', $installer);
+    $self->run_command_as_user('/bin/sh', $installer->path);
 }
 
 1;

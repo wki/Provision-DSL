@@ -8,7 +8,6 @@ extends 'Provision::DSL::Entity::Base::File';
 has link_to => (
     is => 'ro',
     required => 1,
-    coerce => to_File,
 );
 
 sub inspect {

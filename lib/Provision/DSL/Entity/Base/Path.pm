@@ -6,6 +6,7 @@ use Provision::DSL::Types;
 # Abstract base class for Dir/File/Link / Rsync?
 
 extends 'Provision::DSL::Entity';
+with    'Provision::DSL::Role::CommandExecution';
 
 sub need_privilege {
     my $self = shift;

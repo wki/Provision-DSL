@@ -16,10 +16,13 @@ sub _build_need_privilege { 1 }
 sub _service_running {
     my $self = shift;
     
-    $self->command_succeeds(
-        $SERVICE,
-        $self->name, 'status',
-    )
+    # # at least postgresql always succeeds even if no cluster is running.
+    # $self->command_succeeds(
+    #     $SERVICE,
+    #     $self->name, 'status',
+    # )
+    
+    -e "/proc/${\$self->pid}"
 }
 
 sub _install_service {
@@ -43,17 +46,6 @@ sub __service {
         $self->name, $action,
     );
 }
-
-around _build_children => sub {
-    my $orig = shift;
-    my $self = shift;
-    
-    my $children = $self->$orig();
-    
-    # TODO: push @$children, 'Daemon';
-
-    return $children;
-};
 
 #
 # /etc/init.d --> service-datei falls gewuenscht.

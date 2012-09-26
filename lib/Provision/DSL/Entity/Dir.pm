@@ -17,6 +17,16 @@ has rmdir => (
     default => sub { [] },
 );
 
+has links => (
+    is      => 'rw',
+    default => sub { {} },
+);
+
+has ignore => (
+    is      => 'rw',
+    default => sub { [] },
+);
+
 has content => (
     is        => 'ro',
     coerce    => to_ExistingDir,
@@ -25,8 +35,8 @@ has content => (
 
 sub inspect { -d $_[0]->path ? 'current' : 'missing' }
 
-# sub change {} not needed
-# sub remove {} in base class
+# sub change {} not needed, changes done by children
+# sub remove {} implemented in base class
 sub create {
     my $self = shift;
     
@@ -44,26 +54,14 @@ sub _build_children {
     return [
         ### TODO: Privilege
         ### TODO: Owner
-        $self->__as_entities( $self->mkdir, 1 ),
-        $self->__as_entities( $self->rmdir, 0 ),
-
-        (
-            $self->has_content
-            ? $self->create_entity(
-                Rsync => {
-                    parent  => $self,
-                    name    => $self->name,
-                    path    => $self->path,
-                    content => $self->content,
-                    exclude => $self->mkdir,
-                }
-              )
-            : ()
-        ),
+        $self->__subdirs( $self->mkdir, 1 ),
+        $self->__subdirs( $self->rmdir, 0 ),
+        $self->__links,
+        $self->__content,
     ];
 }
 
-sub __as_entities {
+sub __subdirs {
     my ( $self, $directories, $wanted ) = @_;
 
     map {
@@ -77,6 +75,40 @@ sub __as_entities {
           )
       }
       @$directories;
+}
+
+sub __links {
+    my $self = shift;
+    
+    return (
+        map {
+            $self->create_entity(
+                Link => {
+                    parent => $self,
+                    name => $_,
+                    path => $self->path->subdir($_),
+                    link_to => $self->links->{$_},
+                }
+            )
+        }
+        keys %{$self->links}
+    );
+}
+
+sub __content {
+    my $self = shift;
+    
+    return if !$self->has_content;
+    
+    return $self->create_entity(
+        Rsync => {
+            parent  => $self,
+            name    => $self->name,
+            path    => $self->path,
+            content => $self->content,
+            exclude => [ @{$self->mkdir}, keys %{$self->links}, @{$self->ignore} ],
+        }
+    );
 }
 
 1;

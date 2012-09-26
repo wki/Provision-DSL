@@ -178,6 +178,7 @@ sub install {
     my $state  = shift // $self->state;
 
     my @log = ( $self, $state );
+    unshift @log, ' -' if $self->parent;
 
     if ( $self->is_ok( $wanted, $state ) ) {
         $self->log( @log, '- OK' );
@@ -188,13 +189,16 @@ sub install {
         ? ( $state eq 'missing' ? 'create' : 'change' )
         : 'remove';
 
-    $self->log_dryrun( @log, "would $action" ) and return;
-    $self->log( @log, "$state => $action" );
+    $self->log_dryrun( @log, "- would $action" ) and return;
+    $self->log( @log, "=> $action" );
 
     ### FIXME: is this wise? would it be better to let only one
     ###        action run? Either installer *OR* self
+    
+    if (!$wanted) { $_->install(0) for reverse $self->all_children }
     $self->$action();
     $self->installer_instance->$action() if $self->has_installer;
+    if ($wanted) { $_->install for $self->all_children }
 
     $self->clear_state;
 }
@@ -209,9 +213,10 @@ sub is_ok {
       || ($state eq 'missing' && !$wanted);
 }
 
-# child handling
-after [ 'create', 'change' ] => sub { $_->install() for $_[0]->all_children };
-
-before remove => sub { $_->install(0) for reverse $_[0]->all_children };
+#### does not work with Moo when target method is overloaded in child class:
+# # child handling
+# after  create => sub { $_->install()  for         $_[0]->all_children };
+# after  change => sub { $_->install()  for         $_[0]->all_children };
+# before remove => sub { $_->install(0) for reverse $_[0]->all_children };
 
 1;

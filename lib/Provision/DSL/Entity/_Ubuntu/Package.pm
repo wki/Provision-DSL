@@ -33,16 +33,23 @@ sub remove {
 sub _build_installed_version {
     my $self = shift;
 
-    my $result = $self->run_command(
-        $DPKG_QUERY,
-        '--show',
-        '--showformat', '${Package}\\t${Version}\\t${Status}',
-        $self->name,
-    );
+    my $result;
+    
+    try {
+        $result = $self->run_command(
+            $DPKG_QUERY,
+            '--show',
+            '--showformat', '${Package}\\t${Version}\\t${Status}',
+            $self->name,
+        );
+    };
+    
+    my ($package, $version, $status) = split qr{\t}, $result // '';
 
-    my ($package, $version, $status) = split qr{\t}, $result;
-
-    return $version;
+    # 'install ok installed' is a good status text to watch for.
+    return $status =~ m{\A install}xms
+        ? $version # might be undef
+        : undef;
 }
 
 sub _build_latest_version {

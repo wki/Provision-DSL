@@ -80,7 +80,7 @@ sub pipe_into_command {
         {
             name   => $executable,
             args   => [ @_ ],
-            (defined $stdin ? (stdin  => $stdin) : ()),
+            (defined $stdin ? (stdin  => \$stdin) : ()),
             stdout => \$stdout,
             %options
         }

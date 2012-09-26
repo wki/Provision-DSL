@@ -3,10 +3,25 @@ use Moo;
 
 extends 'Provision::DSL::Entity::File';
 
-### TODO: vorher war Service ein File. 
-###       Wir brauchen nun ein (config) File, das mit uns assoziiert ist
+has pid_file => (
+    is => 'ro',
+    coerce => to_File,
+    predicate => 1,
+);
 
-# sub _build_inspector { 'Service' }
-# sub _build_installer { 'Service' }
+sub pid {
+    my $self = shift;
+    
+    my $pid;
+    if ($self->has_pid_file) {
+        $pid = 0 + scalar $self->pid_file->slurp;
+    }
+    
+    return $pid;
+}
+
+# TODO: children
+#   - Service_Process, inspector übernehmen
+
 
 1;

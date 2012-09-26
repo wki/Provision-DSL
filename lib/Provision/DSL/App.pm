@@ -46,7 +46,7 @@ has entities_to_install => (
     default => sub { [] },
 );
 
-# Entity => Provision::DSL::Entity::Xxx
+# Xxx => Provision::DSL::Entity::Xxx
 has entity_package_for => (
     is => 'rw',
     default => sub { {} },

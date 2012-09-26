@@ -22,11 +22,14 @@ sub inspect {
     my $state = 'missing';
     if (-d $self->path) {
         my $result = $self->_run_rsync_command(
+            '--verbose',
             '--dry-run',
             '--out-format' => 'copying %n',
         );
         
-        $state = $result =~ m{^(?:deleting|copying)\s}xms
+        # warn "RESULT: $result";
+        
+        $state = ($result && $result =~ m{^(?:deleting|copying)\s}xms)
         ? 'outdated'
         : 'current';
     }
@@ -41,7 +44,6 @@ sub _run_rsync_command {
     my $self = shift;
 
     my @args = (
-        '--verbose',
         '--checksum',
         '--recursive',
         '--delete',
@@ -50,11 +52,15 @@ sub _run_rsync_command {
         "${\$self->content}/" => "${\$self->path}/",
     );
     
-    return $self->run_command('/usr/bin/rsync', @args);
+    # FIXME: do we need privileges?
+    # warn "rsync @args...";
+    return $self->run_command(
+        '/usr/bin/rsync', 
+        # {stdout => sub { warn @_ }},
+        @args
+    );
 }
 
-# rsync reports to delete a directory if its subdirectory is in exclusion
-# thus, we have to resolve every path to every of its parents
 sub _exclude_list {
     my $self = shift;
 
@@ -64,8 +70,7 @@ sub _exclude_list {
         my @parts = split qr{/+}, $path;
         
         push @exclude_list, 
-             '--exclude', join('/', '', @parts[0..$_],'')
-            for (0..$#parts);
+             '--exclude', join('/', '', @parts[0..$#parts]);
     }
 
     return @exclude_list;

@@ -7,7 +7,7 @@ use Path::Class;
 use IO::String;
 use MIME::Base64;
 use Cwd;
-use IPC::Run ();
+use IPC::Run3;
 use Config;
 use Try::Tiny;
 use Provision::DSL::Types;
@@ -134,13 +134,13 @@ sub ensure_perlbrew_installer_loaded {
     my $installer_file = $self->temp_lib_dir->file(PERLBREW_INSTALLER);
     return if -f $installer_file;
 
-    $self->log_debug('loading perlbrew installer');
-    
-    ### FIXME: does not work. 
+    $self->log('loading perlbrew installer');
+
+    ### FIXME: does not work.
     ### HTTP::Tiny version 0.017 works when IO::Socket::SSL is installed
     # alternative:
     # curl -L http://install.perlbrew.pl -o .provision_lib/bin/install.perlbrew.sh
-    
+
     try {
         $installer_file->dir->mkpath;
         my $installer = $self->http_get(PERLBREW_INSTALLER_URL);
@@ -155,7 +155,7 @@ sub ensure_perlbrew_installer_loaded {
 sub pack_dependent_libs {
     my $self = shift;
 
-    $self->log_debug('packing dependent libs');
+    $self->log(' - packing dependent libs');
 
     my @install_libs = qw(
         autodie Moo Role::Tiny Try::Tiny
@@ -185,7 +185,7 @@ sub pack_dependent_libs {
 sub pack_provision_libs {
     my $self = shift;
 
-    $self->log_debug('packing provision libs');
+    $self->log(' - packing provision libs');
 
     # Provision::DSL libs are collected manually for two reasons:
     #   - we do not catch dependencies for the controlling machine
@@ -196,17 +196,20 @@ sub pack_provision_libs {
     $self->_pack_dir(
         $provision_dsl_install_dir,
         'Provision' => 'local/lib/perl5/Provision',
-        
+
         [ '*.pod' ], # exclude documentation
     );
 }
 
+# ->_pack_dir ( $root, $rel_source, $rel_target [, \%options] [, \@exclude | @exclude])
 sub _pack_dir {
     my $self = shift;
     my $root_dir = shift;
     my $source_subdir_name = shift;
     my $target_subdir_name = shift;
-    
+
+    my %options = ref $_[0] eq 'HASH' ? %{+shift} : ();
+
     my @exclude_globs = ref $_[0] eq 'ARRAY' ? @{$_[0]} : @_;
     push @exclude_globs, '.provision_lib';
 
@@ -219,7 +222,7 @@ sub _pack_dir {
             s{[?]}{[^/]}xmsg;           # ? => one char but not /
             s{[.]}{\\.}xmsg;            # . => escaped .
             s{/ \z}{}xms;               # trailing / => ignore
-    
+
             qr{$_ (/|\z)}xms;
         }
         @exclude_globs;
@@ -244,17 +247,19 @@ sub _pack_dir {
             $self->log_debug('ignoring:', $relative_file_name);
         } elsif (-d $child) {
             $self->log_debug('adding DIR:', $dest_file);
+            # $self->log_debug(%options) if scalar keys %options;
             $self->tar->add_data(
                 $dest_file,
                 '',
-                { type => DIR, mode => 0755 },
+                { type => DIR, mode => 0755, %options },
             );
         } else {
             $self->log_debug('adding FILE:', $relative_file_name, $dest_file);
+            # $self->log_debug(%options) if scalar keys %options;
             $self->tar->add_data(
                 $dest_file,
                 scalar $child->slurp,
-                { type => FILE, mode => 0644 },
+                { type => FILE, mode => 0644, %options },
             );
         }
         return $cont->();
@@ -269,7 +274,7 @@ sub pack_provision_script {
     my $provision_file_name = $self->config->{provision_file} // 'provision.pl';
     my $provision_script = $self->root_dir->file($provision_file_name);
 
-    $self->log_debug("adding provision script '$provision_file_name'");
+    $self->log(" - packing provision script '$provision_file_name'");
 
     $self->tar->add_data(
         'provision.pl',
@@ -281,7 +286,7 @@ sub pack_provision_script {
 sub pack_resources {
     my $self = shift;
 
-    $self->log_debug('packing resources');
+    $self->log(' - packing resources');
 
     my $resources = $self->config->{resources}
         or return;
@@ -300,11 +305,16 @@ sub pack_resource {
         $resource->{destination}
         // $resource->{source}
         // '';
+    my $options = {
+        map { exists $resource->{$_} ? ( $_ => $resource->{$_}) : () }
+        qw(uid gid)
+    };
 
     $self->log_debug('EXCLUDE:', $resource->{exclude});
     $self->_pack_dir(
         $self->root_dir,
         $resource->{source} => "resources/$resource_subdir",
+        $options,
         $resource->{exclude} // [],
     );
 }
@@ -342,8 +352,8 @@ sub remote_provision {
         (defined $identity_file
             ? ('-i' => $identity_file)
             : ()),
-        '-C',
-        ($ssh_config->{options} // ()),
+        '-C',           # compress data
+        (map { ref $_ eq 'ARRAY' ? @$_ : $_ } ($ssh_config->{options} // ())),
         "$user_prefix$ssh_config->{hostname}",
 
         #
@@ -354,12 +364,13 @@ sub remote_provision {
             . ($self->verbose ? ' -v' : '')
     );
 
+    $self->log(' - running provision script on', $ssh_config->{hostname});
     $self->log_debug('Executing:', @command_and_args);
 
-    IPC::Run::run \@command_and_args,
-                  \$self->script,               # STDIN
-                  \&_print_stdout_in_green,     # STDOUT
-                  \&_print_stderr_in_red;       # STDERR
+    run3 \@command_and_args,
+         \$self->script,               # STDIN
+         \&_print_stdout_in_green,     # STDOUT
+         \&_print_stderr_in_red;       # STDERR
 }
 
 sub _print_stdout_in_green {
@@ -371,14 +382,15 @@ sub _print_stderr_in_red {
 }
 
 sub _boot_script {
-    my $self = shift;
-
+    #
+    # for "booting" on a remote maching, at least Perl 5.10 is required.
+    # Archive::Tar is in CORE since this version of Perl, not before.
+    #
     return <<'EOF';
 #!/usr/bin/env perl
 use strict;
 use warnings;
 use 5.010;
-
 use Cwd;
 use Archive::Tar;
 use File::Temp 'tempdir';
