@@ -71,6 +71,8 @@ sub __subdirs {
                 name   => $_,
                 path   => $self->path->subdir($_),
                 wanted => $wanted,
+                ($self->has_user  ? (user  => $self->user)  : () ),
+                ($self->has_group ? (group => $self->group) : () ),
             }
           )
       }
@@ -88,6 +90,8 @@ sub __links {
                     name => $_,
                     path => $self->path->subdir($_),
                     link_to => $self->links->{$_},
+                    ($self->has_user  ? (user  => $self->user)  : () ),
+                    ($self->has_group ? (group => $self->group) : () ),
                 }
             )
         }

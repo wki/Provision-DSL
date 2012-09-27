@@ -47,7 +47,7 @@ sub _build_installed_version {
     my ($package, $version, $status) = split qr{\t}, $result // '';
 
     # 'install ok installed' is a good status text to watch for.
-    return $status =~ m{\A install}xms
+    return $status && $status =~ m{\A install}xms
         ? $version # might be undef
         : undef;
 }

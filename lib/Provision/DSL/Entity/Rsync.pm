@@ -27,7 +27,7 @@ sub inspect {
             '--out-format' => 'copying %n',
         );
         
-        # warn "RESULT: $result";
+        # warn "Rsync RESULT: $result";
         
         $state = ($result && $result =~ m{^(?:deleting|copying)\s}xms)
         ? 'outdated'

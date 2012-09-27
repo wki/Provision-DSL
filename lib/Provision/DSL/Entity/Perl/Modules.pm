@@ -1,5 +1,6 @@
 package Provision::DSL::Entity::Perl::Modules;
 use Moo;
+use Try::Tiny;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity';
@@ -38,12 +39,12 @@ sub inspect {
     # Strategy:
     #   - list all direct dependencies of our app
     #   - paste them into a perl interpreter trying to require the modules
-    #     stop as soon as the first required module is not found
+    #     exit 1 as soon as the first required module is not found
     
     my $required_modules =
         $self->run_command(
-            $self->perl,
-            $self->cpanm, 
+            $self->perl->stringify,
+            $self->cpanm->stringify, 
             '-q',
             '--showdeps' => $self->app_dir);
     
@@ -51,10 +52,10 @@ sub inspect {
     try {
         $self->pipe_into_command(
             $required_modules,
-            $self->perl,
+            $self->perl->stringify,
             '-I' => $self->install_dir->subdir('lib/perl5'),
             '-n',
-            '-e' => 's{~.*|\\s+\\z}{}xms; eval "require $_" or die "missing: $_"'
+            '-e' => 's{~.*|\\s+\\z}{}xms; eval "require $_" or exit 1'
         );
         $has_all_modules = 1;
     };
@@ -74,11 +75,11 @@ sub change {
     my $self = shift;
 
     $self->run_command(
-        $self->perl,
-        $self->cpanm, 
+        $self->perl->stringify,
+        $self->cpanm->stringify,
         '-q',
-        '-L' => $self->install_dir,
-        '--installdeps' => $self->app_dir);
+        '-L' => $self->install_dir->stringify,
+        '--installdeps' => $self->app_dir->stringify);
 }
 
 sub remove {

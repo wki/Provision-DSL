@@ -21,7 +21,7 @@ sub inspect {
             $rc_dir->children;
     }
     
-    return $nr_files ? 'missing' : 'current';
+    return $nr_files ? 'current' : 'missing';
 }
 
 sub create { goto \&change }

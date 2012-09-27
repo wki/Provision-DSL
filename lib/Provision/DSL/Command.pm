@@ -72,7 +72,7 @@ sub run {
     run3 \@command_and_args,
         ($self->has_stdin  ? $self->stdin  : \undef),
         ($self->has_stdout ? $self->stdout : sub {}),
-        ($self->has_stderr ? $self->stderr : sub { warn $_ });
+        ($self->has_stderr ? $self->stderr : sub {});
 
     $self->_status($? >> 8)
         and croak "Nonzero exit status while executing '${\$self->command}'";
