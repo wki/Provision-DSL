@@ -5,6 +5,20 @@ use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::Dir';
 
+sub BUILD {
+    my $self = shift;
+    
+    $self->add_children(
+        $self->__subdirs( $self->mkdir, 1 ),
+        $self->__subdirs( $self->rmdir, 0 ),
+        $self->__links,
+        $self->__content,
+
+        ### TODO: Privilege
+        ### TODO: Owner
+    );
+}
+
 sub _build_permission { '0755' }
 
 has mkdir => (
@@ -46,19 +60,6 @@ sub create {
         '/bin/mkdir',
         '-p', $self->path,
     );
-}
-
-sub _build_children {
-    my $self = shift;
-
-    return [
-        ### TODO: Privilege
-        ### TODO: Owner
-        $self->__subdirs( $self->mkdir, 1 ),
-        $self->__subdirs( $self->rmdir, 0 ),
-        $self->__links,
-        $self->__content,
-    ];
 }
 
 sub __subdirs {

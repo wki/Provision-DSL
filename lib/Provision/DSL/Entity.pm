@@ -61,6 +61,8 @@ sub add_to_state {
     }
     elsif ( $self->_state ne 'missing' && $self->_state ne $state ) {
         $self->_state('outdated');
+        ### TODO: force children to become outdated also?
+        $_->add_to_state('outdated') for $self->all_children;
     }
 }
 
@@ -157,6 +159,7 @@ has children => (
 
 sub _build_children { [] }
 
+sub add_children { goto \&add_child }
 sub add_child { push @{ $_[0]->children }, @_[1..$#_] }
 
 sub nr_children { scalar @{ $_[0]->children } }

@@ -5,6 +5,18 @@ use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::File';
 
+sub BUILD {
+    my $self = shift;
+
+    $self->add_children(
+        $self->__content,
+        $self->__patch,
+
+        ### TODO: Privilege
+        ### TODO: Owner
+    );
+}
+
 sub _build_permission { '0644' }
 
 has content => (
@@ -46,38 +58,34 @@ sub create {
 #     $fh->close;
 # }
 
-sub _build_children {
+sub __content {
     my $self = shift;
-
-    return [
-        (
-            $self->has_content
-            ? $self->create_entity(
-                File_Content => {
-                    parent  => $self,
-                    name    => $self->name,
-                    path    => $self->path,
-                    content => $self->content,
-                }
-              )
-            : ()
-        ),
-        (
-            $self->has_patches
-            ? $self->create_entity(
-                File_Patch => {
-                    parent  => $self,
-                    name    => $self->name,
-                    path    => $self->path,
-                    patches => $self->patches,
-                }
-              )
-            : ()
-        ),
-        
-        ### TODO: Privilege
-        ### TODO: Owner
-    ];
+    
+    return if !$self->has_content;
+    
+    return $self->create_entity(
+        File_Content => {
+            parent  => $self,
+            name    => $self->name,
+            path    => $self->path,
+            content => $self->content,
+        }
+    );
 }
+
+sub __patch {
+    my $self = shift;
+    
+    return if !$self->has_patches;
+
+    return $self->create_entity(
+        File_Patch => {
+            parent  => $self,
+            name    => $self->name,
+            path    => $self->path,
+            patches => $self->patches,
+        }
+    );
+}        
 
 1;

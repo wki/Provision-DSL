@@ -8,6 +8,14 @@ extends 'Provision::DSL::Entity';
 with    'Provision::DSL::Role::CommandExecution',
         'Provision::DSL::Role::HTTP';
 
+sub BUILD {
+    my $self = shift;
+    
+    $self->add_children(
+        $self->__perlbrew_perl,
+    );
+}
+
 # has install_cpanm => (
 #     is      => 'ro',
 #     isa     => Bool,
@@ -69,20 +77,6 @@ sub bin {
 
 sub inspect { -f $_[0]->perlbrew ? 'current' : 'missing' }
 
-sub _build_children {
-    my $self = shift;
-
-    return [
-        $self->create_entity(
-            Perlbrew_Perl => {
-                name    => join('_', $self->name, 'perl'),
-                parent  => $self,
-                install => $self->install_perl
-            }
-        ),
-    ];
-}
-
 sub create {
     my $self = shift;
 
@@ -98,6 +92,18 @@ sub create {
     };
 
     $self->run_command_as_user('/bin/sh', $installer->path);
+}
+
+sub __perlbrew_perl {
+    my $self = shift;
+    
+    return $self->create_entity(
+        Perlbrew_Perl => {
+            name    => join('_', $self->name, 'perl'),
+            parent  => $self,
+            install => $self->install_perl
+        }
+    );
 }
 
 1;

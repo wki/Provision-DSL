@@ -3,6 +3,14 @@ use Moo;
 
 extends 'Provision::DSL::Entity::Service';
 
+sub BUILD {
+    my $self = shift;
+    
+    $self->add_children(
+        ### TODO: __process
+    );
+}
+
 our $SERVICE    = '/usr/sbin/service';
 our $UPDATE_RCD = '/usr/sbin/update-rc.d';
 
