@@ -13,14 +13,15 @@ sub BUILD {
     
     $self->add_children(
         $self->__perlbrew_perl,
+        $self->__perlbrew_cpanm,
     );
 }
 
-# has install_cpanm => (
-#     is      => 'ro',
-#     isa     => Bool,
-#     default => sub { 0 },
-# );
+has install_cpanm => (
+    is      => 'ro',
+    isa     => Bool,
+    default => sub { 0 },
+);
 
 has install_perl => (
     is       => 'lazy',
@@ -55,17 +56,17 @@ has perl => (
 
 sub _build_perl { $_[0]->bin('perl') }
 
-# has cpanm => (
-#     is     => 'lazy',
-#     coerce => to_File,
-# );
-# 
-# sub _build_cpanm { 
-#     my $self = shift;
-#     
-#     $self->perlbrew_dir
-#          ->file('bin/cpanm')
-# }
+has cpanm => (
+    is     => 'lazy',
+    coerce => to_File,
+);
+
+sub _build_cpanm { 
+    my $self = shift;
+    
+    $self->perlbrew_dir
+         ->file('bin/cpanm')
+}
 
 sub bin {
     my ($self, $binary) = @_;
@@ -102,6 +103,19 @@ sub __perlbrew_perl {
             name    => join('_', $self->name, 'perl'),
             parent  => $self,
             install => $self->install_perl
+        }
+    );
+}
+
+sub __perlbrew_cpanm {
+    my $self = shift;
+    
+    return if !$self->install_cpanm;
+    
+    return $self->create_entity(
+        Perlbrew_Cpanm => {
+            name    => join('_', $self->name, 'cpanm'),
+            parent  => $self,
         }
     );
 }

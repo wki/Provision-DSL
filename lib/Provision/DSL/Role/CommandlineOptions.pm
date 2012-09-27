@@ -101,7 +101,10 @@ sub _log_if {
     my $self = shift;
     my $condition = shift;
 
-    say join(' ', map { _to_string($_) } @_) if $condition;
+    if ($condition) {
+        say join(' ', map { _to_string($_) } @_);
+        binmode(STDOUT);
+    }
 
     return $condition;
 }

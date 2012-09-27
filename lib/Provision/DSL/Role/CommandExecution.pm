@@ -5,6 +5,18 @@ use Provision::DSL::Command;
 
 # all commands: $executable [, \%options] , @args
 
+sub find_command {
+    my ($self, $command) = @_;
+    
+    my ($executable) =
+        grep { -f $_ }
+        map { "$_/$command" }
+        qw(/usr/bin /bin /usr/sbin /sbin)
+    or carp "Could not find command '$command'";
+    
+    return $executable;
+}
+
 sub command_succeeds {
     my $self = shift;
 

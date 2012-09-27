@@ -1,5 +1,6 @@
 package Provision::DSL::Entity::Base::File;
 use Moo;
+use Try::Tiny;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::Path';
@@ -19,7 +20,13 @@ has current_content => (
 sub _build_current_content { 
     my $self = shift;
     
-    $self->run_command_maybe_privileged('/bin/cat', $self->path);
+    my $content;
+    try {
+        $content = 
+            $self->run_command_maybe_privileged('/bin/cat', $self->path);
+    };
+    
+    return $content;
 }
 
 sub write_content {

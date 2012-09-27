@@ -352,7 +352,7 @@ sub remote_provision {
         (defined $identity_file
             ? ('-i' => $identity_file)
             : ()),
-        '-C',           # compress data
+        '-C',   # compress data
         (map { ref $_ eq 'ARRAY' ? @$_ : $_ } ($ssh_config->{options} // ())),
         "$user_prefix$ssh_config->{hostname}",
 
@@ -367,10 +367,13 @@ sub remote_provision {
     $self->log(' - running provision script on', $ssh_config->{hostname});
     $self->log_debug('Executing:', @command_and_args);
 
+    # redirecting stdout/stderr will buffer.
+    # FIXME: find out how to avoid...
     run3 \@command_and_args,
          \$self->script,               # STDIN
-         \&_print_stdout_in_green,     # STDOUT
-         \&_print_stderr_in_red;       # STDERR
+         #\&_print_stdout_in_green,     # STDOUT
+         #\&_print_stderr_in_red;       # STDERR
+         ;
 }
 
 sub _print_stdout_in_green {

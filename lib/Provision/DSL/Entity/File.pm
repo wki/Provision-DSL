@@ -11,9 +11,8 @@ sub BUILD {
     $self->add_children(
         $self->__content,
         $self->__patch,
-
-        ### TODO: Privilege
-        ### TODO: Owner
+        $self->__permission,
+        $self->__owner,
     );
 }
 
@@ -44,19 +43,6 @@ sub create {
     );
     
 }
-
-# before create => sub { $_[0]->_create_from_content };
-# 
-# sub _create_from_content {
-#     my $self = shift;
-# 
-#     croak "File(${\$self->name}) no content for missing file"
-#         if !$self->has_content;
-# 
-#     my $fh = $self->path->openw;
-#     print $fh $self->content;
-#     $fh->close;
-# }
 
 sub __content {
     my $self = shift;

@@ -13,9 +13,8 @@ sub BUILD {
         $self->__subdirs( $self->rmdir, 0 ),
         $self->__links,
         $self->__content,
-
-        ### TODO: Privilege
-        ### TODO: Owner
+        $self->__permission,
+        $self->__owner,
     );
 }
 

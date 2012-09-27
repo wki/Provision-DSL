@@ -6,7 +6,8 @@ use Provision::DSL::Types;
 # Abstract base class for Dir/File/Link / Rsync?
 
 extends 'Provision::DSL::Entity';
-with    'Provision::DSL::Role::CommandExecution';
+with    'Provision::DSL::Role::CommandExecution',
+        'Provision::DSL::Role::PathPermission';
 
 sub need_privilege {
     my $self = shift;
@@ -57,6 +58,39 @@ sub remove {
         '/bin/rm',
         '-rf',
         $self->path,
+    );
+}
+
+sub __owner {
+    my $self = shift;
+    
+    return if !$self->has_user || !$self->has_group;
+    
+    return $self->create_entity(
+        Path_Owner => {
+            parent  => $self,
+            name    => $self->name,
+            path    => $self->path,
+            ($self->has_user
+                ? (user => $self->user)
+                : ()),
+            ($self->has_group
+                ? (group => $self->group)
+                : ()),
+        }
+    );
+}
+
+sub __permission {
+    my $self = shift;
+    
+    return $self->create_entity(
+        Path_Permission => {
+            parent     => $self,
+            name       => $self->name,
+            path       => $self->path,
+            permission => $self->permission,
+        }
     );
 }
 

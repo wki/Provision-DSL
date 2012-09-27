@@ -13,7 +13,9 @@ has patches => (
 sub inspect { 
     my $self = shift;
 
-    return $self->current_content ne $self->apply_modification
+    return !defined $self->current_content
+        ? 'missing'
+    : $self->current_content ne $self->apply_modification
         ? 'outdated'
         : 'current';
 }
@@ -28,7 +30,7 @@ sub change {
 sub apply_modification {
     my ($self) = @_;
 
-    my $content = $self->current_content;
+    my $content = $self->current_content // '';
 
     foreach my $patch (@{$self->patches}) {
         my $match = $patch->{if_line_like}
