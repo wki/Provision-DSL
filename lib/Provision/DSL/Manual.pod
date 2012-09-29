@@ -73,22 +73,24 @@ and your provisioning script could be
 
     # maintain a service for running a http daemon
     Service 'mysite_http_daemon' => {
-        ... params not yet defined, sorry
-        listen => 'website_changed',
+        pid_file => '/var/run/mydaemon.pid',
+        contents => Template('etc/mydaemon.tt', { vars => { ... } }),
     };
+    
+    Done;
 
 =head1 DESCRIPTION
 
 Provision::DSL is a simple domain specific language allowing to describe how a
 combination of packages, files, directories and services should look like on a
 *nix machine you like to control. The entities listed in a provisioning script
-are evaluated in source order. Unless there are dependencies between
-individual entities, each entity decides on its own if it must C<<< create()
->>>, C<<< change() >>> or C<<< remove() >>> itself.
+are evaluated in source order. Each entity decides on its own if it must 
+C<<< create() >>>, C<<< change() >>> or C<<< remove() >>> itself.
 
 Each entity has a C<wanted> attribute which defaults to a true boolean value
-but may be set to some false value. Some types of entites directly use the
-value for eg a version number to install.
+if an installation is wanted but may be set to some false value when the
+entity in question is requested to get removed. Some types of entites directly
+use the value for eg a version number to install.
 
 Entities needing data of some kind may request such an information from
 resources which are available at the moment of deployment. Think of resources
@@ -134,6 +136,8 @@ a point of interruption might be.
 
 Currently the following types of entites are defined:
 
+### TODO: write more
+
 =over
 
 =item Dir
@@ -141,6 +145,8 @@ Currently the following types of entites are defined:
 =item Execute
 
 =item File
+
+=item Link
 
 =item Group
 
@@ -189,12 +195,12 @@ modules only has minimal dependencies, all modules are pure perl and
 run starting from Perl 5.10.
 
 All required modules, resources and the provision script are packed into a tar
-file, the tar file is appended to a extraction script (base-64 encoded, into
+file, the tar file is appended to an extraction script (base-64 encoded, into
 the __DATA__ section, to be precise) and the combination of both is pasted to
 the remote machine's Perl interpreter where it is unpacked into a temporary
-directory and provisiond. The entire process only requires a single ssh
+directory and executed. The entire process only requires a single ssh
 process to run. All other IO-Operations happen entirely on the target machine,
-the ssh connection will compress its payload.
+the ssh connection will compress its payload when possible.
 
 =cut
 

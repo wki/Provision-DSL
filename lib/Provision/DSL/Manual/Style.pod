@@ -61,6 +61,41 @@ implementation might look like this:
         };
     }
 
+=head1 SOURCES
+
+In order to keep the DSL simple and easy to read, sources have simple and
+meaningful names. Coercions accept sources as values and return the resource's
+content.
+
+    # this is valid in a Provision script:
+    File 'path/to/file' => {
+        contents => Url('http://my.website.com/whatever),
+    };
+    
+    # this happens behind:
+    # this is valid in a Provision script:
+    File 'path/to/file' => {
+        contents => Url('http://my.website.com/whatever)->content,
+    };
+
+=head1 INSPECTORS
+
+Usually inspectors know the entity they are inspecting and can look into
+the entity for getting values. 
+
+    SomeEntity 'name' => {
+        inspector => 'Whatever';
+    };
+
+If an inspector needs additional arguments, it may be added like:
+
+    SomeEntity 'name' => {
+        inspector => [ Whatever => more args here ],
+    };
+
+
+=head1 INSTALLERS
+
 =head1 AUTHOR
 
 Wolfgang Kinkeldei
