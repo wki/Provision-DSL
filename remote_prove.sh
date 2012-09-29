@@ -12,6 +12,7 @@ if [ ! -f $module_dir/Makefile.PL ]; then
     dzil build >/dev/null
 fi
 
+echo "copying files"
 ssh box "mkdir -p ~/tmp/local; mkdir -p ~/tmp/$module_dir"
 
 rsync -vcr \
@@ -28,6 +29,7 @@ rsync -vcr --delete \
     . \
     "box:~/tmp/$module_dir/" >/dev/null
 
+echo "checking deps on target"
 ssh box "cd ~/tmp/$module_dir; $cpanm $cpanm_opts --installdeps ."
 
 # forward options of this script to prove call.

@@ -14,8 +14,14 @@ use ok 'Provision::DSL::App';
     sub install { $_[0]->installed(1) }
 }
 
-my $app = Provision::DSL::App->instance(user_has_privilege => 0);
+no strict 'refs';
+no warnings 'redefine';
+local *Provision::DSL::App::_build_user_has_privilege = sub { 0 };
+
+my $app = Provision::DSL::App->instance();
 my $e = FakeEntity->new;
+
+ok !$app->user_has_privilege, 'user has no privileges';
 
 is_deeply $app->entities_to_install, [], 'initially nothing to install';
 
@@ -33,5 +39,6 @@ $e->installed(0);
 ok $app->install_needs_privilege, 'privilege needed for install';
 ok !$e->installed, 'entity not marked as installed 2';
 dies_ok { $app->install_all_entities } 'install impossible w/o privileges';
+ok !$e->installed, 'entity still not marked as installed';
 
 done_testing;

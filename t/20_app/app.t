@@ -28,7 +28,8 @@ use ok 'Provision::DSL::App';
 # Privilege reporting
 {
     my $app = Provision::DSL::App->instance;
-    my $status = system '/usr/bin/sudo -n -u root /usr/bin/false 2>/dev/null';
+    my ($true_command) = grep -x, (qw(/bin/true /usr/bin/true));
+    my $status = system "/usr/bin/sudo -n -u root $true_command 2>/dev/null";
     my $is_privileged = ($status >> 8) == 0;
     
     if ($is_privileged) {
