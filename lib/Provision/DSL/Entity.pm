@@ -28,7 +28,7 @@ sub _build_state {
     $self->_clear_state; # clears _state (!)
 
     $self->add_to_state($self->inspect);
-    $self->add_to_state($self->inspector_instance->inspect)
+    $self->add_to_state($self->inspector_instance->state)
         if $self->has_inspector;
 
     $self->add_to_state( $_->is_ok ? 'current' : 'outdated' )
@@ -215,11 +215,5 @@ sub is_ok {
          ($state eq 'current' &&  $wanted)
       || ($state eq 'missing' && !$wanted);
 }
-
-#### does not work with Moo when target method is overloaded in child class:
-# # child handling
-# after  create => sub { $_->install()  for         $_[0]->all_children };
-# after  change => sub { $_->install()  for         $_[0]->all_children };
-# before remove => sub { $_->install(0) for reverse $_[0]->all_children };
 
 1;

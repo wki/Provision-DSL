@@ -10,75 +10,67 @@ Entity Syntax:
   Entity 'name', arg1 => 'v1', ...;
   Entity name => { ... args ... };
   Entity { ... args ... };
-  
-  # nur bei Compound, $self->add() for @{...} nach Initialisierung
-  Entity [ ... ];
-  Entity 'name', [ ... ];
-  Entity name => { ... args ... }, [ ... ];
-  Entity { ... args ... }, [ ... ];
-
 
 
 Bestandteile:
  (+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
 
- * Script                       enthält DSL Befehle
-    * Provision                 remote laufendes script
- * DSL                          pro DSL Befehl eine sub
+ * Script::Provision            remote laufendes script
+ * DSL                          erzeugt pro Source/Entity eine sub
  * App                          zentrale Ablaufsteuerung
     ----[ logging ]
     ----[ entity creation + caching ]
     ----[ command execution ]
-    * OSX
-    * Ubuntu
  * Base                         Basisklasse constructor, name-handling
+ * Command                      Kommando-Ausführung mittels IPC::Run3
  * Entity                       Basisklasse von Entities
-    * Compound
-        + children: Entity[]
-        - add_child
-        - nr_children
-        - all_children
-        - has_no_children
-      * Dir                     Kinder: Dir, Rsync
-          ! PathPermission
-          ! PathOwner
-          + path: Dir
-          + mkdir: DirList
-          + rmdir: DirList
-          + content: ExistingDir
-    # * Perl
-    #     - bin
-    #     - cpanm
-    #     * Trait --> Perl::Brew, verändert "bin"
-    #         - brew
-    #         - user, group (optional)
-    #     * Perl::Modules --> als Kind eintragen
-    #         - module_dir
-    #         - install_deps
-    #         - ... cpanm optionen
-      * Perlbrew                Kinder: perl
-          !! InstallCpanm::install_cpanm: Bool
-          + switch_to_perl: Str
-      * _XXX::User              Kinder: Dir (=home), Group
-          + uid: Int
-          + home: Dir
-          + group: Group
-    * Execute
-        + path: ExecutableFile
-        + arguments: Str[]
-        + environment: HashRef
-    * File
-        + path
-        + content (Str <- Path, Url)
-      Rollen: permission, owner
-    * _XXX::Group
-        + gid
-    * _XXX::Package
-    * Rsync
-        + path: Dir
-        + content: ExistingDir
-        + exclude: DirList
-    * _XXX::Service
+    ! App
+    ! User
+    + parent: Entity | unset
+    + children
+    - add_child(), add_children()
+    - nr_children()
+    - all_children()
+    - has_no_children()
+    
+    + state: missing | outdated | current
+    + default_state: missing | outdated | current
+    - add_to_state()
+    
+    + need_privilege
+    
+    + wanted
+    - install()
+    - is_ok()
+    
+    + inspector
+    + inspector_class
+    + inspector_instance
+    - inspect()
+    
+    + installer
+    + installer_class
+    + installer_instance
+    - create()
+    - change()
+    - remove()
+
+ * Inspector
+    ! Entity
+    
+ * Installer
+    ! Entity
+    ! CommandExecution
+    
+ * Role
+    * App                       App handling und delegation
+    * CommandExecution          Befehle ausführen diverse Variationen
+    * CommandlineOptions        @ARGV handling
+    * Entity                    entity-Attribut
+    * HTTP                      http_get() Methode
+    * ProcessControl            pid_file-Attribut und pid() Methode
+    * User                      user, group ...
+    
  * Source                       Basisklasse von Datenquellen
       + name: Str
       + content: Str
@@ -90,106 +82,11 @@ Bestandteile:
           + vars: HashRef
     * Url
         + url
-[* Condition]
 
+  * Types                       to_Type() coercions, Type() checks
 
+  * Util                        various utilities
 
-Entity Funktionsweise:
-
-   * P::DSL::Entity
-     (+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
-     ----[ identifikation, Wunsch ]
-     + name                     Pflicht, wird evtl. nach ??? kopiert
-     - app                      ->P::DSL::App
-     + parent                   ->P::DSL::Entity, wenn compound
-     + wanted                   bool oder Version [1]
-     + need_privilege           gesetzt wenn root-Recht erforderlich
-     + ...                      weitere Angaben bei Kind-Klassen
-
-     ----[ Bestimmen des Status ]
-     + default_state
-     - add_to_state             Beisteuern von Zuständen durch Kind/Rolle/...
-     - calculate_state          Auslösen der Status-Berechnung
-     - state                    missing / outdated / current
-     - is_ok()                  wenn Endzustand "wanted" erreicht
-                                normalerweise abgeleitet aus state/wanted
-
-     ----[ Berechnete Werte ]
-     + changed                  wird gesetzt, wenn Veränderung erfolgte
-
-     ----[ Steuerung ]
-     - install()                auf Zustand "wanted" bringen
-     - create()                 von Kindern zu erweitern, before!
-     - change()                 von Kindern zu erweitern, before!
-     - remove()                 von Kindern zu erweitern, after!
-
-
-
-Entity Erweiterung:
-  - über Rolle(n), Traits oder Kind-Klassen
-     * Entscheidung: before calculate_state
-     * Steuerung:    (before|after) (create|change|remove)
-  - Aufruf-Reihenfolge:
-     * Kind-Klassen, dann Kind-Rollen reverse (before, around)
-     * Klasse, dann Rollen reverse (before, around)
-     * Methode
-     * Rollen, dann Klasse (around, after)
-     * Kind-Rollen, dann Kind-Klasse (around, after)
-  - Traits werden automatisch gesucht über Attribut bei Entity
-      Xxx asdf => { foo_bar => 123 }
-        # suche Trait wegen unbekannter methode 'foo_bar'
-        # Reihenfolge: OS::Xxx::FooBar, Xxx::FooBar, OS::FooBar, FooBar
-  - Kinder hinzufügen:
-      Xxx ... [ [ Yyy => ... ] ]
-        # fügt Kind Xxx::Yyy hinzu.
-
-
-Condition Funktionsweise:
-  + entity                  Entity die verglichen wird
-  + attribute               Attribut der Entity
-  + value                   Wert(e) mit denen Verglichen wird
-  - state                   ermitteln des Status
-
-Entity::add_condition(Condition => 'attribute', ...)
-Entity::conditions ['DirPresent']
-
-besser als Condition: Inspector
-(+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
-  + entity
-  + attribute
-  + expected_value
-  + state (lazy + clearer)
-  - inspect
-  - need_proívilege
-  - is_current
-  - is_outdated
-  - is_missing
-
---> viele Dinge werden compound 
-    C=Children, I=Inspectors, CI=Child Inspectors
-    * = mögliche Code-Verdoppelung
-    
-    COMPOUND:
-    Dir 
-        C: PathPermission, PathOwner, Rsync*, Dir
-        I: DirPresent
-        CI: PathPermission, PathOwner, Rsync*
-    
-    File
-        C: PathPermission, PathOwner, FileContent | FilePatch
-        I: FilePresent
-        
-    Perlbrew
-        C: Cpanm, Perl, Modules
-        I: Perlbrew
-        CI: Cpanm, Perl, Modules
-    
-    SINGLE ENTITY:
-    Execute, I: Always
-    Group, I: Group
-    Package, I: Package
-    Rsync*, I:Rsync*
-    Service, I:Service
 
 Datenstruktur zum Deployment (gepackt als .tar.gz):
 

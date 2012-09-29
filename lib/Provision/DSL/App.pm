@@ -6,6 +6,7 @@ use Scalar::Util 'blessed';
 use Role::Tiny ();
 use Try::Tiny;
 use Provision::DSL::Types;
+use Provision::DSL::Util;
 
 with 'Provision::DSL::Role::CommandlineOptions',
      'Provision::DSL::Role::CommandExecution';
@@ -82,17 +83,6 @@ sub DEMOLISH {
     my $self = shift;
 
     $self->log_debug('End of Program');
-}
-
-# maybe construct an attribute ???
-sub os {
-    my $self = shift;
-
-    my $os = ref $self;
-    $os =~ s{\A .* App::}{}xms
-        or return 'Unknown';
-
-    return $os;
 }
 
 ####################################### Installation

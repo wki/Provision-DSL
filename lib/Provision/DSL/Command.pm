@@ -8,6 +8,23 @@ extends 'Provision::DSL::Base';
 with 'Provision::DSL::Role::User';
 # we do not use the user roles, we only need a string as user/group
 
+=head1 Provision::DSL::Command
+
+Provision::DSL::Command - Easy command execution
+
+=head1 SYNOPSIS
+
+    my $command = Provision::DSL::Command->new( ... );
+    $command->run;
+
+=head1 DESCRIPTION
+
+This simple module provides an easy interface for running commands.
+
+=head1 ATTRIBUTES
+
+=cut
+
 has command => (
     is => 'lazy',
     coerce => to_Str,
@@ -44,6 +61,10 @@ has _status => (
     is => 'rw',
     predicate => '_has_status',
 );
+
+=head1 METHODS
+
+=cut
 
 sub run {
     my $self = shift;
@@ -95,16 +116,6 @@ sub success {
     
     return $self->status == 0;
 }
-
-=head1 Provision::DSL::Command
-
-Provision::DSL::Command - Easy commandline provision
-
-=head1 SYNOPSIS
-
-=head1 DESCRIPTION
-
-=head1 METHODS
 
 =head1 AUTHOR
 

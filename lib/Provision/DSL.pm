@@ -18,6 +18,16 @@ Provision::DSL - a simple provisioning toolkit
 
 See L<Provision::DSL::Manual> for a comprehensive description
 
+In short, L<Provision::DSL> is a toolkit for provisioning *nix systems.
+The process needs a single ssh connection to the target maching using a
+user-account that has suffucient rights for doing the install procedures
+required or is allowed to switch to a more privileged user-account using
+the F<sudo> command without requiring a password.
+
+The simple DSL describes the desired state on the target machine which
+will get installed by running the DSL script. If parts of the installation
+are alredy done, they will get skipped.
+
 =cut
 
 our @EXPORT = qw(Done done OS Os os Defaults Files files app);
@@ -46,15 +56,7 @@ sub import {
     app->log_debug('init done');
 }
 
-sub instantiate_app {
-    my @argv = @_;
-
-    my $os = os();
-    my $app_package = "Provision::DSL::App::$os";
-    load $app_package;
-
-    $app_package->instance(@argv);
-}
+sub instantiate_app { Provision::DSL::App->instance(@_) }
 
 sub app { Provision::DSL::App->instance }
 
@@ -73,15 +75,6 @@ sub create_and_export_entity_keywords {
         next if exists $package_for{$entity_name}
              && length $package_for{$entity_name} > length $entity_package;
         $package_for{$entity_name} = $entity_package;
-
-        # create class-types and coercions before loading entity modules
-        # if (!find_type_constraint($entity_name)) {
-        #     class_type $entity_name,
-        #         { class => $entity_package };
-        #     coerce $entity_name,
-        #         from 'Str',
-        #         via { $entity_package->new({app => $app, name => $_}) };
-        # }
     }
     app->entity_package_for(\%package_for);
 

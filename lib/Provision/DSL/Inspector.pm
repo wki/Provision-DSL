@@ -13,10 +13,10 @@ has attribute => (
 # may get changed in derieved classes if attribute is different
 sub _build_attribute { 'name' }
 
-# retrieve value from entitie's attribute given above
+# retrieve actual value from entitie's attribute given above
 sub value { $_[0]->entity->${\$_[0]->attribute} }
 
-# return values as list
+# return actual values as list
 sub values {
     map { ref $_ eq 'ARRAY' ? @$_ : $_ } $_[0]->value;
 }
@@ -38,12 +38,6 @@ has state => (
 );
 
 sub _build_state { croak '_build_state must be defined in implementation' }
-
-sub inspect {
-    my $self = shift;
-
-    $self->entity->add_to_state( $self->state );
-}
 
 has need_privilege => (
     is => 'lazy',
