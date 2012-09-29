@@ -7,6 +7,7 @@ extends 'Provision::DSL::Entity::Base::File';
 
 has content => (
     is       => 'ro',
+    coerce   => to_Content,
     required => 1,
 );
 
