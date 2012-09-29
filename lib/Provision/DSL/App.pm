@@ -6,7 +6,7 @@ use Scalar::Util 'blessed';
 use Role::Tiny ();
 use Try::Tiny;
 use Provision::DSL::Types;
-use Provision::DSL::Util;
+use Provision::DSL::Util ();
 
 with 'Provision::DSL::Role::CommandlineOptions',
      'Provision::DSL::Role::CommandExecution';
@@ -14,6 +14,11 @@ with 'Provision::DSL::Role::CommandlineOptions',
 has is_running => (
     is => 'rw',
     default => sub { 0 },
+);
+
+has os => (
+    is => 'ro',
+    default => \&Provision::DSL::Util::os
 );
 
 has user_has_privilege => (

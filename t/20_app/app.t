@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 use Test::Exception;
+use Provision::DSL::Util ();
 use Provision::DSL::Entity::File;
 use Provision::DSL::Entity::TestingOnly;
 
@@ -20,8 +21,8 @@ use ok 'Provision::DSL::App';
 # OS reporting
 {
     my $app = Provision::DSL::App->instance;
-    is $app->os, 'Unknown',
-        'base class reports OS as unknown';
+    is $app->os, Provision::DSL::Util::os,
+        'os reported is same as Util::os';
 }
 
 # Privilege reporting
