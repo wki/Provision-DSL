@@ -49,26 +49,4 @@ dies_ok { Provision::DSL::Inspector->new }
             'Using a nonsense state dies';
 }
 
-# state - ok matrix
-{
-    foreach my $state (qw(missing outdated current)) {
-        my $e = E->new;
-        my $i = Provision::DSL::Inspector->new( entity => $e, state => $state );
-        
-        foreach my $test_state (qw(missing outdated current)) {
-            my $method = "is_$test_state";
-            if ($test_state eq $state) {
-                ok $i->$method, "$method is true for $test_state";
-            } else {
-                ok !$i->$method, "$method is false for $test_state";
-            }
-        }
-    
-        is $e->state, '', 'entity state empty';
-        
-        $i->inspect;
-        is $e->state, $state, "entity state is set to $state";
-    }
-}
-
 done_testing;

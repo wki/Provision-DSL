@@ -17,7 +17,6 @@ can_ok 'main', qw(OS Os os Done done app Defaults);
 
     Provision::DSL::instantiate_app();
     my $app = Provision::DSL::App->instance();
-    isa_ok $app, "Provision::DSL::App::$os";
     isa_ok $app, "Provision::DSL::App";
 
     ok scalar keys %{app->entity_package_for} > 5,

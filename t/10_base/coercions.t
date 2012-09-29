@@ -21,9 +21,10 @@ use ok 'Provision::DSL::Types';
     
     dies_ok { $c->('NotExistingClass') } 'coercing a not existing class dies';
     
-    # fails but should work:
-    is $c->('Package'), 'Provision::DSL::Inspector::_OSX::Package',
-        'a OS-specific Class is found';
+    ### currently we do not have OS-Inspectors
+    # # fails but should work:
+    # is $c->('Package'), 'Provision::DSL::Inspector::_OSX::Package',
+    #     'a OS-specific Class is found';
     
     is $c->('Always'), 'Provision::DSL::Inspector::Always',
         'a not OS-Specific Class is found';

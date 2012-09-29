@@ -41,6 +41,7 @@ use ok 'Provision::DSL::Entity';
 {
     # no strict 'refs';
     no warnings 'redefine';
+    no warnings 'once';
     local *Provision::DSL::Inspector::Never::need_privilege = sub { 1 };
 
     ok +Provision::DSL::Entity->new(name => 'bla', inspector => 'Never')->need_privilege,

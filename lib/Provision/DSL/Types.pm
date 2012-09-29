@@ -8,6 +8,8 @@ use Provision::DSL::Util 'os';
 use Module::Load;
 use base 'Exporter';
 
+no warnings 'uninitialized';
+
 our @EXPORT = qw(
     Str Int Bool
     State
@@ -28,35 +30,35 @@ our @EXPORT = qw(
 sub Str {
     return sub {
         defined $_[0] && !ref $_[0]
-            or croak "not a Str: $_[0]";
+            or croak "not a Str: '$_[0]'";
     };
 }
 
 sub Int {
     return sub {
         defined $_[0] && !ref $_[0] && $_[0] =~ m{\A \d+ \z}xms
-            or croak "not an Int: $_[0]";
+            or croak "not an Int: '$_[0]'";
     };
 }
 
 sub Bool {
     return sub {
         !defined $_[0] || !ref $_[0]
-            or croak "not a Bool: $_[0]";
+            or croak "not a Bool: '$_[0]'";
     };
 }
 
 sub State {
     return sub {
         defined $_[0] && !ref $_[0] && $_[0] =~ m{\A (?:missing|outdated|current) \z}xms
-            or croak "not a valid State: $_[0]";
+            or croak "not a valid State: '$_[0]'";
     };
 }
 
 sub CodeRef {
     return sub {
         ref $_[0] eq 'CODE'
-            or croak "not a CodeRef: $_[0]";
+            or croak "not a CodeRef: '$_[0]'";
     }
 }
 

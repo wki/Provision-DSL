@@ -85,7 +85,11 @@ use ok 'Provision::DSL::Script::Provision';
 }
 
 # ensure_perlbrew_installer_loaded
+SKIP:
 {
+    skip 'Not connected to the Internet', 3
+        if !gethostbyname('www.cpan.org');
+    
     my $s = Provision::DSL::Script::Provision->new(
         config => "$FindBin::Bin/../conf/test_config.pl",
         root_dir => "$FindBin::Bin/../..",
