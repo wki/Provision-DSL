@@ -37,8 +37,8 @@ sub inspect {
     return $state;
 }
 
-sub create { $_[0]->_run_rsync_command }
-sub change { $_[0]->_run_rsync_command }
+sub create {                         $_[0]->_run_rsync_command }
+sub change { $_[0]->_handle_backups; $_[0]->_run_rsync_command }
 
 sub _run_rsync_command {
     my $self = shift;
@@ -59,6 +59,15 @@ sub _run_rsync_command {
         # {stdout => sub { warn @_ }},
         @args
     );
+}
+
+sub _handle_backups {
+    my $self = shift;
+    
+    ### TODO: implement me.
+    ### mkdir backup_dir; 
+    ### rsync -vcr --link-dest original --links original/ backup_dir/
+    ### remove backups if limit exceeded
 }
 
 sub _exclude_list {

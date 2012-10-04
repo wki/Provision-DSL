@@ -14,6 +14,12 @@ Generell:
     kann sudo         | normal       | sudo -n -u x ... | su - x -c ... / sudo
     root              | normal       | sudo -n -u x ... | normal
 
+Entity::Rsync --> Entity::Backup (steuert keinen State bei)
+  * backup => backup_dir / backup_copies => n Optionen
+  * backup nur, wenn state != current
+  * Linux: cp -al destination backup_yyyymmdd_hhmm -- 3-4 times faster than rsync
+  * OS-X: pax -rw -l 
+  * generisch: mkdir backup_dir; rsync -vcr --link-dest original --links original/ backup_dir/
 
 _Ubuntu::Package
   * aptitude meldet keine Fehler beim Installieren
@@ -23,7 +29,7 @@ Config:
   * cpan_mirror option starts a CPAN::Mirror::Server::HTTP server
   * remove environment
 
-Execute:
+Entity::Execute:
   * cwd attribute
 
 Perlbrew:
@@ -34,106 +40,9 @@ Service:
     Idee: Prozess-Alter vs. config-file(s)
     problematisch, wenn sich das dahinter sitzende Script geändert habt
 
-Entities: (entities immer Plattformunabhängig)
-  * Dir (path)
-    DirExists --> Dir --> MkDir, Chown, Chmod, Rsync, Dir*
-  * Execute (path, arguments)
-    Always --> Execute --> Execute
-  * File (path)
-    FileExists --> File --> Touch, Chown, Chmod, Content, Patch
-  * Link (path, link_to)
-    LinkExists --> Link --> Link
-  * Cron (path, arguments, environment)
-    PatchNeeded --> Cron --> Patch
-  * Perl_Modules (name-->local_lib_dir, perl, cpanm, mirror, installdeps, install)
-
 Provision:
   * -f switch: alle Entities sind outdated
   * --debug pass thru oder --trace ?
   * bei -v: stdout bei Execute mit anzeigen?
   * logging in ~/.provision/log/...
-
-Installer:
-  Suchreihenfolge: Installer::_OX::Xxx, Installer::Xxx
-  Privileged wird über Role::CommandExecution geregelt. entity->user/group testen
-  * Null - ok
-  * PathBase - ok
-  *   MkDir - ok
-  *   Touch - ok
-  *   Link - ok
-  * Chown
-  * Chmod
-  * InstallPerlbrew
-  * Rsync
-  * Patch
-  * Xxx::User
-  * Xxx::Group
-  * Ubuntu::Aptitude
-  * OSX::Macport
-  * Xxx::Service
-  * Execute
-
-Inspector:
-  Suchreihenfolge: Inspector::_OX::Xxx, Inspector::Xxx
-  * Always - ok
-  * Never - ok
-  * PathExists --> entity->path - ok
-  *   DirExists - ok
-  *   FileExists - ok
-  *   LinkExists - ok
-  *   PathPermission --> entity->path, entity->permission
-  *   PathOwner -->entity->path, entity->user/group
-  *   PathAge -->entity->path, timestamp/other files - ok
-  * ProcessAge -->entity->pid, timestamp/other files
-  * ScriptSuccess -->entity->path
-  * PatchNeeded
-  * ContentEqual
-  * Rsync
-  * XXX::UserExists
-  * XXX::GroupExists
-  * XXX::Package
-  * XXX::Service
-
-      Condition:
-        Always()
-        Never()
-        OnDemand()
-        ScriptSuccess(script)
-        FilePresent(file)
-        DirPresent(dir)
-        PathPermission(path, perm)
-        PathOwner(path, owner)
-        PathNewer(path, <dir/*.css>)
-
-----
-
-state: lazy, clearer
-_build_state: <== calculate_state // _state beeinflussen, dann return _state
-
-_state: rw, predicate, clearer
-
-inspect() // return 'state'
-Inspector::inspect() // return state
-
------------
-
-need_privilege: lazy
-_build_privilege: return inspector *OR* all_children
-
------------
-
-create() // nur aufrufen wenn kein installer
-change()
-remove()
-
-------------
-
-inspector: lazy, coerce
-_build_inspector: return undef
-has_inspector: return defined inspector()
-
-inspector_instance: lazy
-_build_inspector_instance: undef durchreichen, sonst instance bauen
-
---- installer ditto
 
