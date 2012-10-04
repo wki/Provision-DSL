@@ -46,3 +46,22 @@ Provision:
   * bei -v: stdout bei Execute mit anzeigen?
   * logging in ~/.provision/log/...
 
+Entity::Cron
+  Cron '/path/to/executable' => {
+        minutes         => 11, # singular/plural, scalar/arrayref erlaubt.
+        hours           => [5,6,7],
+        days_of_week    => [1,2],
+        months          => [1..12],
+        days_of_month   => '*/2',
+        
+        execute         => '/path/to/executable', # copied from name if omitted
+        arguments       => [ ... ],
+  };
+  
+  * wenn User === root ==> /etc/crontab, sonst crontab -e
+  * jeder Eintrag wird mit einem Kommentar eingeleitet, enthält config name
+    # autocreated by Provision::DSL (hrko dev) -- do not edit
+  * Einträge kommen ganz am Anfang aber in jedem Fall alle 
+    zu einer Config gehörenden in einem Block.
+
+
