@@ -23,7 +23,7 @@ sub create { goto \&change }
 sub change {
     my $self = shift;
     
-    $self->run_command_as_superuser(
+    $self->run_command_as_user(
         $self->find_command('chmod'),
         sprintf('%3o', $self->permission),
         $self->path,

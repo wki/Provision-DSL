@@ -175,7 +175,7 @@ sub pack_dependent_libs {
         );
     }
 
-    $self->_pack_dir(
+    $self->_pack_file_or_dir(
         $self->temp_lib_dir,
         '.' => "local",
         [ $Config{archname}, '*.pod' ], # exclude binary-dir and documentation
@@ -193,7 +193,7 @@ sub pack_provision_libs {
     my $this_file = file(__FILE__)->resolve->absolute;
     my $provision_dsl_install_dir = $this_file->dir->parent->parent->parent;
 
-    $self->_pack_dir(
+    $self->_pack_file_or_dir(
         $provision_dsl_install_dir,
         'Provision' => 'local/lib/perl5/Provision',
 
@@ -201,12 +201,12 @@ sub pack_provision_libs {
     );
 }
 
-# ->_pack_dir ( $root, $rel_source, $rel_target [, \%options] [, \@exclude | @exclude])
-sub _pack_dir {
+# ->_pack_file_or_dir ( $root, $rel_source, $rel_target [, \%options] [, \@exclude | @exclude])
+sub _pack_file_or_dir {
     my $self = shift;
     my $root_dir = shift;
-    my $source_subdir_name = shift;
-    my $target_subdir_name = shift;
+    my $source = shift;
+    my $target = shift;
 
     my %options = ref $_[0] eq 'HASH' ? %{+shift} : ();
 
@@ -232,40 +232,55 @@ sub _pack_dir {
     my $cwd = getcwd;
     chdir $root_dir;
 
-    my $subdir = $root_dir->subdir($source_subdir_name);
-    $subdir->traverse( sub {
+    my $thing_to_pack = $root_dir->subdir($source);
+    if (-d $thing_to_pack) {
+        $self->__pack_dir($thing_to_pack => $target, \%options, \@exclude_regexes);
+    } else {
+        $self->__pack_file($root_dir->file($source) => $target, \%options);
+    }
+    
+    chdir $cwd;
+}
+
+sub __pack_dir {
+    my ($self, $dir, $dest_dir, $options, $exclude_regexes) = @_;
+    
+    $dir->traverse( sub {
         my ($child, $cont) = @_;
 
-        my $relative_file_name = $child->relative($subdir)->stringify;
-        my $dest_file = $target_subdir_name
-            ? "$target_subdir_name/$relative_file_name"
+        my $relative_file_name = $child->relative($dir)->stringify;
+        my $dest_path = $dest_dir
+            ? "$dest_dir/$relative_file_name"
             : $relative_file_name;
 
         if ($relative_file_name eq '.') {
             # ignore .
-        } elsif (grep { $relative_file_name =~ $_ } @exclude_regexes) {
+        } elsif (grep { $relative_file_name =~ $_ } @$exclude_regexes) {
             $self->log_debug('ignoring:', $relative_file_name);
         } elsif (-d $child) {
-            $self->log_debug('adding DIR:', $dest_file);
-            # $self->log_debug(%options) if scalar keys %options;
+            $self->log_debug('adding DIR:', $dest_path);
             $self->tar->add_data(
-                $dest_file,
+                $dest_path,
                 '',
-                { type => DIR, mode => 0755, %options },
+                { type => DIR, mode => 0755, %$options },
             );
         } else {
-            $self->log_debug('adding FILE:', $relative_file_name, $dest_file);
-            # $self->log_debug(%options) if scalar keys %options;
-            $self->tar->add_data(
-                $dest_file,
-                scalar $child->slurp,
-                { type => FILE, mode => 0644, %options },
-            );
+            $self->log_debug('adding FILE:', $relative_file_name, $dest_path);
+            $self->__pack_file($child => $dest_path, $options);
         }
         return $cont->();
     });
+    
+}
 
-    chdir $cwd;
+sub __pack_file {
+    my ($self, $file, $dest_file, $options) = @_;
+    
+    $self->tar->add_data(
+        $dest_file,
+        scalar $file->slurp,
+        { type => FILE, mode => 0644, %$options },
+    );
 }
 
 sub pack_provision_script {
@@ -311,7 +326,7 @@ sub pack_resource {
     };
 
     $self->log_debug('EXCLUDE:', $resource->{exclude});
-    $self->_pack_dir(
+    $self->_pack_file_or_dir(
         $self->root_dir,
         $resource->{source} => "resources/$resource_subdir",
         $options,
@@ -358,8 +373,10 @@ sub remote_provision {
 
         #
         # provision perl running script from stdin (-) with options
+        # try to find the perl binary with the highest version number
+        # otherwise OS-X Tiger systems would only use 5.8.9 which fails here.
         #
-        'perl -'
+        'env `ls -1 -r /usr/bin/perl5.1* /usr/bin/perl | head -1` -'
             . ($self->dryrun  ? ' -n' : '')
             . ($self->verbose ? ' -v' : '')
     );
