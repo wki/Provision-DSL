@@ -120,7 +120,6 @@ sub _save_crontab_text {
 ### FIXME: must read /etc/crontab or execute crontab -l and check content
 sub inspect { 'current' }
 
-### FIXME: depends on user requested
 sub need_privilege { $_[0]->is_other_user }
 
 ### FIXME: must change /etc/crontab or execute crontab -e
