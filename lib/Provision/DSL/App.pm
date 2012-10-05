@@ -101,11 +101,12 @@ sub add_entity_for_install {
 sub install_needs_privilege {
     my $self = shift;
 
-    foreach my $entity (@{$self->entities_to_install}) {
-        return 1 if $entity->need_privilege;
-    }
-
-    return 0;
+    grep { $_->need_privilege } @{$self->entities_to_install};
+    # foreach my $entity (@{$self->entities_to_install}) {
+    #     return 1 if $entity->need_privilege;
+    # }
+    # 
+    # return 0;
 }
 
 sub install_all_entities {
@@ -119,6 +120,7 @@ sub install_all_entities {
     croak 'Privileged user needed for installing'
         if $self->install_needs_privilege && !$self->user_has_privilege;
 
+    ### TODO: we can add a getppid() call here to discover if we are orphaned
     $_->install for @{$self->entities_to_install};
 }
 
