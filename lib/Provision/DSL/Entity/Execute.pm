@@ -7,33 +7,35 @@ extends 'Provision::DSL::Entity';
 with 'Provision::DSL::Role::CommandExecution';
 
 has path => (
-    is => 'lazy',
-    isa => ExecutableFile,
+    is     => 'lazy',
+    isa    => ExecutableFile,
     coerce => to_File,
 );
 
 sub _build_path { $_[0]->name }
 
 has chdir => (
-    is => 'ro',
-    isa => ExistingDir,
-    coerce => to_Dir,
+    is        => 'ro',
+    isa       => ExistingDir,
+    coerce    => to_Dir,
     predicate => 1,
 );
 
 has arguments => (
-    is => 'ro',
+    is      => 'ro',
     default => sub { [] },
+    coerce  => to_Array,
 );
 
 has args => (
-    is => 'lazy',
+    is     => 'lazy',
+    coerce => to_Array,
 );
 
 sub _build_args { $_[0]->arguments }
 
 has environment => (
-    is => 'ro',
+    is      => 'ro',
     default => sub { {} },
 );
 

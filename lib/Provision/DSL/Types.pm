@@ -18,6 +18,7 @@ our @EXPORT = qw(
     PerlVersion
 
     to_Str
+    to_Array
     to_Content
     to_Channels
     to_Dir to_ExistingDir to_File
@@ -84,6 +85,12 @@ sub PerlVersion {
 
 sub to_Str {
     return sub { "$_[0]" }
+}
+
+sub to_Array {
+    return sub {
+        ref $_[0] eq 'ARRAY' ? $_[0] : [$_[0]]
+    }
 }
 
 sub to_Content {

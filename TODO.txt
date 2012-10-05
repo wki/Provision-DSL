@@ -57,7 +57,7 @@ Entity::Cron
         months          => [1..12],
         days_of_month   => '*/2',
         
-        execute         => '/path/to/executable', # copied from name if omitted
+        path            => '/path/to/executable', # copied from name if omitted
         arguments       => [ ... ],
   };
   

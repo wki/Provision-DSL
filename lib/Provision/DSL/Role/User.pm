@@ -31,6 +31,10 @@ sub _build_home_dir {
 sub has_gid { $_[0]->has_group }
 sub gid { getgrnam($_[0]->group) }
 
+sub is_root {
+    $< == 0 || ($_[0]->has_user && $_[0]->user eq 'root')
+}
+
 sub is_other_user {
     $_[0]->has_user && $_[0]->user ne getpwuid($<)
 }
