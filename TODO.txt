@@ -2,7 +2,7 @@ TODO for provisioning
 ---------------------
 
 Boot-Script:
-  * kein "| ssh" mehr
+  * kein PIPE zu "ssh" mehr
   * stattdessen: scp, dann ausführen via ssh
 
 Generell:
