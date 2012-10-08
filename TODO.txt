@@ -1,6 +1,10 @@
 TODO for provisioning
 ---------------------
 
+Boot-Script:
+  * kein "| ssh" mehr
+  * stattdessen: scp, dann ausführen via ssh
+
 Generell:
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
              Provision::DSL::Installer::Port | Apt | Aptitude | ...
