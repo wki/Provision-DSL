@@ -69,6 +69,45 @@ has days_of_month => (
 
 sub _build_days_of_month { $_[0]->day_of_month }
 
+# [ -- entries may be undef
+#    0: all leading lines (up to last variable definition)
+#    1: # autocreated by Provision::DSL -- do not edit
+#    2: lines before our line
+#    3: --> OUR LINE <--
+#    4: lines after our line
+#    5: # end Provision::DSL
+#    6: all trailing lines
+# ]
+
+has crontab_parts => (
+    is => 'lazy',
+);
+
+sub _build_crontab_parts {
+    ... # TODO: fill me
+    
+    # wenn "# autocreated..." enthalten, leading, block, trailing einfach
+    #      innerhalb: path wird verwendet, die Zeile als "meine" zu erkennen
+    # sonst: scannen nach var-definitionen, rest.
+}
+
+sub _crontab_line {
+    my $self = shift;
+    
+    join ' ',
+        (
+            map { 
+                my $x = join(',', $self->$_); 
+                $x =~ s{\s+}{}xmsg;
+                $x =~ m{\A \s* \z}xms ? '*' : $x 
+            }
+            qw(minutes hours days_of_month months days_of_week)
+        ),
+        ($self->is_root ? 'root' : ()),
+        $self->path,
+        @{$self->args};
+}
+
 sub _get_crontab_text {
     my $self = shift;
     
@@ -118,7 +157,10 @@ sub _save_crontab_text {
 # end Provision::DSL
 
 ### FIXME: must read /etc/crontab or execute crontab -l and check content
-sub inspect { 'current' }
+sub inspect {
+    my $self = shift;
+    
+}
 
 sub need_privilege { $_[0]->is_other_user }
 
