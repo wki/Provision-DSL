@@ -28,15 +28,16 @@ sub create { goto \&change }
 sub change { 
     my $self = shift;
     
-    $self->run_command_as_superuser($UPDATE_RCD, $self->name, 'defaults');
+    $self->run_command_as_superuser(
+        $UPDATE_RCD, $self->name, 'defaults'
+    );
 }
 
 sub remove {
     my $self = shift;
     
     $self->run_command_as_superuser(
-        '/bin/rm',
-        "/etc/rc?.d/[SK]??${\$self->name}"
+        $UPDATE_RCD, '-f', $self->name, 'defaults'
     );
 }
 
