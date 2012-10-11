@@ -291,7 +291,7 @@ sub pack_provision_script {
     my $provision_script = scalar $self->root_dir->file($provision_file_name)->slurp;
 
     $provision_script =~ s{^ \s*
-                           include\s+               # 'include' keyword
+                           [Ii]nclude\s+            # 'include' keyword
                            (\w+)                    # $1: file to include
                            (?:\s* ,? \s* (.+?) )?   # $2: optional args
                            \s* ; \s*
