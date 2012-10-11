@@ -31,7 +31,14 @@ are alredy done, they will get skipped.
 
 =cut
 
-our @EXPORT = qw(Done done OS Os os Defaults Files files app);
+our @EXPORT = qw(
+    Done done 
+    OS Os os 
+    Defaults defaults
+    Files files 
+    Include include 
+    app);
+
 our %default_for_entity;
 
 sub app;
@@ -143,7 +150,8 @@ sub done {
     app->install_all_entities;
 }
 
-sub Defaults {
+sub Defaults { goto &defaults }
+sub defaults {
     my %d = ref $_[0] eq 'HASH' ? %{$_[0]} : @_;
 
     @default_for_entity{keys %d} = values %d;
@@ -163,6 +171,19 @@ sub files {
     }
 
     return \@files;
+}
+
+sub Include(*;@) { goto &include }
+sub include(*;@) {
+    say STDERR <<EOF;
+
+
+You are running the provision script directly which is not allowed.
+Please use provision.pl and a config file to fire the script on the
+target machine.
+
+EOF
+    exit 1;
 }
 
 =head1 AUTHOR

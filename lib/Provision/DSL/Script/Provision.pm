@@ -238,13 +238,13 @@ sub _pack_file_or_dir {
     } else {
         $self->__pack_file($root_dir->file($source) => $target, \%options);
     }
-    
+
     chdir $cwd;
 }
 
 sub __pack_dir {
     my ($self, $dir, $dest_dir, $options, $exclude_regexes) = @_;
-    
+
     $dir->traverse( sub {
         my ($child, $cont) = @_;
 
@@ -270,12 +270,12 @@ sub __pack_dir {
         }
         return $cont->();
     });
-    
+
 }
 
 sub __pack_file {
     my ($self, $file, $dest_file, $options) = @_;
-    
+
     $self->tar->add_data(
         $dest_file,
         scalar $file->slurp,
@@ -287,15 +287,43 @@ sub pack_provision_script {
     my $self = shift;
 
     my $provision_file_name = $self->config->{provision_file} // 'provision.pl';
-    my $provision_script = $self->root_dir->file($provision_file_name);
+    my $provision_dir = $self->root_dir->file($provision_file_name)->dir;
+    my $provision_script = scalar $self->root_dir->file($provision_file_name)->slurp;
+
+    $provision_script =~ s{^ \s*
+                           include\s+               # 'include' keyword
+                           (\w+)                    # $1: file to include
+                           (?:\s* ,? \s* (.+?) )?   # $2: optional args
+                           \s* ; \s*
+                           [#] .*
+                           $
+                           }{$self->_include($provision_dir->file("$1.pl"), $2)}exmsg;
 
     $self->log(" - packing provision script '$provision_file_name'");
 
+    warn "SCRIPT = $provision_script"; die 'stop for testing' ;
+
     $self->tar->add_data(
         'provision.pl',
-        scalar $provision_script->slurp,
+        $provision_script,
         { type => FILE, mode => 0755 },
     );
+}
+
+sub _include {
+    my $self = shift;
+    my $file = shift;
+    my $args = shift // '';
+    
+    my @content;
+    my @variables = (eval $args); # keep order of variables
+    while (my ($name, $value) = splice @variables, 0, 2) {
+        push @content, 'my ' . Data::Dumper->Dump([$value], [$name]);
+    }
+
+    push @content, $file->slurp(chomp => 1);
+
+    return join "\n", @content;
 }
 
 sub pack_resources {

@@ -1,6 +1,7 @@
 package Provision::DSL::Entity::Cron;
 use Moo;
 use Try::Tiny;
+use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Execute';
 
