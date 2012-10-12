@@ -290,7 +290,7 @@ sub pack_provision_script {
                            (\w+)                    # $1: file to include
                            (?: \s* , \s* (.+?) )?   # $2: optional arglist
                            \s* ; \s*                # closing semicolon
-                           (?: [#] .*? )?            # optional comment
+                           (?: [#] .*? )?           # optional comment
                            $
                            }{$self->_include($provision_dir->file("$1.pl"), $2)}exmsg;
 
