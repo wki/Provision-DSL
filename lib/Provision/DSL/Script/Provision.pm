@@ -20,7 +20,6 @@ use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 #
 
 with 'Provision::DSL::Role::CommandlineOptions',
-     'Provision::DSL::Role::CommandExecution',
      'Provision::DSL::Role::HTTP';
 
 has config => (
@@ -168,11 +167,7 @@ sub pack_dependent_libs {
         $lib_filename =~ s{::}{/}xmsg;
         next if -f $self->temp_lib_dir->file($lib_filename);
 
-        $self->run_command(
-            'cpanm',
-            -L => $self->temp_lib_dir,
-            -n => $lib
-        );
+        run3 ['cpanm', -L => $self->temp_lib_dir, -n => $lib];
     }
 
     $self->_pack_file_or_dir(
@@ -293,21 +288,33 @@ sub pack_provision_script {
     $provision_script =~ s{^ \s*
                            [Ii]nclude\s+            # 'include' keyword
                            (\w+)                    # $1: file to include
-                           (?:\s* ,? \s* (.+?) )?   # $2: optional args
-                           \s* ; \s*
-                           [#] .*
+                           (?: \s* , \s* (.+?) )?   # $2: optional arglist
+                           \s* ; \s*                # closing semicolon
+                           (?: [#] .*? )?            # optional comment
                            $
                            }{$self->_include($provision_dir->file("$1.pl"), $2)}exmsg;
 
     $self->log(" - packing provision script '$provision_file_name'");
-
-    warn "SCRIPT = $provision_script"; die 'stop for testing' ;
+    # warn $provision_script; die 'stop for testing';
+    $self->must_have_valid_syntax($provision_script);
 
     $self->tar->add_data(
         'provision.pl',
         $provision_script,
         { type => FILE, mode => 0755 },
     );
+}
+
+sub must_have_valid_syntax {
+    my ($self, $script) = @_;
+
+    $self->log_debug('Syntax-Checking combined provision script');
+
+    my $perl = $Config{perlpath} // 'perl';
+
+    my ($stdout, $stderr);
+    run3 [$perl, '-c', '-'], \$script, \$stdout, \$stderr;
+    die "Error Checking provision script:\n$stderr" if $? >> 8;
 }
 
 sub _include {
@@ -404,7 +411,7 @@ sub remote_provision {
         # try to find the perl binary with the highest version number
         # otherwise OS-X Tiger systems would only use 5.8.9 which fails here.
         #
-        'env `ls -1 -r /usr/bin/perl5.1* /usr/bin/perl | head -1` -'
+        '/usr/bin/env `ls -1 -r /usr/bin/perl5.[123]* /usr/bin/perl | head -1` -'
             . ($self->dryrun  ? ' -n' : '')
             . ($self->verbose ? ' -v' : '')
     );
