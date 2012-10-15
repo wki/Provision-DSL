@@ -1,9 +1,60 @@
 TODO for provisioning
 ---------------------
 
+Vorgänge im Einzelnen
+  * /tmp/xxx Verzeichnis erstellen
+  
+  * Alles packen für Rsync
+    /tmp/xxx/script/provision.pl
+    /tmp/xxx/resources 
+    /tmp/xxx/blabla
+  
+  * Erstellen : /etc/xxx/rsyncd.conf
+  
+  * lokalen CPAN Server starten
+    plackup ...
+
+  * lokalen rsync daemon starten
+    --> keine Dateien mehr auf den Server kopieren!
+    rsync --daemon \
+          --address 127.0.0.1 \
+          --no-detach \
+          --port 2873 \
+          --config ~/etc/xxx/rsyncd.conf
+
+  * provision.pl Datei erstellen
+  
+  * scp provision.pl destination:/tmp/xxx.pl
+  
+  * ausführen:
+    ssh \
+        -i identity_file \
+        -C \
+        -R 2080:127.0.0.1:2080 \
+        -R 2873:127.0.0.1:2873 \
+        destination \
+        /usr/bin/rsync rsync://127.0.0.1:2873/script/xxx.pl /tmp/xxx.pl "&&" \
+        /usr/bin/env perl \
+        /tmp/xxx.pl \
+        -n -v # (if given...)
+
+
+rsyncd.conf:
+    use chroot = no
+    [script]
+        path = /tmp/xxx/script
+    [resources]
+        path = /tmp/xxx/resources
+    [blabla]
+        path = /tmp/xxx/blabla
+    
+    
+
 Boot-Script:
   * kein PIPE zu "ssh" mehr
   * stattdessen: scp, dann ausführen via ssh
+  * dann ssh -R 2080:127.0.0.1:2080         -- cpan server
+  * und  ssh -R 2873:127.0.0.1:2873         -- rsync
 
 Generell:
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
