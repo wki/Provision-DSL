@@ -1,6 +1,5 @@
 {
-    # just a name, currently not used.
-    name           => 'box config',
+    name => 'box',
     
     # the file to run on the controlled machine
     provision_file => 'box.pl',

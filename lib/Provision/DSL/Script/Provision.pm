@@ -6,10 +6,12 @@ use Archive::Tar::Constant;
 use Path::Class;
 use IO::String;
 use MIME::Base64;
+use File::Temp ();
 use Cwd;
 use IPC::Run3;
 use Config;
 use Try::Tiny;
+use Proc::Daemon;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
@@ -48,31 +50,61 @@ sub _build_root_dir {
     die 'cannot guess root_dir, stopping.';
 }
 
-has temp_lib_dir => (
+has cache_dir => (
     is     => 'lazy',
     coerce => to_ExistingDir,
 );
 
-sub _build_temp_lib_dir {
+sub _build_cache_dir {
     my $self = shift;
 
-    my $dir = $self->root_dir->subdir('.provision_lib');
+    my $cache_dir_name = join '_', '.provision', $self->config->{name} // ();
+    my $dir = $self->root_dir->subdir($cache_dir_name);
     $dir->mkpath if !-d $dir;
 
     return $dir;
 }
 
-has tar => (
-    is => 'lazy',
+has provision_dir => (
+    is     => 'lazy',
+    coerce => to_ExistingDir,
 );
 
-sub _build_tar { Archive::Tar->new }
+sub _build_provision_dir {
+    my $self = shift;
+    
+    my $provision_dir = $self->cache_dir->subdir('provision');
+    if (!-d $provision_dir) {
+        $provision_dir->mkpath;
+        $provision_dir->subdir($_)->mkpath
+            for qw(bin lib);
+    }
+    return $provision_dir;
+}
 
-has script => (
-    is => 'lazy',
+has resources_dir => (
+    is     => 'lazy',
+    coerce => to_ExistingDir,
 );
 
-sub _build_script { $_[0]->_boot_script . $_[0]->_tar_content_base64_encoded }
+sub _build_resources_dir {
+    my $self = shift;
+    
+    my $resources_dir = $self->cache_dir->subdir('resources');
+    $resources_dir->mkpath if !-d $resources_dir;
+    return $resources_dir;
+}
+
+has rsyncd_config_file => (
+    is     => 'lazy',
+    coerce => to_File
+);
+
+sub _build_rsyncd_config_file { $_[0]->cache_dir->file('rsyncd.conf') }
+
+has rsync_daemon => (
+    is => 'rw',
+);
 
 around options => sub {
     my ($orig, $self) = @_;
@@ -93,11 +125,8 @@ sub run {
     $self->log_debug(Data::Dumper->Dump([$self->config], ['config']));
 
     $self->prepare_environment;
-
     $self->pack_requisites;
-
-    file('/tmp/provision.pl')->spew($self->script)
-        if ($self->debug);
+    $self->create_rsyncd_config;
 
     my $result = $self->remote_provision;
 
@@ -119,18 +148,29 @@ sub prepare_environment {
 sub pack_requisites {
     my $self = shift;
 
-    $self->ensure_perlbrew_installer_loaded;
-
+    $self->pack_perlbrew_installer;
     $self->pack_dependent_libs;
     $self->pack_provision_libs;
     $self->pack_resources;
     $self->pack_provision_script;
 }
 
-sub ensure_perlbrew_installer_loaded {
+sub create_rsyncd_config {
+    my $self = shift;
+    
+    $self->rsyncd_config_file->spew(<<EOF);
+use chroot = no
+[provision]
+    path = ${\$self->provision_dir}
+[resources]
+    path = ${\$self->resources_dir}
+EOF
+}
+
+sub pack_perlbrew_installer {
     my $self = shift;
 
-    my $installer_file = $self->temp_lib_dir->file(PERLBREW_INSTALLER);
+    my $installer_file = $self->provision_dir->file(PERLBREW_INSTALLER);
     return if -f $installer_file;
 
     $self->log('loading perlbrew installer');
@@ -165,16 +205,16 @@ sub pack_dependent_libs {
     foreach my $lib (@install_libs) {
         my $lib_filename = "lib/perl5/$lib.pm";
         $lib_filename =~ s{::}{/}xmsg;
-        next if -f $self->temp_lib_dir->file($lib_filename);
+        next if -f $self->provision_dir->file($lib_filename);
 
-        run3 ['cpanm', -L => $self->temp_lib_dir, -n => $lib];
+        run3 ['cpanm', -L => $self->provision_dir, -n => $lib];
     }
 
-    $self->_pack_file_or_dir(
-        $self->temp_lib_dir,
-        '.' => "local",
-        [ $Config{archname}, '*.pod' ], # exclude binary-dir and documentation
-    );
+    # $self->_pack_file_or_dir(
+    #     $self->cache_dir,
+    #     '.' => '.',
+    #     [ $Config{archname}, '*.pod' ], # exclude binary-dir and documentation
+    # );
 }
 
 sub pack_provision_libs {
@@ -190,7 +230,7 @@ sub pack_provision_libs {
 
     $self->_pack_file_or_dir(
         $provision_dsl_install_dir,
-        'Provision' => 'local/lib/perl5/Provision',
+        'Provision' => 'provision/lib/perl5/Provision',
 
         [ '*.pod' ], # exclude documentation
     );
@@ -254,11 +294,12 @@ sub __pack_dir {
             $self->log_debug('ignoring:', $relative_file_name);
         } elsif (-d $child) {
             $self->log_debug('adding DIR:', $dest_path);
-            $self->tar->add_data(
-                $dest_path,
-                '',
-                { type => DIR, mode => 0755, %$options },
-            );
+            # $self->cache_dir->subdir($dest_path)->mkpath;
+            # $self->tar->add_data(
+            #     $dest_path,
+            #     '',
+            #     { type => DIR, mode => 0755, %$options },
+            # );
         } else {
             $self->log_debug('adding FILE:', $relative_file_name, $dest_path);
             $self->__pack_file($child => $dest_path, $options);
@@ -269,13 +310,17 @@ sub __pack_dir {
 }
 
 sub __pack_file {
-    my ($self, $file, $dest_file, $options) = @_;
+    my ($self, $source_file, $relative_dest_path, $options) = @_;
 
-    $self->tar->add_data(
-        $dest_file,
-        scalar $file->slurp,
-        { type => FILE, mode => 0644, %$options },
-    );
+    my $dest_file = $self->cache_dir->file($relative_dest_path);
+    $dest_file->dir->mkpath if !-d $dest_file->dir;
+    $dest_file->spew(scalar $source_file->slurp);
+    
+    # $self->tar->add_data(
+    #     $dest_file,
+    #     scalar $file->slurp,
+    #     { type => FILE, mode => 0644, %$options },
+    # );
 }
 
 sub pack_provision_script {
@@ -298,11 +343,12 @@ sub pack_provision_script {
     # warn $provision_script; die 'stop for testing';
     $self->must_have_valid_syntax($provision_script);
 
-    $self->tar->add_data(
-        'provision.pl',
-        $provision_script,
-        { type => FILE, mode => 0755 },
-    );
+    $self->provision_dir->file('provision.pl')->spew($provision_script);
+    # $self->tar->add_data(
+    #     'provision.pl',
+    #     $provision_script,
+    #     { type => FILE, mode => 0755 },
+    # );
 }
 
 sub must_have_valid_syntax {
@@ -387,104 +433,84 @@ sub remote_provision {
     my $self = shift;
 
     my $ssh_config = $self->config->{ssh} // {};
-    my $identity_file = exists $ssh_config->{identity_file}
-        ? "$ENV{HOME}/.ssh/$ssh_config->{identity_file}"
-        : undef;
+    my @identity_file = exists $ssh_config->{identity_file}
+        ? (-i => "$ENV{HOME}/.ssh/$ssh_config->{identity_file}")
+        : ();
     my $user_prefix = exists $ssh_config->{user}
         ? "$ssh_config->{user}\@"
         : '';
+    
+    my $temp_dir = File::Temp::tempnam('/tmp', 'provision_');
 
     my @command_and_args = (
         #
         # establish an ssh connection with compression
         #
         '/usr/bin/ssh',
-        (defined $identity_file
-            ? ('-i' => $identity_file)
-            : ()),
-        '-C',   # compress data
+        @identity_file,
+        '-C',
         (map { ref $_ eq 'ARRAY' ? @$_ : $_ } ($ssh_config->{options} // ())),
+        
+        # reverse port forwardings
+        '-R', '2080:127.0.0.1:2080',   # http (cpan)
+        '-R', '2873:127.0.0.1:2873',   # rsync
+        
         "$user_prefix$ssh_config->{hostname}",
+        
+        # command sequence to execute
+        '/bin/mkdir', '-p', $temp_dir, 
+        
+        '&&',
+        
+        '/usr/bin/rsync', '-r', 
+            'rsync://127.0.0.1:2873/provision/' => "$temp_dir/", 
+        
+        '&&',
+            
+        "PERL5LIB=$temp_dir/provision/lib/perl5",
+            "/usr/bin/perl", "$temp_dir/provision/provision.pl",
+            ($self->dryrun  ? ' -n' : ()),
+            ($self->verbose ? ' -v' : ()),
 
-        #
-        # provision perl running script from stdin (-) with options
-        # try to find the perl binary with the highest version number
-        # otherwise OS-X Tiger systems would only use 5.8.9 which fails here.
-        #
-        '/usr/bin/env `ls -1 -r /usr/bin/perl5.[123]* /usr/bin/perl | head -1` -'
-            . ($self->dryrun  ? ' -n' : '')
-            . ($self->verbose ? ' -v' : '')
+        # uncomment as soon as things do work
+        # '&&'
+        # '/bin/rm', '-rf', $temp_dir,
     );
 
     $self->log(' - running provision script on', $ssh_config->{hostname});
     $self->log_debug('Executing:', @command_and_args);
+    
+    $self->start_rsync_daemon;
 
-    # redirecting stdout/stderr will buffer.
-    # FIXME: find out how to avoid...
-    run3 \@command_and_args,
-         \$self->script,               # STDIN
-         #\&_print_stdout_in_green,     # STDOUT
-         #\&_print_stderr_in_red;       # STDERR
-         ;
+    run3 \@command_and_args;
+    
+    $self->stop_rsync_daemon;
 }
 
-sub _print_stdout_in_green {
-    print "\e[32m$_[0]\e[m";
+sub start_rsync_daemon {
+    my $self = shift;
+    
+    my @command_and_args = (
+        'rsync', 
+        '--daemon',
+        '--address', '127.0.0.1',
+        '--no-detach',
+        '--port', 2873,
+        '--config', $self->rsyncd_config_file->stringify,
+    );
+    
+    $self->rsync_daemon(
+        Proc::Daemon->new(exec_command => \@command_and_args)
+    );
+    
+    $self->rsync_daemon->Init or exit 0; # child
+    warn 'started rsync daemon';
 }
 
-sub _print_stderr_in_red {
-    print "\e[31m$_[0]\e[m";
-}
-
-sub _boot_script {
-    #
-    # for "booting" on a remote maching, at least Perl 5.10 is required.
-    # Archive::Tar is in CORE since this version of Perl, not before.
-    #
-    return <<'EOF';
-#!/usr/bin/env perl
-use strict;
-use warnings;
-use 5.010;
-use Cwd;
-use Archive::Tar;
-use File::Temp 'tempdir';
-
-my $cwd      = getcwd;
-my $temp_dir = tempdir(CLEANUP => 1);
-
-chdir $temp_dir;
-binmode DATA, ':via(Base64Decode)';
-Archive::Tar->new(\*DATA)->extract;
-
-chdir $cwd;
-$ENV{PERL5LIB} = "$temp_dir/local/lib/perl5";
-system "$temp_dir/provision.pl", @ARGV;
-
-{
-    package Base64Decode;
-    use MIME::Base64;
-
-    sub PUSHED {
-        my ($class, $mode, $fh) = @_;
-
-        my $buf = '';
-        return bless \$buf, $class;
-    }
-
-    sub FILL {
-        my ($obj, $fh) = @_;
-
-        my $line = <$fh>;
-        return defined $line
-            ? decode_base64($line)
-            : undef;
-    }
-}
-
-# data contains base-64 encoded tar file, compression via ssh -C
-__DATA__
-EOF
+sub stop_rsync_daemon {
+    my $self = shift;
+    
+    $self->rsync_daemon->Kill_Daemon;
 }
 
 1;

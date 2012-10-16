@@ -1,6 +1,6 @@
 {
     # just a name, currently not used.
-    name           => 'test config',
+    name           => 'testing',
     
     # the file to run on the controlled machine
     provision_file => 't/conf/list_files.pl',
