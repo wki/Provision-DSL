@@ -2,17 +2,23 @@ TODO for provisioning
 ---------------------
 
 Vorgänge im Einzelnen
-  * /tmp/xxx Verzeichnis erstellen
-  
-  * Alles packen für Rsync
-    /tmp/xxx/script/provision.pl
-    /tmp/xxx/resources 
-    /tmp/xxx/blabla
-  
-  * Erstellen : /etc/xxx/rsyncd.conf
-  
-  * lokalen CPAN Server starten
-    plackup ...
+  * Verzeichnis {root_dir}/.provision_{name} erstellen und füllen
+
+    .provision_{name}/  -- jedes Unterverzeichnis wird rsync-modul
+      |
+      +-- provision/
+      |    |
+      |    +-- bin/    -- install.perlbrew.sh
+      |    |
+      |    +-- lib/    -- Provision::DSL + abhängige libs
+      |    |
+      |    +-- provision.pl
+      |
+      +-- resources/
+      |
+      +-- rsyncd.conf
+
+  * lokalen CPAN Server starten ???
 
   * lokalen rsync daemon starten
     --> keine Dateien mehr auf den Server kopieren!
@@ -20,41 +26,33 @@ Vorgänge im Einzelnen
           --address 127.0.0.1 \
           --no-detach \
           --port 2873 \
-          --config ~/etc/xxx/rsyncd.conf
+          --config .provision_{name}/rsyncd.conf
 
-  * provision.pl Datei erstellen
-  
-  * scp provision.pl destination:/tmp/xxx.pl
-  
-  * ausführen:
+  * ausführen (rsync und perl Pfade konfigurierbar)
+    Hint: File::Temp::tempnam('/tmp', 'provision_')
+    
     ssh \
         -i identity_file \
         -C \
         -R 2080:127.0.0.1:2080 \
         -R 2873:127.0.0.1:2873 \
         destination \
-        /usr/bin/rsync rsync://127.0.0.1:2873/script/xxx.pl /tmp/xxx.pl "&&" \
-        /usr/bin/env perl \
-        /tmp/xxx.pl \
-        -n -v # (if given...)
+        /bin/mkdir -p /tmp/provisionXXXX '&&' \
+        /usr/bin/rsync -r rsync://127.0.0.1:2873/provision/ /tmp/provisionXXXX/ '&&' \
+        PERL5LIB=/tmp/provisionXXXX/lib/perl5 \
+        /usr/bin/perl /tmp/provisionXXXX/provision.pl \
+        -n -v '&&'
+        /bin/rm -rf /tmp/provisionXXXX
 
 
 rsyncd.conf:
     use chroot = no
-    [script]
-        path = /tmp/xxx/script
+    [provision]
+        path = .provision_{name}/provision
     [resources]
-        path = /tmp/xxx/resources
-    [blabla]
-        path = /tmp/xxx/blabla
-    
-    
+        path = .provision_{name}/resources
 
-Boot-Script:
-  * kein PIPE zu "ssh" mehr
-  * stattdessen: scp, dann ausführen via ssh
-  * dann ssh -R 2080:127.0.0.1:2080         -- cpan server
-  * und  ssh -R 2873:127.0.0.1:2873         -- rsync
+
 
 Generell:
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
@@ -73,7 +71,7 @@ Entity::Rsync --> Entity::Backup (steuert keinen State bei)
   * backup => backup_dir / backup_copies => n Optionen
   * backup nur, wenn state != current
   * Linux: cp -al destination backup_yyyymmdd_hhmm -- 3-4 times faster than rsync
-  * OS-X: pax -rw -l 
+  * OS-X: pax -rw -l
   * generisch: mkdir backup_dir; rsync -vcr --link-dest original --links original/ backup_dir/
 
 _Ubuntu::Package
@@ -111,15 +109,15 @@ Entity::Cron
         days_of_week    => [1,2],
         months          => [1..12],
         days_of_month   => '*/2',
-        
+
         path            => '/path/to/executable', # copied from name if omitted
         arguments       => [ ... ],
   };
-  
+
   * wenn User === root ==> /etc/crontab, sonst crontab -e
   * jeder Eintrag wird mit einem Kommentar eingeleitet, enthält config name
     # autocreated by Provision::DSL (hrko dev) -- do not edit
-  * Einträge kommen ganz am Anfang aber in jedem Fall alle 
+  * Einträge kommen ganz am Anfang aber in jedem Fall alle
     zu einer Config gehörenden in einem Block.
 
 

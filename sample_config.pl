@@ -1,6 +1,6 @@
 {
-    # just a name, currently not used.
-    name           => 'sample config',
+    # a name appended to the ".provision" directory name
+    name => 'sample',
     
     # the file to run on the controlled machine
     provision_file => 'examples.pl',
@@ -15,7 +15,7 @@
         # options     => '--foo 42 --bar zzz',
     },
     
-    # resources to get packed into resources/ in a tar archive
+    # resources to get packed into resources/
     resources => [
         {
             # copy everything inside t/resources except /dirx
@@ -27,6 +27,18 @@
         
         # ... more rules
     ],
+    
+    # optional definitions of paths on target machine
+    path_for => {
+        perl  => '/usr/bin/perl',
+        rsync => '/usr/bin/rsync',
+    },
+    
+    # maybe define some ports
+    port_for => {
+        cpan  => '2080:127.0.0.1:2080',
+        rsync => '2873:127.0.0.1:2873',
+    },
     
     # environment variables to set on the local machine
     environment => {
