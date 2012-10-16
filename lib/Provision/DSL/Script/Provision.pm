@@ -463,7 +463,7 @@ sub remote_provision {
         '&&',
         
         '/usr/bin/rsync', '-r', 
-            'rsync://127.0.0.1:2873/provision/' => "$temp_dir/", 
+            'rsync://127.0.0.1:2873/provision' => "$temp_dir/provision", 
         
         '&&',
             
@@ -491,7 +491,7 @@ sub start_rsync_daemon {
     my $self = shift;
     
     my @command_and_args = (
-        'rsync', 
+        '/usr/bin/rsync', 
         '--daemon',
         '--address', '127.0.0.1',
         '--no-detach',
@@ -499,18 +499,25 @@ sub start_rsync_daemon {
         '--config', $self->rsyncd_config_file->stringify,
     );
     
-    $self->rsync_daemon(
-        Proc::Daemon->new(exec_command => \@command_and_args)
-    );
+    # $self->rsync_daemon(
+    #     Proc::Daemon->new(exec_command => \@command_and_args)
+    # );
+    # 
+    # $self->rsync_daemon->Init or exit 0; # child
     
-    $self->rsync_daemon->Init or exit 0; # child
-    warn 'started rsync daemon';
+    if (fork) {
+        # parent
+        warn 'started rsync daemon';
+    } else {
+        system @command_and_args;
+        exit;
+    }
 }
 
 sub stop_rsync_daemon {
     my $self = shift;
     
-    $self->rsync_daemon->Kill_Daemon;
+    # $self->rsync_daemon->Kill_Daemon;
 }
 
 1;
