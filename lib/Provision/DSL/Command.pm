@@ -5,20 +5,8 @@ use Provision::DSL::Types;
 use Carp;
 
 extends 'Provision::DSL::Base';
-with 'Provision::DSL::Role::User';
-# we do not use the user roles, we only need a string as user/group
-
-has command => (
-    is => 'lazy',
-    coerce => to_Str,
-);
-
-sub _build_command { $_[0]->name }
-
-has args => (
-    is => 'ro',
-    default => sub { [] },
-);
+with 'Provision::DSL::Role::User',
+     'Provision::DSL::Role::CommandAndArgs';
 
 has env => (
     is => 'ro',

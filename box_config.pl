@@ -12,6 +12,9 @@
         # user          => 'wolfgang',
         # identity_file => 'id_rsa',
         # options     => '--foo 42 --bar zzz',
+        
+        # TODO: implement this
+        environment => { foo => 42 },
     },
     
     # resources to get packed into resources/ in a tar archive

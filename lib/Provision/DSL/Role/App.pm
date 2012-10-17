@@ -1,5 +1,6 @@
 package Provision::DSL::Role::App;
 use Moo::Role;
+use Provision::DSL::App;
 
 has app => (
     is       => 'lazy',

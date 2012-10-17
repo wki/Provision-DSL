@@ -14,6 +14,7 @@ use Try::Tiny;
 use Proc::Daemon;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
+use Provision::DSL::Daemon;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
 #
@@ -72,7 +73,7 @@ has provision_dir => (
 
 sub _build_provision_dir {
     my $self = shift;
-    
+
     my $provision_dir = $self->cache_dir->subdir('provision');
     if (!-d $provision_dir) {
         $provision_dir->mkpath;
@@ -89,7 +90,7 @@ has resources_dir => (
 
 sub _build_resources_dir {
     my $self = shift;
-    
+
     my $resources_dir = $self->cache_dir->subdir('resources');
     $resources_dir->mkpath if !-d $resources_dir;
     return $resources_dir;
@@ -103,8 +104,25 @@ has rsyncd_config_file => (
 sub _build_rsyncd_config_file { $_[0]->cache_dir->file('rsyncd.conf') }
 
 has rsync_daemon => (
-    is => 'rw',
+    is => 'lazy',
 );
+
+sub _build_rsync_daemon {
+    my $self = shift;
+
+    return Provision::DSL::Daemon->new(
+        '/usr/bin/rsync',
+        {
+            args => [
+                '--daemon',
+                '--address', '127.0.0.1',
+                '--no-detach',
+                '--port', 2873,
+                '--config', $self->rsyncd_config_file->stringify,
+            ],
+        }
+    );
+}
 
 around options => sub {
     my ($orig, $self) = @_;
@@ -157,7 +175,7 @@ sub pack_requisites {
 
 sub create_rsyncd_config {
     my $self = shift;
-    
+
     $self->rsyncd_config_file->spew(<<EOF);
 use chroot = no
 [provision]
@@ -315,7 +333,7 @@ sub __pack_file {
     my $dest_file = $self->cache_dir->file($relative_dest_path);
     $dest_file->dir->mkpath if !-d $dest_file->dir;
     $dest_file->spew(scalar $source_file->slurp);
-    
+
     # $self->tar->add_data(
     #     $dest_file,
     #     scalar $file->slurp,
@@ -367,7 +385,7 @@ sub _include {
     my $self = shift;
     my $file = shift;
     my $args = shift // '';
-    
+
     my @content;
     my @variables = (eval $args); # keep order of variables
     while (my ($name, $value) = splice @variables, 0, 2) {
@@ -415,20 +433,6 @@ sub pack_resource {
     );
 }
 
-sub _tar_content_base64_encoded {
-    my $self = shift;
-
-    my $buffer;
-    my $io = IO::String->new($buffer);
-    $self->tar->write($io);
-
-    if ($self->debug) {
-        $self->tar->write('/tmp/provision.tar');
-    }
-
-    return encode_base64($buffer);
-}
-
 sub remote_provision {
     my $self = shift;
 
@@ -439,7 +443,7 @@ sub remote_provision {
     my $user_prefix = exists $ssh_config->{user}
         ? "$ssh_config->{user}\@"
         : '';
-    
+
     my $temp_dir = File::Temp::tempnam('/tmp', 'provision_');
 
     my @command_and_args = (
@@ -450,23 +454,27 @@ sub remote_provision {
         @identity_file,
         '-C',
         (map { ref $_ eq 'ARRAY' ? @$_ : $_ } ($ssh_config->{options} // ())),
-        
+
         # reverse port forwardings
         '-R', '2080:127.0.0.1:2080',   # http (cpan)
         '-R', '2873:127.0.0.1:2873',   # rsync
-        
+
         "$user_prefix$ssh_config->{hostname}",
-        
+
+        '/bin/rm', '-rf', '/tmp/provision_*',
+
+        '&&',
+
         # command sequence to execute
-        '/bin/mkdir', '-p', $temp_dir, 
-        
+        '/bin/mkdir', '-p', $temp_dir,
+
         '&&',
-        
-        '/usr/bin/rsync', '-r', 
-            'rsync://127.0.0.1:2873/provision' => "$temp_dir/provision", 
-        
+
+        '/usr/bin/rsync', '-r',
+            'rsync://127.0.0.1:2873/provision' => "$temp_dir/provision",
+
         '&&',
-            
+
         "PERL5LIB=$temp_dir/provision/lib/perl5",
             "/usr/bin/perl", "$temp_dir/provision/provision.pl",
             ($self->dryrun  ? ' -n' : ()),
@@ -479,45 +487,12 @@ sub remote_provision {
 
     $self->log(' - running provision script on', $ssh_config->{hostname});
     $self->log_debug('Executing:', @command_and_args);
-    
-    $self->start_rsync_daemon;
+
+    $self->rsync_daemon->start;
 
     run3 \@command_and_args;
-    
-    $self->stop_rsync_daemon;
-}
 
-sub start_rsync_daemon {
-    my $self = shift;
-    
-    my @command_and_args = (
-        '/usr/bin/rsync', 
-        '--daemon',
-        '--address', '127.0.0.1',
-        '--no-detach',
-        '--port', 2873,
-        '--config', $self->rsyncd_config_file->stringify,
-    );
-    
-    # $self->rsync_daemon(
-    #     Proc::Daemon->new(exec_command => \@command_and_args)
-    # );
-    # 
-    # $self->rsync_daemon->Init or exit 0; # child
-    
-    if (fork) {
-        # parent
-        warn 'started rsync daemon';
-    } else {
-        system @command_and_args;
-        exit;
-    }
-}
-
-sub stop_rsync_daemon {
-    my $self = shift;
-    
-    # $self->rsync_daemon->Kill_Daemon;
+    $self->rsync_daemon->stop;
 }
 
 1;
