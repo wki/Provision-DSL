@@ -101,7 +101,21 @@ has rsyncd_config_file => (
     coerce => to_File
 );
 
-sub _build_rsyncd_config_file { $_[0]->cache_dir->file('rsyncd.conf') }
+sub _build_rsyncd_config_file {
+    my $self = shift;
+
+    my $config_file = $self->cache_dir->file('rsyncd.conf');
+
+    $config_file->spew(<<EOF);
+use chroot = no
+[provision]
+    path = ${\$self->provision_dir}
+[resources]
+    path = ${\$self->resources_dir}
+EOF
+
+    return $config_file;
+}
 
 has rsync_daemon => (
     is => 'lazy',
@@ -144,7 +158,6 @@ sub run {
 
     $self->prepare_environment;
     $self->pack_requisites;
-    $self->create_rsyncd_config;
 
     my $result = $self->remote_provision;
 
@@ -171,18 +184,6 @@ sub pack_requisites {
     $self->pack_provision_libs;
     $self->pack_resources;
     $self->pack_provision_script;
-}
-
-sub create_rsyncd_config {
-    my $self = shift;
-
-    $self->rsyncd_config_file->spew(<<EOF);
-use chroot = no
-[provision]
-    path = ${\$self->provision_dir}
-[resources]
-    path = ${\$self->resources_dir}
-EOF
 }
 
 sub pack_perlbrew_installer {
