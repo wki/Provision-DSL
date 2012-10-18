@@ -8,7 +8,7 @@
     # ssh connection details
     #  - only hostname is mandatory, all others are optional
     #  - options are added to the ssh commandline as-is
-    ssh => {
+    remote => {
         hostname      => 'localhost',
         user          => 'nobody',
         identity_file => 'id_rsa',

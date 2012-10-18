@@ -69,8 +69,6 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
     
     $s->pack_provision_script;
     
-    $s->create_rsyncd_config;
-    
     ### TODO: check file existence
 
     # my $stdout;
