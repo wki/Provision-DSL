@@ -20,39 +20,6 @@ Vorgänge im Einzelnen
 
   * lokalen CPAN Server starten ???
 
-  * lokalen rsync daemon starten
-    --> keine Dateien mehr auf den Server kopieren!
-    rsync --daemon \
-          --address 127.0.0.1 \
-          --no-detach \
-          --port 2873 \
-          --config .provision_{name}/rsyncd.conf
-
-  * ausführen (rsync und perl Pfade konfigurierbar)
-    Hint: File::Temp::tempnam('/tmp', 'provision_')
-    
-    ssh \
-        -i identity_file \
-        -C \
-        -R 2080:127.0.0.1:2080 \
-        -R 2873:127.0.0.1:2873 \
-        destination \
-        /bin/mkdir -p /tmp/provisionXXXX '&&' \
-        /usr/bin/rsync -r rsync://127.0.0.1:2873/provision/ /tmp/provisionXXXX/ '&&' \
-        PERL5LIB=/tmp/provisionXXXX/lib/perl5 \
-        /usr/bin/perl /tmp/provisionXXXX/provision.pl \
-        -n -v '&&'
-        /bin/rm -rf /tmp/provisionXXXX
-
-
-rsyncd.conf:
-    use chroot = no
-    [provision]
-        path = .provision_{name}/provision
-    [resources]
-        path = .provision_{name}/resources
-
-
 
 Generell:
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute

@@ -438,12 +438,12 @@ sub pack_resource {
 sub remote_provision {
     my $self = shift;
 
-    my $ssh_config = $self->config->{ssh} // {};
-    my @identity_file = exists $ssh_config->{identity_file}
-        ? (-i => "$ENV{HOME}/.ssh/$ssh_config->{identity_file}")
+    my $remote_config = $self->config->{remote} // {};
+    my @identity_file = exists $remote_config->{identity_file}
+        ? (-i => "$ENV{HOME}/.ssh/$remote_config->{identity_file}")
         : ();
-    my $user_prefix = exists $ssh_config->{user}
-        ? "$ssh_config->{user}\@"
+    my $user_prefix = exists $remote_config->{user}
+        ? "$remote_config->{user}\@"
         : '';
 
     my $temp_dir = File::Temp::tempnam('/tmp', 'provision_');
@@ -455,13 +455,13 @@ sub remote_provision {
         '/usr/bin/ssh',
         @identity_file,
         '-C',
-        (map { ref $_ eq 'ARRAY' ? @$_ : $_ } ($ssh_config->{options} // ())),
+        (map { ref $_ eq 'ARRAY' ? @$_ : $_ } ($remote_config->{options} // ())),
 
         # reverse port forwardings
         '-R', '2080:127.0.0.1:2080',   # http (cpan)
         '-R', '2873:127.0.0.1:2873',   # rsync
 
-        "$user_prefix$ssh_config->{hostname}",
+        "$user_prefix$remote_config->{hostname}",
 
         '/bin/rm', '-rf', '/tmp/provision_*',
 
@@ -487,7 +487,7 @@ sub remote_provision {
         # '/bin/rm', '-rf', $temp_dir,
     );
 
-    $self->log(' - running provision script on', $ssh_config->{hostname});
+    $self->log(' - running provision script on', $remote_config->{hostname});
     $self->log_debug('Executing:', @command_and_args);
 
     $self->rsync_daemon->start;
