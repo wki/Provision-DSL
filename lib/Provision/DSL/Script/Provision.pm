@@ -145,6 +145,7 @@ around options => sub {
         $self->$orig,
         'config|c=s     ; specify a config file (required)',
         'root_dir|r=s   ; root dir for locating files and resources',
+        ### TODO: rsync, cpanm paths
     );
 };
 
@@ -466,18 +467,18 @@ sub remote_provision {
 
         '&&',
 
-        # command sequence to execute
         '/bin/mkdir', '-p', $temp_dir,
 
         '&&',
 
         '/usr/bin/rsync', '-r',
-            'rsync://127.0.0.1:2873/provision' => "$temp_dir/provision",
+            'rsync://127.0.0.1:2873/provision' => "$temp_dir/",
 
         '&&',
 
-        "PERL5LIB=$temp_dir/provision/lib/perl5",
-            "/usr/bin/perl", "$temp_dir/provision/provision.pl",
+        ### TODO: more ENV variables to set?
+        "PERL5LIB=$temp_dir/lib/perl5",
+            "/usr/bin/perl", "$temp_dir/provision.pl",
             ($self->dryrun  ? ' -n' : ()),
             ($self->verbose ? ' -v' : ()),
 
