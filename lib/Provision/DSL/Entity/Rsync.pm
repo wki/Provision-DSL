@@ -6,7 +6,7 @@ extends 'Provision::DSL::Entity::Base::Dir';
 
 has content => (
     is       => 'ro',
-    coerce   => to_ExistingDir,
+    coerce   => to_ExistingDir,  ### FIXME: to_RsyncSource needed!
     required => 1,
 );
 

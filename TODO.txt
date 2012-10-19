@@ -3,6 +3,7 @@ TODO for provisioning
 
 Vorgänge im Einzelnen
   * Verzeichnis {root_dir}/.provision_{name} erstellen und füllen
+    provision/lib: Cache-Haltbarkeit = 24h
 
     .provision_{name}/  -- jedes Unterverzeichnis wird rsync-modul
       |
@@ -20,6 +21,11 @@ Vorgänge im Einzelnen
 
   * lokalen CPAN Server starten ???
 
+Source::Xxx
+  * Handling muß korrigiert werden, wegen Rsync über ssh Tunnel
+  * Coercion to_RsyncSource erforderlich für Entity::Rsync
+  * -> content muß einzelne Datei via rsync holen und cachen.
+    -> Source::Resource "before _build_content" erstellen.
 
 Generell:
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
@@ -87,4 +93,8 @@ Entity::Cron
   * Einträge kommen ganz am Anfang aber in jedem Fall alle
     zu einer Config gehörenden in einem Block.
 
+
+AUFRÄUMARBEITEN:
+  * Module, die nur für Provision::DSL::Script::Provision gedacht sind,
+    -> nach Provision::DSL::Script::Xxx umbenennen
 
