@@ -1,4 +1,4 @@
-package Provision::DSL::Daemon;
+package Provision::DSL::Script::Daemon;
 use Moo;
 use POSIX ':sys_wait_h';
 
