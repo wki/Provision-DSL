@@ -176,4 +176,10 @@ sub get_cached_entity {
     }
 }
 
+####################################### Ports and binary paths
+
+sub rsync      { $ENV{PROVISION_RSYNC}      // '/usr/bin/rsync' }
+sub rsync_port { $ENV{PROVISION_RSYNC_PORT} // 2873 }
+
+
 1;

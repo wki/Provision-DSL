@@ -109,15 +109,15 @@ Vorbereitung eines Provision Vorganges:
     * via cpanm: Provision::DSL und Abhängigkeiten installieren
       dürfen nur Pure-Perl Module sein!
       --> derzeit ca. 50 pm-Dateien zuzüglich Provision::DSL
+      --> ca. 1,5 MB
     * evtl. Konfigurations-Datei(en) nach $DIR/etc kopieren
-    * Resourcen kopieren
-    * .tar.gz erstellen
-    
- - auf Ziel-Server kopieren
- 
- - auf dem Ziel Server:
-    * .tar.gz nach /tmp/whatever entpacken
-    * cd /tmp/whatever
-    * perl apply.pl ausführen
+    * rsyncd starten
+    * ssh aufruf
+    * rsyncd stoppen
 
+ - auf dem Ziel Server:
+    * tmp dir anlegen
+    * script per rsync holen
+    * script ausführen
+    * tmp dir löschen
 

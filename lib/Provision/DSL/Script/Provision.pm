@@ -14,7 +14,7 @@ use Try::Tiny;
 use Proc::Daemon;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
-use Provision::DSL::Daemon;
+use Provision::DSL::Script::Daemon;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
 #
@@ -124,7 +124,7 @@ has rsync_daemon => (
 sub _build_rsync_daemon {
     my $self = shift;
 
-    return Provision::DSL::Daemon->new(
+    return Provision::DSL::Script::Daemon->new(
         '/usr/bin/rsync',
         {
             args => [

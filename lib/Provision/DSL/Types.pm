@@ -121,6 +121,14 @@ sub to_ExistingDir {
     }
 }
 
+sub to_RsyncSource {
+    return sub {
+        blessed $_[0] && $_[0]->can('rsync_source')
+            ? $_[0]->rsync_source
+            : $_[0]
+    }
+}
+
 sub to_File {
     return sub { file($_[0])->absolute->cleanup }
 }
