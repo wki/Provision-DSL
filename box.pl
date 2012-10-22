@@ -22,10 +22,6 @@ Done;
 
 __END__
 
-
-
-__END__
-
 User sites => {
     uid => 513,
 };

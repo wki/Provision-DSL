@@ -19,7 +19,8 @@ sub start {
     if (my $pid = fork) {
         # parent
         $self->pid($pid);
-        # warn 'starting daemon:', $self->name, ' pid:', $pid, ' mypid:', $$;
+        
+        # must let the daemon try to open the port
         sleep 1;
         
         die "could not start '${\$self->name}' -- port already bound?"
