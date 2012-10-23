@@ -1,11 +1,7 @@
 package Provision::DSL::Script::Provision;
 use Moo;
 use feature ':5.10';
-use Archive::Tar;
-use Archive::Tar::Constant;
 use Path::Class;
-use IO::String;
-use MIME::Base64;
 use File::Temp ();
 use Cwd;
 use IPC::Run3;
