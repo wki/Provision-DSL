@@ -24,15 +24,13 @@ sub default_config {
 
         local => {
             ssh             => '/usr/bin/ssh',
-            ssh_options     => [
-                '-C',
-                '-R', '2080:127.0.0.1:2080',    # http (cpan)
-                '-R', '2873:127.0.0.1:2873',    # rsync
-            ],
+            ssh_options     => ['-C'],
             cpanm           => 'cpanm',         # search via $PATH
             cpanm_options   => [],
             rsync           => '/usr/bin/rsync',
+            rsync_port      => 2873,
             rsync_modules   => {},
+            cpan_http_port  => 2080,
             environment     => {},
         },
 
@@ -44,6 +42,7 @@ sub default_config {
                 PROVISION_RSYNC         => '/usr/bin/rsync',
                 PROVISION_RSYNC_PORT    => 2873,
                 PROVISION_PERL          => '/usr/bin/perl',
+                PROVISION_HTTP_PORT     => 2080,
                 PERL_CPANM_OPT          => '--mirror http://localhost:2080 --mirror-only',
             },
         },
@@ -56,7 +55,13 @@ has config => (
     is       => 'ro',
     required => 1,
     coerce   => sub {
-        merge do $_[0], default_config;
+        my $config = merge do $_[0], default_config;
+        
+        push @{$config->{local}->{ssh_options}},
+            '-R', "$config->{local}->{cpan_http_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_HTTP_PORT}",
+            '-R', "$config->{local}->{rsync_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_RSYNC_PORT}";
+        
+        return $config;
     },
 );
 

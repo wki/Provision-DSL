@@ -33,7 +33,9 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
                 cpanm           => 'cpanm',
                 cpanm_options   => [],
                 rsync           => '/usr/bin/rsync',
+                rsync_port      => 2873,
                 rsync_modules   => {},
+                cpan_http_port  => 2080,
                 environment     => {
                     foo => 42,
                     bar => 'some thing',
@@ -48,6 +50,7 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
                     PROVISION_RSYNC         => '/usr/bin/rsync',
                     PROVISION_RSYNC_PORT    => 2873,
                     PROVISION_PERL          => '/usr/bin/perl',
+                    PROVISION_HTTP_PORT     => 2080,
                     PERL_CPANM_OPT          => '--mirror http://localhost:2080 --mirror-only',
                     XX42                    => 'foo',
                 },
