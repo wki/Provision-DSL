@@ -10,7 +10,7 @@ use Try::Tiny;
 use Proc::Daemon;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
-use Provision::DSL::Daemon;
+use Provision::DSL::Script::Daemon;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
 #
@@ -120,7 +120,7 @@ has rsync_daemon => (
 sub _build_rsync_daemon {
     my $self = shift;
 
-    return Provision::DSL::Daemon->new(
+    return Provision::DSL::Script::Daemon->new(
         '/usr/bin/rsync',
         {
             args => [
@@ -443,6 +443,11 @@ sub remote_provision {
         : '';
 
     my $temp_dir = File::Temp::tempnam('/tmp', 'provision_');
+    
+    my %remote_env = (
+        PERL5LIB => "$temp_dir/lib/perl5",
+        %{$remote_config->{environment} // {}},
+    );
 
     my @command_and_args = (
         #
@@ -451,13 +456,21 @@ sub remote_provision {
         '/usr/bin/ssh',
         @identity_file,
         '-C',
-        (map { ref $_ eq 'ARRAY' ? @$_ : $_ } ($remote_config->{options} // ())),
+        (
+            map { ref $_ eq 'ARRAY' ? @$_ : $_ }
+            ($remote_config->{ssh_options} // ())
+        ),
 
         # reverse port forwardings
         '-R', '2080:127.0.0.1:2080',   # http (cpan)
         '-R', '2873:127.0.0.1:2873',   # rsync
 
         "$user_prefix$remote_config->{hostname}",
+
+        (
+            map { "export $_='$remote_env{$_}'; " }
+            keys %remote_env
+        ),
 
         '/bin/rm', '-rf', '/tmp/provision_*',
 
@@ -467,14 +480,12 @@ sub remote_provision {
 
         '&&',
 
-        '/usr/bin/rsync', '-r',
-            'rsync://127.0.0.1:2873/provision' => "$temp_dir/",
+        '${PROVISION_RSYNC:-/usr/bin/rsync}', '-r',
+            'rsync://127.0.0.1:${PROVISION_RSYNC_PORT:-2873}/provision' => "$temp_dir/",
 
         '&&',
 
-        ### TODO: more ENV variables to set?
-        "PERL5LIB=$temp_dir/lib/perl5",
-            "/usr/bin/perl", "$temp_dir/provision.pl",
+        '${PROVISION_PERL:-/usr/bin/perl}', "$temp_dir/provision.pl",
             ($self->dryrun  ? ' -n' : ()),
             ($self->verbose ? ' -v' : ()),
 

@@ -21,7 +21,7 @@ our @EXPORT = qw(
     to_Array
     to_Content
     to_Channels
-    to_Dir to_ExistingDir to_File
+    to_Dir to_ExistingDir to_File to_RsyncSource
     to_User to_Group
     to_Permission to_PerlVersion
     to_Class
@@ -118,6 +118,14 @@ sub to_ExistingDir {
                 ? $_[0]->path
                 : dir($_[0])
         )->absolute->resolve
+    }
+}
+
+sub to_RsyncSource {
+    return sub {
+        blessed $_[0] && $_[0]->can('rsync_source')
+            ? $_[0]->rsync_source
+            : $_[0]
     }
 }
 
