@@ -17,8 +17,51 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
         config => "$FindBin::Bin/../conf/test_config.pl",
     );
 
-    is ref($s->config), 'HASH', 'config is a hashref';
-    ok exists $s->config->{environment}, 'config->{environment} exists';
+    is_deeply $s->config,
+        {
+            name => 'testing',
+            provision_file => 't/conf/list_files.pl',
+            
+            local => {
+                ssh             => '/usr/bin/ssh',
+                ssh_options     => [
+                    '--foo', 42, '--bar', 'zzz',
+                    '-C',
+                    '-R', '2080:127.0.0.1:2080',
+                    '-R', '2873:127.0.0.1:2873',
+                ],
+                cpanm           => 'cpanm',
+                cpanm_options   => [],
+                rsync           => '/usr/bin/rsync',
+                rsync_modules   => {},
+                environment     => {
+                    foo => 42,
+                    bar => 'some thing',
+                },
+            },
+            
+            remote => {
+                hostname        => 'localhost',
+                user            => 'nobody',
+            
+                environment => {
+                    PROVISION_RSYNC         => '/usr/bin/rsync',
+                    PROVISION_RSYNC_PORT    => 2873,
+                    PROVISION_PERL          => '/usr/bin/perl',
+                    PERL_CPANM_OPT          => '--mirror http://localhost:2080 --mirror-only',
+                    XX42                    => 'foo',
+                },
+            },
+            
+            resources => [
+                {
+                    source      => 't/resources',
+                    destination => 'files',
+                    exclude     => 'dirx',
+                },
+            ],
+        },
+        'config is merged right';
 
     isa_ok $s->root_dir, 'Path::Class::Dir';
     is $s->root_dir->absolute->resolve->stringify,
@@ -56,6 +99,8 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
         config => "$FindBin::Bin/../conf/test_config.pl",
         root_dir => "$FindBin::Bin/../..",
     );
+    
+    $s->config->{local}->{cpanm} = "$FindBin::Bin/../bin/fake_cpanm.pl";
 
     $s->pack_perlbrew_installer;
     ok -f "$FindBin::Bin/../../.provision_testing/provision/bin/install.perlbrew.sh",

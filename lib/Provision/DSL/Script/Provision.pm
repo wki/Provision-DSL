@@ -6,6 +6,7 @@ use File::Temp ();
 use Cwd;
 use IPC::Run3;
 use Config;
+use Hash::Merge 'merge';
 use Try::Tiny;
 use Proc::Daemon;
 use Provision::DSL::Types;
@@ -13,18 +14,50 @@ use Provision::DSL::Const;
 use Provision::DSL::Script::Daemon;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
-#
-# test with:
-# PERL5LIB=lib bin/provision.pl -c sample_config.pl -n -v --debug
-#
-
 with 'Provision::DSL::Role::CommandlineOptions',
      'Provision::DSL::Role::HTTP';
+
+sub default_config {
+    +{
+      # name => 'some_name',
+      # provision_file => 'relative/path/to/file.pl',
+
+        local => {
+            ssh             => '/usr/bin/ssh',
+            ssh_options     => [
+                '-C',
+                '-R', '2080:127.0.0.1:2080',    # http (cpan)
+                '-R', '2873:127.0.0.1:2873',    # rsync
+            ],
+            cpanm           => 'cpanm',         # search via $PATH
+            cpanm_options   => [],
+            rsync           => '/usr/bin/rsync',
+            rsync_modules   => {},
+            environment     => {},
+        },
+
+        remote => {
+          # hostname        => 'box',
+          # user            => 'wolfgang',
+
+            environment => {
+                PROVISION_RSYNC         => '/usr/bin/rsync',
+                PROVISION_RSYNC_PORT    => 2873,
+                PROVISION_PERL          => '/usr/bin/perl',
+                PERL_CPANM_OPT          => '--mirror http://localhost:2080 --mirror-only',
+            },
+        },
+
+        resources => [],
+    };
+}
 
 has config => (
     is       => 'ro',
     required => 1,
-    coerce   => sub { do $_[0] },
+    coerce   => sub {
+        merge do $_[0], default_config;
+    },
 );
 
 has root_dir => (
@@ -141,7 +174,6 @@ around options => sub {
         $self->$orig,
         'config|c=s     ; specify a config file (required)',
         'root_dir|r=s   ; root dir for locating files and resources',
-        ### TODO: rsync, cpanm paths
     );
 };
 
@@ -165,9 +197,9 @@ sub run {
 sub prepare_environment {
     my $self = shift;
 
-    return if !exists $self->config->{environment};
+    return if !exists $self->config->{local}->{environment};
 
-    my %vars = %{$self->config->{environment}};
+    my %vars = %{$self->config->{local}->{environment}};
     @ENV{keys %vars} = values %vars;
 
     $self->log_debug(Data::Dumper->Dump([\%ENV, \%vars], ['ENV', 'vars']));
@@ -223,7 +255,13 @@ sub pack_dependent_libs {
         $lib_filename =~ s{::}{/}xmsg;
         next if -f $self->provision_dir->file($lib_filename);
 
-        run3 ['cpanm', -L => $self->provision_dir, -n => $lib];
+        run3 [
+                $self->config->{local}->{cpanm},
+                -L => $self->provision_dir, '--notest',
+                @{$self->config->{local}->{cpanm_options}},
+                $lib
+            ],
+            \undef, \undef, \undef;
     }
 
     # $self->_pack_file_or_dir(
@@ -374,8 +412,8 @@ sub must_have_valid_syntax {
 
     my $perl = $Config{perlpath} // 'perl';
 
-    my ($stdout, $stderr);
-    run3 [$perl, '-c', '-'], \$script, \$stdout, \$stderr;
+    my $stderr;
+    run3 [$perl, '-c', '-'], \$script, \undef, \$stderr;
     die "Error Checking provision script:\n$stderr" if $? >> 8;
 }
 
@@ -434,43 +472,30 @@ sub pack_resource {
 sub remote_provision {
     my $self = shift;
 
-    my $remote_config = $self->config->{remote} // {};
-    my @identity_file = exists $remote_config->{identity_file}
-        ? (-i => "$ENV{HOME}/.ssh/$remote_config->{identity_file}")
-        : ();
-    my $user_prefix = exists $remote_config->{user}
-        ? "$remote_config->{user}\@"
+    my $local  = $self->config->{local};
+    my $remote = $self->config->{remote};
+    
+    my $user_prefix = exists $remote->{user}
+        ? "$remote->{user}\@"
         : '';
 
     my $temp_dir = File::Temp::tempnam('/tmp', 'provision_');
-    
+
     my %remote_env = (
         PERL5LIB => "$temp_dir/lib/perl5",
-        %{$remote_config->{environment} // {}},
+        %{$remote->{environment}},
     );
 
     my @command_and_args = (
         #
         # establish an ssh connection with compression
         #
-        '/usr/bin/ssh',
-        @identity_file,
-        '-C',
-        (
-            map { ref $_ eq 'ARRAY' ? @$_ : $_ }
-            ($remote_config->{ssh_options} // ())
-        ),
+        $local->{ssh},
+        @{$local->{ssh_options}},
 
-        # reverse port forwardings
-        '-R', '2080:127.0.0.1:2080',   # http (cpan)
-        '-R', '2873:127.0.0.1:2873',   # rsync
+        "$user_prefix$remote->{hostname}",
 
-        "$user_prefix$remote_config->{hostname}",
-
-        (
-            map { "export $_='$remote_env{$_}'; " }
-            keys %remote_env
-        ),
+        ( map { "export $_='$remote_env{$_}'; " } keys %remote_env ),
 
         '/bin/rm', '-rf', '/tmp/provision_*',
 
@@ -480,12 +505,12 @@ sub remote_provision {
 
         '&&',
 
-        '${PROVISION_RSYNC:-/usr/bin/rsync}', '-r',
-            'rsync://127.0.0.1:${PROVISION_RSYNC_PORT:-2873}/provision' => "$temp_dir/",
+        '$PROVISION_RSYNC', '-r',
+            'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/provision' => "$temp_dir/",
 
         '&&',
 
-        '${PROVISION_PERL:-/usr/bin/perl}', "$temp_dir/provision.pl",
+        '$PROVISION_PERL', "$temp_dir/provision.pl",
             ($self->dryrun  ? ' -n' : ()),
             ($self->verbose ? ' -v' : ()),
 
@@ -494,7 +519,7 @@ sub remote_provision {
         # '/bin/rm', '-rf', $temp_dir,
     );
 
-    $self->log(' - running provision script on', $remote_config->{hostname});
+    $self->log(' - running provision script on', $remote->{hostname});
     $self->log_debug('Executing:', @command_and_args);
 
     $self->rsync_daemon->start;
