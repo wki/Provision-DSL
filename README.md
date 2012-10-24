@@ -7,14 +7,18 @@ machine in a simple way.
 having a config file like:
 
     {
+        # a meaningful name appended to temporary filenames
         name => 'box',
         
+        # execute this script on the remote machine
         provision_file => 'box.pl',
         
+        # specifications for the remote machine
         remote => {
             hostname => 'box',
         },
         
+        # files needed for the provisioning process
         resources => [
             {
                 # copy everything inside xxx/resources except /dirx
@@ -29,7 +33,9 @@ having a config file like:
 and a provision file like:
 
     #!/usr/bin/env perl
+    
     use Provision::DSL;
+    
     my $WEB_DIR     = '/web/data';
     my $SITE_DIR    = "$WEB_DIR/www.mysite.de";
     

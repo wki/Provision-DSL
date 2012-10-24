@@ -13,13 +13,15 @@ fire a script
 where a minimal configuration file might look like
 
     {
-        name           => 'a descriptive name',
+        # a name used to distinguish generated files
+        name           => 'fileserver',
+        
+        # the fine running on the remote machine
         provision_file => 'path/to/provisioning_script.pl',
         
         # details of the ssh connection
-        ssh => {
+        remote => {
             hostname => 'your_server.domain.de',
-            user     => 'websites',
         },
         
         # files accessible via Resource(...) in provisioning-script
@@ -140,25 +142,29 @@ Currently the following types of entites are defined:
 
 =over
 
+=item Cron
+
 =item Dir
 
 =item Execute
 
 =item File
 
-=item Link
-
 =item Group
 
+=item Link
+
 =item Package
+
+=item Perl_Modules
 
 =item Perlbrew
 
 =item Rsync
 
-=item User
-
 =item Service
+
+=item User
 
 =back
 
@@ -194,13 +200,11 @@ Provision::DSL is depending on a few CPAN modules only. Each of these
 modules only has minimal dependencies, all modules are pure perl and
 run starting from Perl 5.10.
 
-All required modules, resources and the provision script are packed into a tar
-file, the tar file is appended to an extraction script (base-64 encoded, into
-the __DATA__ section, to be precise) and the combination of both is pasted to
-the remote machine's Perl interpreter where it is unpacked into a temporary
-directory and executed. The entire process only requires a single ssh
-process to run. All other IO-Operations happen entirely on the target machine,
-the ssh connection will compress its payload when possible.
+All required modules, resources and the provision script are packed into a
+temporary directory. Using a locally running rsync daemon, all files are
+transferred to the remote machine using the established ssh connection.
+
+The process is explained in-depth in L<Provision::DSL::Manual::Remote>
 
 =cut
 

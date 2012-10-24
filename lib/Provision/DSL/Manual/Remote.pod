@@ -4,33 +4,65 @@ Provision::DSL::Manual::Remote - what happens at the remote machine
 
 =head1 METHOD OF EXECUTION
 
-Using a single ssh connection, the remote machine's perl interpreter is
-started and waits for a command on its STDIN. It is something like:
+=head2 Preparations
 
-    ssh remote_host perl -
+Before the script can run on the remote machine, the local machine has to
+prepare all needed files into a temporary directory. The directory is named
+".provision" with the name-value from the config file appended.
 
-Then, a huge file containing a simple script and a base-64 encoded tar archive
-is copied to the remote machine's STDIN where it is executed as soon as
-STDIN is closed. The file contains a simple logic which creates a temporary
-directory into which the contents of the tar archive will get extracted.
+The directory typically has the following layout:
 
-On the top level of the extracted tar archive, a script named "provision.pl"
-is run. It contains the provisioning script and cares for the process
-of installing the remote machine. All modules in the namespace 
-"Provision::DSL" and all dependencies will also be contained in the tar
-archive. Before running "provision.pl", the remote perl interpreter will
-get a library-search-path added in order to find all required modules.
+    .provision_some_name/
+        provision/                  -- everything needed to run the script
+            bin/                    -- misc binaries which may be needed
+                install.perlbrew.sh
+            lib/
+                perl5/              -- all perl modules needed remote
+            provision.pl            -- the script running remote
+        resources/                  -- optional resources for provisioning
+        rsyncd.conf                 -- config file for local rsync daemon
 
-Every output (STDOUT in green, STDERR in red) is displayed on the local
-terminal.
+=head2 Daemons
 
-=head1 TAR LAYOUT
+After all needed files have been collected, an rsync daemon is started
+on the local machine using the config file from the temporary directory.
+The rsync daemon supports two modules ("provision" and "resources") that
+simply point to the two identically named directories inside the
+temporary directory. This allows future expansions currently not supported.
 
-    provision.pl        -- the script running on the remote site
-    local/
-      lib/
-        perl5/          -- perl modules for running provision.pl
-    resources/          -- optional resources for provisioning
+The daemon listens to the port '2873' on the loopback interface. The port can
+be customized in the "local" section of the config file.
+
+It is planned, to launch another daemon providing either a proxy to a CPAN
+Server or providing a prepared CPAN mirror. It will probably listen on port
+2080.
+
+=head2 Connecting to the Remote machine
+
+Basically the ssh connection looks like this shell command. It is split
+into several lines and indented to be readable.
+
+    ssh some_user@hostname
+        export PERL5LIB='/tmp/provision_XXX'
+        mkdir -p /tmp/provision_XXX
+        rsync -r rsync://127.0.0.1:2873/provision /tmp/provision_XXX/
+        perl /tmp/provision_XXX/provision.pl
+
+Some details are omitted and almost every part is customizable in the
+"remote" section of the config file.
+
+=head2 Running the Provision Script
+
+The provision script will get all required libraries and (hopefully) run on
+every perl starting version 5.10.0.
+
+Depending on the operation running on the remote machine, root provileges
+may be required. `sudo -n -u root` must be executable for the provisioning
+user in this case. Otherwise the whole process will be aborted.
+
+If, however, all provisioning operations can get executed by the provisioning
+user, no further privileges will get aquired and the installation process
+will not abort if the `sudo` operation above is not possible.
 
 =head1 AUTHOR
 

@@ -3,7 +3,8 @@ TODO for provisioning
 
 Vorgänge im Einzelnen
   * Verzeichnis {root_dir}/.provision_{name} erstellen und füllen
-    provision/lib: Cache-Haltbarkeit = 24h
+    provision/lib:       Cache-Haltbarkeit = 24h
+    provision/resources: jedesmal neu packen
 
     .provision_{name}/  -- jedes Unterverzeichnis wird rsync-modul
       |
