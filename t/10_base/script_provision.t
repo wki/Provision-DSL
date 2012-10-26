@@ -5,6 +5,7 @@ use Test::Exception;
 use FindBin;
 use Path::Class;
 use IPC::Run3;
+use Config;
 
 use ok 'Provision::DSL::Script::Provision';
 
@@ -163,5 +164,19 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
 
 ### TODO: more test:
 # pack_dependent_libs
+
+# start a script on another machine (box)
+SKIP:
+{
+    system "ssh box echo asdf>/dev/null";
+    
+    skip 'cannot ssh to a machine named "box"', 42
+        if $? >> 8;
+    
+    local $Config{archname} = 'xtest-arch';
+    
+    
+}
+
 
 done_testing;

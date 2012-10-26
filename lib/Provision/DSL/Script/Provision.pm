@@ -477,31 +477,26 @@ sub pack_resource {
 sub remote_provision {
     my $self = shift;
 
-    my $local  = $self->config->{local};
-    my $remote = $self->config->{remote};
-    
-    my $user_prefix = exists $remote->{user}
-        ? "$remote->{user}\@"
-        : '';
-
+    my $local    = $self->config->{local};
+    my $remote   = $self->config->{remote};
     my $temp_dir = File::Temp::tempnam('/tmp', 'provision_');
 
-    my %remote_env = (
-        PERL5LIB => "$temp_dir/lib/perl5",
-        %{$remote->{environment}},
-    );
-
+    # Hint: quoted '$VARIABLES' below are expanded on the remote machine!
+    
     my @command_and_args = (
-        #
-        # establish an ssh connection with compression
-        #
         $local->{ssh},
         @{$local->{ssh_options}},
+        ($remote->{user} ? (-l => $remote->{user}) : ()),
 
-        "$user_prefix$remote->{hostname}",
+        $remote->{hostname},
 
-        ( map { "export $_='$remote_env{$_}'; " } keys %remote_env ),
+        "export PERL5LIB='$temp_dir/lib/perl5';",
+        ( 
+            map { "export $_='$remote->{environment}->{$_}';" }
+            keys %{$remote->{environment}} 
+        ),
 
+        # FIXME: is this kind of cleanup wise?
         '/bin/rm', '-rf', '/tmp/provision_*',
 
         '&&',
@@ -511,6 +506,8 @@ sub remote_provision {
         '&&',
 
         '$PROVISION_RSYNC', '-r',
+            '--exclude', '"*.pod"',
+            '--exclude', "/lib/perl5/$Config{archname}",
             'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/provision' => "$temp_dir/",
 
         '&&',
