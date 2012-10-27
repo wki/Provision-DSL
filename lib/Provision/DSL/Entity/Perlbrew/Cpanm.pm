@@ -1,5 +1,6 @@
 package Provision::DSL::Entity::Perlbrew::Cpanm;
 use Moo;
+use Provision::DSL::Const;
 
 extends 'Provision::DSL::Entity';
 with    'Provision::DSL::Role::CommandExecution';
@@ -11,7 +12,7 @@ sub change {
     my $self = shift;
     
     $self->run_command_as_user(
-        '/usr/bin/perl',
+        $self->parent->perl,
         $self->parent->perlbrew,
         'install-cpanm'
     );

@@ -6,6 +6,7 @@ use Scalar::Util 'blessed';
 use Role::Tiny ();
 use Try::Tiny;
 use Provision::DSL::Types;
+use Provision::DSL::Const;
 use Provision::DSL::Util ();
 
 with 'Provision::DSL::Role::CommandlineOptions',
@@ -30,7 +31,7 @@ sub _build_user_has_privilege {
     my $self = shift;
 
     # be safe: kill the user's password timeout
-    $self->run_command('/usr/bin/sudo', '-K');
+    $self->run_command(SUDO, '-K');
 
     my $result;
     try {
@@ -175,11 +176,5 @@ sub get_cached_entity {
         croak "entity '$entity' is ambiguous, name required";
     }
 }
-
-####################################### Ports and binary paths
-
-sub rsync      { $ENV{PROVISION_RSYNC}      // '/usr/bin/rsync' }
-sub rsync_port { $ENV{PROVISION_RSYNC_PORT} // 2873 }
-
 
 1;

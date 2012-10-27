@@ -23,7 +23,10 @@ sub _build_current_content {
     my $content;
     try {
         $content = 
-            $self->run_command_maybe_privileged('/bin/cat', $self->path);
+            $self->run_command_maybe_privileged(
+                $self->find_command('cat'), 
+                $self->path,
+            );
     };
     
     return $content;
@@ -33,7 +36,7 @@ sub write_content {
     my ($self, $new_content) = @_;
     
     $self->run_command_maybe_privileged(
-        '/usr/bin/tee',
+        $self->find_command('tee'),
         { stdin => \$new_content },
         $self->path,
     );

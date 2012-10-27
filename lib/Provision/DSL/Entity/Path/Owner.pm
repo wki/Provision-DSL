@@ -26,6 +26,7 @@ sub change {
     if ($self->has_user) {
         $self->run_command_as_superuser(
             $self->find_command('chown'),
+            '-R',
             $self->user,
             $self->path,
         );
@@ -33,6 +34,7 @@ sub change {
     if ($self->has_group) {
         $self->run_command_as_superuser(
             $self->find_command('chgrp'),
+            '-R',
             $self->group,
             $self->path,
         );

@@ -27,10 +27,10 @@ sub default_config {
             ssh_options     => ['-C'],
             cpanm           => 'cpanm',         # search via $PATH
             cpanm_options   => [],
-            rsync           => '/usr/bin/rsync',
-            rsync_port      => 2873,
+            rsync           => RSYNC,
+            rsync_port      => RSYNC_PORT,
             rsync_modules   => {},
-            cpan_http_port  => 2080,
+            cpan_http_port  => HTTP_PORT,
             environment     => {},
         },
 
@@ -39,11 +39,11 @@ sub default_config {
           # user            => 'wolfgang',
 
             environment => {
-                PROVISION_RSYNC         => '/usr/bin/rsync',
-                PROVISION_RSYNC_PORT    => 2873,
-                PROVISION_PERL          => '/usr/bin/perl',
-                PROVISION_HTTP_PORT     => 2080,
-                PERL_CPANM_OPT          => '--mirror http://localhost:2080 --mirror-only',
+                PROVISION_RSYNC         => RSYNC,
+                PROVISION_RSYNC_PORT    => RSYNC_PORT,
+                PROVISION_PERL          => PERL,
+                PROVISION_HTTP_PORT     => HTTP_PORT,
+                PERL_CPANM_OPT          => "--mirror http://localhost:${\HTTP_PORT} --mirror-only",
             },
         },
 

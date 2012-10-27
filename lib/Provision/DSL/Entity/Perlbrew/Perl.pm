@@ -1,7 +1,7 @@
 package Provision::DSL::Entity::Perlbrew::Perl;
 use Moo;
-# use Provision::DSL::Util 'remove_recursive';
-# 
+use Provision::DSL::Const;
+
 extends 'Provision::DSL::Entity';
 with    'Provision::DSL::Role::CommandExecution';
 
@@ -12,7 +12,7 @@ sub change {
     my $self = shift;
     
     $self->run_command_as_user(
-        '/usr/bin/perl',
+        PERL,
         $self->parent->perlbrew,
         'install' => $self->parent->install_perl,
     );

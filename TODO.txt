@@ -1,26 +1,7 @@
 TODO for provisioning
 ---------------------
 
-Vorgänge im Einzelnen
-  * Verzeichnis {root_dir}/.provision_{name} erstellen und füllen
-    provision/lib:       Cache-Haltbarkeit = 24h
-    provision/resources: jedesmal neu packen
-
-    .provision_{name}/  -- jedes Unterverzeichnis wird rsync-modul
-      |
-      +-- provision/
-      |    |
-      |    +-- bin/    -- install.perlbrew.sh
-      |    |
-      |    +-- lib/    -- Provision::DSL + abhängige libs
-      |    |
-      |    +-- provision.pl
-      |
-      +-- resources/
-      |
-      +-- rsyncd.conf
-
-  * lokalen CPAN Server starten ???
+  * lokalen CPAN Server starten / Proxy ???
 
 Source::Xxx
   * Handling muß korrigiert werden, wegen Rsync über ssh Tunnel

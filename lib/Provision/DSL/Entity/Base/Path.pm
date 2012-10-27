@@ -43,7 +43,7 @@ sub prepare_for_creation {
 
     if (!-d $self->path->parent) {
         $self->run_command_maybe_privileged(
-            '/bin/mkdir',
+            $self->find_command('mkdir'),
             '-p', $self->path->parent,
         );
         
@@ -55,7 +55,7 @@ sub remove {
     my $self = shift;
 
     $self->run_command_maybe_privileged(
-        '/bin/rm',
+        $self->find_command('rm'),
         '-rf',
         $self->path,
     );
@@ -64,7 +64,7 @@ sub remove {
 sub __owner {
     my $self = shift;
     
-    return if !$self->has_user || !$self->has_group;
+    return if !$self->has_user && !$self->has_group;
     
     return $self->create_entity(
         Path_Owner => {

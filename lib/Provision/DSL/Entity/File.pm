@@ -38,7 +38,7 @@ sub create {
     $self->prepare_for_creation;
     
     $self->run_command_maybe_privileged(
-        '/usr/bin/touch',
+        $self->find_command('touch'),
         $self->path,
     );
     

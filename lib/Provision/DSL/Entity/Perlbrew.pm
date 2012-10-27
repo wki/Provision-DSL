@@ -2,6 +2,7 @@ package Provision::DSL::Entity::Perlbrew;
 use Moo;
 use Try::Tiny;
 use Provision::DSL::Types;
+use Provision::DSL::Const;
 use Provision::DSL::Source::Bin;
 
 extends 'Provision::DSL::Entity';
@@ -92,7 +93,7 @@ sub create {
             'IO::Socket::SSL probably not installed';
     };
 
-    $self->run_command_as_user('/bin/sh', $installer->path);
+    $self->run_command_as_user(SH, $installer->path);
 }
 
 sub __perlbrew_perl {

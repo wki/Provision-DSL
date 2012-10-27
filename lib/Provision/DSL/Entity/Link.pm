@@ -23,7 +23,7 @@ sub create {
     $self->prepare_for_creation;
 
     $self->run_command_maybe_privileged(
-        '/bin/ln',
+        $self->find_command('ln'),
         '-s', $self->link_to, $self->path
     );
 }

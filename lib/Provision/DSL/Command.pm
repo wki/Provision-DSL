@@ -2,6 +2,7 @@ package Provision::DSL::Command;
 use Moo;
 use IPC::Run3;
 use Provision::DSL::Types;
+use Provision::DSL::Const;
 use Carp;
 
 extends 'Provision::DSL::Base';
@@ -39,7 +40,7 @@ sub run {
     my @sudo;
     if ($self->is_other_user_or_group) {
         @sudo = (
-            '/usr/bin/sudo',
+            SUDO,
             '-n',
             ($self->is_other_user  ? (-u => $self->user)  : ()),
             ($self->is_other_group ? (-g => $self->group) : ()),

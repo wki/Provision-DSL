@@ -9,12 +9,12 @@ sub BUILD {
     my $self = shift;
     
     $self->add_children(
+        $self->__permission,
+        $self->__owner,
         $self->__subdirs( $self->mkdir, 1 ),
         $self->__subdirs( $self->rmdir, 0 ),
         $self->__links,
         $self->__content,
-        $self->__permission,
-        $self->__owner,
     );
 }
 
@@ -42,7 +42,7 @@ has ignore => (
 
 has content => (
     is        => 'ro',
-    coerce    => to_ExistingDir,
+    coerce   => to_RsyncSource,
     predicate => 1,
 );
 
@@ -56,7 +56,7 @@ sub create {
     $self->prepare_for_creation;
     
     $self->run_command_maybe_privileged(
-        '/bin/mkdir',
+        $self->find_command('mkdir'),
         '-p', $self->path,
     );
 }

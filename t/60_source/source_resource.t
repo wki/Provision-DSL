@@ -9,7 +9,7 @@ use ok 'Provision::DSL::Source::Resource';
 my $root_dir = "$FindBin::Bin/../resources";
 
 
-# existing dir
+# dir
 {
     foreach my $dir (qw(dir1 /dir1 dir1/ /dir1/)) {
         my $r;

@@ -18,6 +18,12 @@ Dir $WEB_DIR => {
     permission => '0755',
 };
 
+Dir $SITE_DIR => {
+    user => 'vagrant',
+    group => 'vagrant',
+    content => Resource('files'),
+};
+
 Done;
 
 __END__

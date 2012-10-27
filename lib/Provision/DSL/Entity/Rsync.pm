@@ -1,6 +1,7 @@
 package Provision::DSL::Entity::Rsync;
 use Moo;
 use Provision::DSL::Types;
+use Provision::DSL::Const;
 
 extends 'Provision::DSL::Entity::Base::Dir';
 
@@ -54,8 +55,8 @@ sub _run_rsync_command {
     
     # FIXME: do we need privileges?
     # warn "rsync @args...";
-    return $self->run_command(
-        '/usr/bin/rsync', 
+    return $self->run_command_maybe_privileged(
+        RSYNC, 
         # {stdout => sub { warn @_ }},
         @args
     );

@@ -13,14 +13,22 @@ prepare all needed files into a temporary directory. The directory is named
 The directory typically has the following layout:
 
     .provision_some_name/
-        provision/                  -- everything needed to run the script
-            bin/                    -- misc binaries which may be needed
-                install.perlbrew.sh
-            lib/
-                perl5/              -- all perl modules needed remote
-            provision.pl            -- the script running remote
-        resources/                  -- optional resources for provisioning
-        rsyncd.conf                 -- config file for local rsync daemon
+      |
+      +-- provision/                -- everything needed to run the script
+      |     |
+      |     +-- bin/                -- misc binaries which may be needed
+      |     |     |
+      |     |     +-- install.perlbrew.sh
+      |     |
+      |     +-- lib/
+      |     |     |
+      |     |     +-- perl5/         -- all perl modules needed remote
+      |     |
+      |     +-- provision.pl        -- the script running remote
+      |
+      +-- resources/                -- optional resources for provisioning
+      |
+      +-- rsyncd.conf               -- config file for local rsync daemon
 
 =head2 Daemons
 
