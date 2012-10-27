@@ -309,7 +309,7 @@ sub _pack_file_or_dir {
     #          therefore we must join strings instead of ->subdir()
     run3 [
         $self->config->{local}->{rsync},
-        '--checksum', '--recursive',
+        '--checksum', '--recursive', '--perms',
         ( map { ('--exclude' => $_) } @exclude ),
         $source => join('/', $self->cache_dir, $target),
     ];
