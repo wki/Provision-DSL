@@ -3,22 +3,21 @@
     name           => 'testing',
     
     # the file to run on the controlled machine
-    provision_file => 't/conf/list_files.pl',
+    provision_file => 't/conf/include_test.pl',
 
     local => {
         environment => {
             foo => 42,
             bar => 'some thing',
         },
-        ssh_options => [ qw(--foo 42 --bar zzz) ],
+        ssh_options => [ qw(-q -x) ],
     },
     
     # ssh connection details
     #  - only hostname is mandatory, all others are optional
     #  - options are added to the ssh commandline as-is
     remote => {
-        hostname      => 'localhost',
-        user          => 'nobody',
+        hostname    => 'box',
         
         environment => {
             XX42 => 'foo',

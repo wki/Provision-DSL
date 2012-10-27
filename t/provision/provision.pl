@@ -12,4 +12,7 @@ use File::Find;
 chdir $FindBin::Bin;
 find sub { -f $_ and say $File::Find::name }, '.';
 
-say for map { "$_: $ENV{$_}" } sort keys %ENV;
+say for map "$_: $ENV{$_}", sort keys %ENV;
+
+# a nonzero exit code for tests
+exit 13;

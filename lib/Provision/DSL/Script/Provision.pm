@@ -65,6 +65,12 @@ has config => (
     },
 );
 
+# allow faking arch during tests
+has archname => (
+    is      => 'ro',
+    default => sub { $Config{archname} },
+);
+
 has root_dir => (
     is     => 'lazy',
     coerce => to_ExistingDir,
@@ -165,7 +171,7 @@ sub _build_rsync_daemon {
                 '--daemon',
                 '--address', '127.0.0.1',
                 '--no-detach',
-                '--port', 2873,
+                '--port', $self->config->{local}->{rsync_port},
                 '--config', $self->rsyncd_config_file->stringify,
             ],
         }
@@ -195,8 +201,13 @@ sub run {
 
     my $result = $self->remote_provision;
 
-    $self->log('Finished Provisioning');
-    exit $? >> 8; ### FIXME: get remote provision status somehow.
+    $self->log(
+        'Finished Provisioning',
+        ($result
+            ? ('Status-Code:', $result)
+            : ())
+    );
+    exit $result;
 }
 
 sub prepare_environment {
@@ -250,9 +261,8 @@ sub pack_dependent_libs {
     $self->log(' - packing dependent libs');
 
     my @install_libs = qw(
-        autodie Moo Role::Tiny Try::Tiny
+        autodie Moo Role::Tiny Try::Tiny IPC::Run3
         HTTP::Tiny Path::Class Template::Simple
-        IPC::Run3
     );
 
     foreach my $lib (@install_libs) {
@@ -268,12 +278,6 @@ sub pack_dependent_libs {
             ],
             \undef, \undef, \undef;
     }
-
-    # $self->_pack_file_or_dir(
-    #     $self->cache_dir,
-    #     '.' => '.',
-    #     [ $Config{archname}, '*.pod' ], # exclude binary-dir and documentation
-    # );
 }
 
 sub pack_provision_libs {
@@ -285,101 +289,30 @@ sub pack_provision_libs {
     #   - we do not catch dependencies for the controlling machine
     #   - if add-ons are present, we get them, too
     my $this_file = file(__FILE__)->resolve->absolute;
-    my $provision_dsl_install_dir = $this_file->dir->parent->parent->parent;
+    
+    # points to "Provision/" dir (where Provision::DSL is installed)
+    my $provision_dsl_dir = $this_file->dir->parent->parent;
 
     $self->_pack_file_or_dir(
-        $provision_dsl_install_dir,
-        'Provision' => 'provision/lib/perl5/Provision',
-
-        [ '*.pod' ], # exclude documentation
-    );
+        $_ => 'provision/lib/perl5/Provision/',
+        [ '*.pod' ],
+    ) for $provision_dsl_dir->children;
 }
 
-# ->_pack_file_or_dir ( $root, $rel_source, $rel_target [, \%options] [, \@exclude | @exclude])
 sub _pack_file_or_dir {
-    my $self = shift;
-    my $root_dir = shift;
-    my $source = shift;
-    my $target = shift;
+    my $self     = shift;
+    my $source   = shift;
+    my $target   = shift;
+    my @exclude  = ref $_[0] eq 'ARRAY' ? @{$_[0]} : @_;
 
-    my %options = ref $_[0] eq 'HASH' ? %{+shift} : ();
-
-    my @exclude_globs = ref $_[0] eq 'ARRAY' ? @{$_[0]} : @_;
-    push @exclude_globs, '.provision_lib';
-
-    my @exclude_regexes =
-        map {
-            s{\A (?=[^/])}{(\\A|/)}xms; # start of a file name
-            s{\A /}{\\A}xms;            # leading / => begin of string
-            s{[*][*]}{.*}xmsg;          # ** => anything including /
-            s{[*]}{[^/]*}xmsg;          # * => anything but /
-            s{[?]}{[^/]}xmsg;           # ? => one char but not /
-            s{[.]}{\\.}xmsg;            # . => escaped .
-            s{/ \z}{}xms;               # trailing / => ignore
-
-            qr{$_ (/|\z)}xms;
-        }
-        @exclude_globs;
-
-    $self->log_debug('Exclude Regexes:', @exclude_regexes);
-
-    my $cwd = getcwd;
-    chdir $root_dir;
-
-    my $thing_to_pack = $root_dir->subdir($source);
-    if (-d $thing_to_pack) {
-        $self->__pack_dir($thing_to_pack => $target, \%options, \@exclude_regexes);
-    } else {
-        $self->__pack_file($root_dir->file($source) => $target, \%options);
-    }
-
-    chdir $cwd;
-}
-
-sub __pack_dir {
-    my ($self, $dir, $dest_dir, $options, $exclude_regexes) = @_;
-
-    $dir->traverse( sub {
-        my ($child, $cont) = @_;
-
-        my $relative_file_name = $child->relative($dir)->stringify;
-        my $dest_path = $dest_dir
-            ? "$dest_dir/$relative_file_name"
-            : $relative_file_name;
-
-        if ($relative_file_name eq '.') {
-            # ignore .
-        } elsif (grep { $relative_file_name =~ $_ } @$exclude_regexes) {
-            $self->log_debug('ignoring:', $relative_file_name);
-        } elsif (-d $child) {
-            $self->log_debug('adding DIR:', $dest_path);
-            # $self->cache_dir->subdir($dest_path)->mkpath;
-            # $self->tar->add_data(
-            #     $dest_path,
-            #     '',
-            #     { type => DIR, mode => 0755, %$options },
-            # );
-        } else {
-            $self->log_debug('adding FILE:', $relative_file_name, $dest_path);
-            $self->__pack_file($child => $dest_path, $options);
-        }
-        return $cont->();
-    });
-
-}
-
-sub __pack_file {
-    my ($self, $source_file, $relative_dest_path, $options) = @_;
-
-    my $dest_file = $self->cache_dir->file($relative_dest_path);
-    $dest_file->dir->mkpath if !-d $dest_file->dir;
-    $dest_file->spew(scalar $source_file->slurp);
-
-    # $self->tar->add_data(
-    #     $dest_file,
-    #     scalar $file->slurp,
-    #     { type => FILE, mode => 0644, %$options },
-    # );
+    # Caution: $target might contain a trailing '/'.
+    #          therefore we must join strings instead of ->subdir()
+    run3 [
+        $self->config->{local}->{rsync},
+        '--checksum', '--recursive',
+        ( map { ('--exclude' => $_) } @exclude ),
+        $source => join('/', $self->cache_dir, $target),
+    ];
 }
 
 sub pack_provision_script {
@@ -456,24 +389,18 @@ sub pack_resources {
 sub pack_resource {
     my ($self, $resource) = @_;
 
-    my $resource_subdir =
-        $resource->{destination}
-        // $resource->{source}
-        // '';
-    my $options = {
-        map { exists $resource->{$_} ? ( $_ => $resource->{$_}) : () }
-        qw(uid gid)
-    };
+    my $source = $self->root_dir->subdir($resource->{source});
+    $source .= '/' if -d $source;
+    
+    my $target = 'resources/' . ($resource->{destination} // $resource->{source});
 
-    $self->log_debug('EXCLUDE:', $resource->{exclude});
     $self->_pack_file_or_dir(
-        $self->root_dir,
-        $resource->{source} => "resources/$resource_subdir",
-        $options,
+        $source => $target,
         $resource->{exclude} // [],
     );
 }
 
+# remaining args are passed thru to run3 for testing purposes
 sub remote_provision {
     my $self = shift;
 
@@ -507,7 +434,7 @@ sub remote_provision {
 
         '$PROVISION_RSYNC', '-r',
             '--exclude', '"*.pod"',
-            '--exclude', "/lib/perl5/$Config{archname}",
+            '--exclude', "/lib/perl5/${\$self->archname}",
             'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/provision' => "$temp_dir/",
 
         '&&',
@@ -526,9 +453,12 @@ sub remote_provision {
 
     $self->rsync_daemon->start;
 
-    run3 \@command_and_args;
+    run3 \@command_and_args, @_;
+    my $status = $? >> 8;
 
     $self->rsync_daemon->stop;
+    
+    return $status;
 }
 
 1;
