@@ -63,20 +63,20 @@ and your provisioning script could be
     # tell our listeners if things have changed
     Dir '/path/to/site' => {
         mkdir    => [ qw(logs pid) ],
-        contents => Resource('website'),
+        content  => Resource('website'),
         tell     => 'website_changed',
     };
 
     # create a customized config file for whatever daemon
     File '/etc/whatever.conf' => {
         user     => 'root',
-        contents => Template('etc/whatever.tt', { vars => { ... } }),
+        content  => Template('etc/whatever.tt', { vars => { ... } }),
     };
 
     # maintain a service for running a http daemon
     Service 'mysite_http_daemon' => {
         pid_file => '/var/run/mydaemon.pid',
-        contents => Template('etc/mydaemon.tt', { vars => { ... } }),
+        content  => Template('etc/mydaemon.tt', { vars => { ... } }),
     };
     
     Done;

@@ -69,13 +69,13 @@ content.
 
     # this is valid in a Provision script:
     File 'path/to/file' => {
-        contents => Url('http://my.website.com/whatever),
+        content => Url('http://my.website.com/whatever),
     };
     
     # this happens behind:
     # this is valid in a Provision script:
     File 'path/to/file' => {
-        contents => Url('http://my.website.com/whatever)->content,
+        content => Url('http://my.website.com/whatever)->content,
     };
 
 =head1 INSPECTORS

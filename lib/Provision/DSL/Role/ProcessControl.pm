@@ -1,6 +1,9 @@
 package Provision::DSL::Role::ProcessControl;
 use Moo::Role;
 use Provision::DSL::Types;
+use Provision::DSL::Util 'os';
+
+with "Provision::DSL::Role::ProcessControl::${\os}";
 
 has pid_file => (
     is => 'ro',
@@ -13,7 +16,7 @@ sub pid {
     my $self = shift;
     
     return $self->has_pid_file && -f $self->pid_file
-        ? $self->run_command_maybe_privileged('/bin/cat', $self->pid_file) + 0
+        ? $self->read_content_of_file($self->pid_file) + 0
         : undef;
 }
 

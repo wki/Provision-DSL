@@ -3,12 +3,6 @@ TODO for provisioning
 
   * lokalen CPAN Server starten / Proxy ???
 
-Source::Xxx
-  * Handling muß korrigiert werden, wegen Rsync über ssh Tunnel
-  * Coercion to_RsyncSource erforderlich für Entity::Rsync
-  * -> content muß einzelne Datei via rsync holen und cachen.
-    -> Source::Resource "before _build_content" erstellen.
-
 Generell:
   * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
              Provision::DSL::Installer::Port | Apt | Aptitude | ...

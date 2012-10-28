@@ -8,7 +8,7 @@ sub BUILD {
 
     $self->add_children(
         $self->__service_rc,
-        $self->__service_process,
+        $self->process,
     );
 }
 
@@ -19,7 +19,8 @@ sub _build_group      { 'root' }
 
 sub _build_need_privilege { 1 }
 
-sub __service_process {
+### maybe extract to parent class.
+sub _build_process {
     my $self = shift;
 
     return $self->create_entity(

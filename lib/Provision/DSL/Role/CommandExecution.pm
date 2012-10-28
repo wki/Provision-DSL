@@ -101,4 +101,13 @@ sub pipe_into_command {
     return $stdout;
 }
 
+sub read_content_of_file {
+    my $self = shift;
+    my $file = shift;
+    
+    return $self->run_command_maybe_privileged(
+        $self->find_command('cat'), $file
+    );
+}
+
 1;

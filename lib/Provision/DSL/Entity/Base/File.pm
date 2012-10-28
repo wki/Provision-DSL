@@ -22,11 +22,7 @@ sub _build_current_content {
     
     my $content;
     try {
-        $content = 
-            $self->run_command_maybe_privileged(
-                $self->find_command('cat'), 
-                $self->path,
-            );
+        $content = $self->read_content_of_file($self->path);
     };
     
     return $content;
