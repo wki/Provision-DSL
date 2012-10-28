@@ -2,6 +2,7 @@ package Provision::DSL::Entity::Base::Path;
 use Moo;
 use Try::Tiny;
 use Provision::DSL::Types;
+use Provision::DSL::Const;
 
 # Abstract base class for Dir/File/Link / Rsync?
 
@@ -43,11 +44,8 @@ sub prepare_for_creation {
 
     if (!-d $self->path->parent) {
         $self->run_command_maybe_privileged(
-            $self->find_command('mkdir'),
-            '-p', $self->path->parent,
+            MKDIR, '-p', $self->path->parent,
         );
-        
-        ### TODO: change ownership ???
     }
 };
 
@@ -55,9 +53,7 @@ sub remove {
     my $self = shift;
 
     $self->run_command_maybe_privileged(
-        $self->find_command('rm'),
-        '-rf',
-        $self->path,
+        RM, '-rf', $self->path,
     );
 }
 

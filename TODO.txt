@@ -3,36 +3,12 @@ TODO for provisioning
 
   * lokalen CPAN Server starten / Proxy ???
 
-Generell:
-  * Package: installer attribute OS-X: port, Ubuntu: apt, aptitute
-             Provision::DSL::Installer::Port | Apt | Aptitude | ...
-             Methoden: latest_version, installed_version, install(version)
-
-  * Befehlsausführung
-
-    User / Ausführung | keine Angabe | anderer User     | root
-    ------------------+--------------+------------------+-------------------
-    normal            | normal       | N/A              | N/A
-    kann sudo         | normal       | sudo -n -u x ... | su - x -c ... / sudo
-    root              | normal       | sudo -n -u x ... | normal
-
-Entity::Rsync --> Entity::Backup (steuert keinen State bei)
-  * backup => backup_dir / backup_copies => n Optionen
-  * backup nur, wenn state != current
-  * Linux: cp -al destination backup_yyyymmdd_hhmm -- 3-4 times faster than rsync
-  * OS-X: pax -rw -l
-  * generisch: mkdir backup_dir; rsync -vcr --link-dest original --links original/ backup_dir/
-
 _Ubuntu::Package
   * aptitude meldet keine Fehler beim Installieren
   * --> Test nach der Installation erforderlich.
 
 Package
   * wenn kein "wanted" angegeben, nicht zwingend auf aktuelle Version aktualisieren.
-
-Config:
-  * cpan_mirror option starts a CPAN::Mirror::Server::HTTP server
-  * remove environment
 
 Entity::Execute:
   * cwd attribute
@@ -43,7 +19,7 @@ Perlbrew:
 Service:
   * reload() feststellen.
     Idee: Prozess-Alter vs. config-file(s)
-    problematisch, wenn sich das dahinter sitzende Script geändert habt
+    problematisch, wenn sich das dahinter sitzende Script geändert hat
 
 Provision:
   * -f switch: alle Entities sind outdated

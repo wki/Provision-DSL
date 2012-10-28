@@ -2,6 +2,7 @@ package Provision::DSL::Entity::Dir;
 use Moo;
 use Try::Tiny;
 use Provision::DSL::Types;
+use Provision::DSL::Const;
 
 extends 'Provision::DSL::Entity::Base::Dir';
 
@@ -46,18 +47,39 @@ has content => (
     predicate => 1,
 );
 
+has backup_dir => (
+    is => 'ro',
+    coerce => to_ExistingDir,
+    predicate => 'want_backup',
+);
+
 sub inspect { -d $_[0]->path ? 'current' : 'missing' }
 
-# sub change {} not needed, changes done by children
-# sub remove {} implemented in base class
+sub remove {
+    ### FIXME: where is a dir entirely removed?
+}
+
+sub change {
+    my $self = shift;
+    
+    return if !$self->want_backup;
+    
+    unshift @{$self->children},
+        $self->create_entity(
+            Backup => { 
+                name       => $self->backup_dir,
+                source_dir => $self->path,
+            }
+        );
+}
+
 sub create {
     my $self = shift;
     
     $self->prepare_for_creation;
     
     $self->run_command_maybe_privileged(
-        $self->find_command('mkdir'),
-        '-p', $self->path,
+        MKDIR, '-p', $self->path,
     );
 }
 

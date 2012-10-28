@@ -424,11 +424,11 @@ sub remote_provision {
         ),
 
         # FIXME: is this kind of cleanup wise?
-        '/bin/rm', '-rf', '/tmp/provision_*',
+        RM, '-rf', '/tmp/provision_*',
 
         '&&',
 
-        '/bin/mkdir', '-p', $temp_dir,
+        MKDIR, '-p', $temp_dir,
 
         '&&',
 
