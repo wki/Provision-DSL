@@ -1,0 +1,32 @@
+Changes for Provision::DSL
+
+0.06    2012-10-28
+        * changed .tar packing to fetching from a local rsync daemon
+          resources, remote script and libraries are copied via rsync
+          when needed
+        * most hard coded executable paths are constants
+        * many things are configurable
+        * configuration format separated in local/remote part for clarity
+        * long ssh command line instead of piped script
+        * 'include' directive allows separating a provision script into parts
+        * syntax check of provision script before remote execution
+        * fixed many tests, some still missing.
+
+0.05    2012-08-31
+        * app is a singleton
+        * added inspectors and installers as optional components
+
+0.04    2012-08-10
+        * improved state calculation by eliminating method modifiers
+          and using only entities with children
+        * factored out many things into roles
+        
+0.03    2012-07-23
+        * moo work is complete
+        * provisioning scripts are executable
+
+0.02    2012-07-11
+        * switched to Moo for getting less dependencies
+
+0.01    2012-07-08
+        * initial proof-of-concept using Moose for simplicity

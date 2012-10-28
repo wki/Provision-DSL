@@ -15,7 +15,7 @@ sub create {
     $self->run_command_as_superuser(
         $APTITUDE,
         '--assume-yes',
-        install => $self->name,
+        install => $self->name, ### FIXME: handle wanted version/latest
     );
     $self->clear_installed_version;
 }

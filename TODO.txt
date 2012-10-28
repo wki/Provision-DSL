@@ -10,9 +10,6 @@ _Ubuntu::Package
 Package
   * wenn kein "wanted" angegeben, nicht zwingend auf aktuelle Version aktualisieren.
 
-Entity::Execute:
-  * cwd attribute
-
 Perlbrew:
   * beim Installieren: laufen lassen von local/bin/perlbrew self-install
 

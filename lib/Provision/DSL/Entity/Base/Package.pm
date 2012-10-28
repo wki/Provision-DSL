@@ -19,7 +19,9 @@ sub inspect {
     
     my $state = 'missing';
     if (!$self->installed_version) {
-    } elsif ($self->installed_version ne $self->latest_version) {
+    } elsif ($self->wanted eq 'latest' && $self->installed_version ne $self->latest_version) {
+        $state = 'outdated';
+    } elsif ($self->wanted ne '1' && $self->installed_version ne $self->wanted) {
         $state = 'outdated';
     } else {
         $state = 'current';

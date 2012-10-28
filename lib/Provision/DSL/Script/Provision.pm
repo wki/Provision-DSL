@@ -8,7 +8,6 @@ use IPC::Run3;
 use Config;
 use Hash::Merge 'merge';
 use Try::Tiny;
-use Proc::Daemon;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 use Provision::DSL::Script::Daemon;
