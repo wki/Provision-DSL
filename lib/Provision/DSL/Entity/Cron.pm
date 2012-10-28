@@ -138,7 +138,7 @@ sub _save_crontab_text {
     my @args;
     if ($self->is_root) {
         $command = TEE;
-        @args = qw(/etc/crontab);
+        push @args, '/etc/crontab';
     } else {
         $command = CRONTAB;
         if ($self->is_other_user) {
