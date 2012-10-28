@@ -2,7 +2,7 @@ Provision-DSL
 =============
 
 a simple provisioning toolkit allowing to deploy and configure a remote
-machine in a simple way.
+machine in a simple way without having to install things on the remote before.
 
 having a config file like:
 
@@ -21,8 +21,8 @@ having a config file like:
         # files needed for the provisioning process
         resources => [
             {
-                # copy everything inside xxx/resources except /dirx
-                #    to 'resources/files'
+                # make everything in 'xxx/resources' except '/dirx'
+                #    accessible via Resource('files') during provision
                 source      => 'xxx/resources',
                 destination => 'files',
                 exclude     => 'dirx',
@@ -36,8 +36,8 @@ and a provision file like:
     
     use Provision::DSL;
     
-    my $WEB_DIR     = '/web/data';
-    my $SITE_DIR    = "$WEB_DIR/www.mysite.de";
+    # define variables in another file
+    include vars;
     
     Package 'build-essential';
     # ... more packages
@@ -68,4 +68,6 @@ by firing the shell command:
 
     $ provision.pl -c path/to/config.conf
 
-the destination machine will receive the setup from the provision file
+the destination machine will receive the setup from the provision file.
+During the provisioning process every entity will check if itself already
+is in the right state or leave itself in the desired state.

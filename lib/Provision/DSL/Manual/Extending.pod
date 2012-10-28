@@ -10,9 +10,9 @@ system behind working you need to know a few things.
 The basic principle of an entity is 
 L<Idempotence|http://en.wikipedia.org/wiki/Idempotence>. In short, an entity
 will be responsible for getting itself into a desired state. If an entity
-alread is in this state, nothing will happen.
+already is in this state, nothing will happen.
 
-Three things will influence if and how an entity will operate:
+Seven things will influence if and how an entity will operate:
 
 =over
 
@@ -42,6 +42,10 @@ Installation of an entity can get done by the entity itself, will be
 assisted by all of its children or can get delegated to an installer which
 can get established specially for this job.
 
+=item 3 things still missing
+
+but 7 looks like a promising number, doesn't it?
+
 =back
 
 =head2 Common things among all entities
@@ -50,12 +54,13 @@ can get established specially for this job.
 
 =item name
 
-When using the dsl to define a provisioning, an entity is created or 
+When using the dsl to define a provisioning, an entity is created or
 referenced by a C<name> which is stored in the object's attribute "name".
 However, most entities behave more natural if they use correctly named
 attributes for their purposes. In order to still allow an easy creation of
-entities using clde like C<<< Entity some_name => { ... } >>>. To allow
-this mechanism to happen, you will need to define one attribute like this:
+entities classes may be defined like C<<< Entity some_name => { ... } >>>. To
+allow this mechanism to happen, you will need to define one identifying
+attribute like this:
 
     # assuming that 'foo' is the attribute you like
     has foo => ( is => 'lazy' );

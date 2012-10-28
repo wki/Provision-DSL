@@ -39,7 +39,8 @@ simply point to the two identically named directories inside the
 temporary directory. This allows future expansions currently not supported.
 
 The daemon listens to the port '2873' on the loopback interface. The port can
-be customized in the "local" section of the config file.
+be customized in the "local" and "remote" section of the config file for
+either of the two sides.
 
 It is planned, to launch another daemon providing either a proxy to a CPAN
 Server or providing a prepared CPAN mirror. It will probably listen on port
@@ -48,7 +49,7 @@ Server or providing a prepared CPAN mirror. It will probably listen on port
 =head2 Connecting to the Remote machine
 
 Basically the ssh connection looks like this shell command. It is split
-into several lines and indented to be readable.
+into several lines here to be readable.
 
     ssh some_user@hostname
         export PERL5LIB='/tmp/provision_XXX'

@@ -14,7 +14,7 @@ where a minimal configuration file might look like
 
     {
         # a name used to distinguish generated files
-        name           => 'fileserver',
+        name => 'fileserver',
         
         # the fine running on the remote machine
         provision_file => 'path/to/provisioning_script.pl',

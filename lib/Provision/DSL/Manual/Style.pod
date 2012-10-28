@@ -8,13 +8,17 @@ Provision::DSL::Manual::Style - Style and Patterns used
 
 Almost every class has an attribute C<name> which is mandatory. In order
 to maintain meaningful names for attributes actually needed for a class
-very often, a better-named attribute is constructed like this:
+very often, a better-named identifying attribute is constructed like this:
 
-    has attribute_name => (
+    has foo => (
         is => 'lazy',
     );
     
-    sub _build_attribute_name { $_[0]->name }
+    sub _build_foo { $_[0]->name }
+
+This allows constructing classes without knowing the name of the identifying
+attribute. For example a package can use an attribute different from a
+directory or a service.
 
 =head2 Easy construction
 
@@ -64,7 +68,7 @@ implementation might look like this:
 =head1 SOURCES
 
 In order to keep the DSL simple and easy to read, sources have simple and
-meaningful names. Coercions accept sources as values and return the resource's
+meaningful names. Coercions accept sources as values and return the source's
 content.
 
     # this is valid in a Provision script:
@@ -81,7 +85,7 @@ content.
 =head1 INSPECTORS
 
 Usually inspectors know the entity they are inspecting and can look into
-the entity for getting values. 
+the entity for getting the values they need.
 
     SomeEntity 'name' => {
         inspector => 'Whatever';
