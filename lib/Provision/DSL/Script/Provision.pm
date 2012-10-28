@@ -165,7 +165,7 @@ sub _build_rsync_daemon {
     my $self = shift;
 
     return Provision::DSL::Script::Daemon->new(
-        '/usr/bin/rsync',
+        RSYNC,
         {
             args => [
                 '--daemon',
@@ -445,7 +445,7 @@ sub remote_provision {
 
         # uncomment as soon as things do work
         # '&&'
-        # '/bin/rm', '-rf', $temp_dir,
+        # RM, '-rf', $temp_dir,
     );
 
     $self->log(' - running provision script on', $remote->{hostname});

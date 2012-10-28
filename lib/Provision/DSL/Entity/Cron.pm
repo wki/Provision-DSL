@@ -2,6 +2,7 @@ package Provision::DSL::Entity::Cron;
 use Moo;
 use Try::Tiny;
 use Provision::DSL::Types;
+use Provision::DSL::Const;
 
 extends 'Provision::DSL::Entity::Execute';
 
@@ -114,9 +115,9 @@ sub _get_crontab_text {
     
     my @command_and_args;
     if ($self->is_root) {
-        @command_and_args = qw(/bin/cat /etc/crontab)
+        @command_and_args = (CAT, '/etc/crontab')
     } else {
-        @command_and_args = qw(/usr/bin/crontab -l);
+        @command_and_args = (CRONTAB, '-l');
         if ($self->is_other_user) {
             push @command_and_args, '-u', $self->user;
         }
@@ -136,10 +137,10 @@ sub _save_crontab_text {
     my $command;
     my @args;
     if ($self->is_root) {
-        $command = '/usr/bin/tee';
+        $command = TEE;
         @args = qw(/etc/crontab);
     } else {
-        $command = '/usr/bin/crontab';
+        $command = CRONTAB;
         if ($self->is_other_user) {
             push @args, '-u', $self->user;
         }
