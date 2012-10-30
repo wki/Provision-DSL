@@ -87,6 +87,7 @@ sub pipe_into_command {
     my $executable = shift;
     my %options    = ref $_[0] eq 'HASH' ? %{+shift} : ();
 
+    # warn "command: $executable " . join(' ', @_);
     my $stdout;
     Provision::DSL::Command->new(
         {

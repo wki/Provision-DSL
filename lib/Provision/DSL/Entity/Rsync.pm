@@ -81,8 +81,8 @@ sub _exclude_list {
         $path =~ s{\A / | / \z}{}xmsg;
         my @parts = split qr{/+}, $path;
         
-        push @exclude_list, 
-             '--exclude', join('/', '', @parts[0..$#parts]);
+        push @exclude_list, '--exclude', join '/', '', @parts[0..$_]
+            for 0 .. $#parts;
     }
 
     return @exclude_list;

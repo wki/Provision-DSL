@@ -53,7 +53,7 @@ has backup_dir => (
     predicate => 'want_backup',
 );
 
-sub inspect { -d $_[0]->path ? 'current' : 'missing' }
+sub inspect { -d $_[0]->path ? 'current'  : 'missing' }
 
 sub remove {
     ### FIXME: where is a dir entirely removed?
@@ -124,7 +124,7 @@ sub __links {
 sub __content {
     my $self = shift;
     
-    return if !$self->has_content;
+    return if !$self->has_content || !$self->wanted;
     
     return $self->create_entity(
         Rsync => {

@@ -48,26 +48,35 @@ use ok 'Provision::DSL::Entity';
         'privilege needed when inspector requests it';
 }
 
-# states/privilege depending on parent/child
+# states/privilege/wanted depending on parent/child
 {
     my @testcases = (
-        # parent         child          expect
-        [ 'missing',  0, 'current',  0, 'missing',  0 ],
-        [ 'missing',  0, 'outdated', 0, 'missing',  0 ],
-        [ 'missing',  0, 'missing',  0, 'missing',  0 ],
+        # parent: s,p    child: s,p,w     expect: s,p
+        [ 'missing',  0, 'current',  0,1, 'missing',  0 ],
+        [ 'missing',  0, 'outdated', 0,1, 'missing',  0 ],
+        [ 'missing',  0, 'missing',  0,1, 'missing',  0 ],
+        [ 'missing',  0, 'current',  0,0, 'missing',  0 ],
+        [ 'missing',  0, 'outdated', 0,0, 'missing',  0 ],
+        [ 'missing',  0, 'missing',  0,0, 'missing',  0 ],
         
-        [ 'outdated', 0, 'current',  0, 'outdated', 0 ],
-        [ 'outdated', 0, 'outdated', 0, 'outdated', 0 ],
-        [ 'outdated', 0, 'missing',  0, 'outdated', 0 ],
+        [ 'outdated', 0, 'current',  0,1, 'outdated', 0 ],
+        [ 'outdated', 0, 'outdated', 0,1, 'outdated', 0 ],
+        [ 'outdated', 0, 'missing',  0,1, 'outdated', 0 ],
+        [ 'outdated', 0, 'current',  0,0, 'outdated', 0 ],
+        [ 'outdated', 0, 'outdated', 0,0, 'outdated', 0 ],
+        [ 'outdated', 0, 'missing',  0,0, 'outdated', 0 ],
         
-        [ 'current',  1, 'current',  0, 'current',  1 ],
-        [ 'current',  0, 'outdated', 1, 'outdated', 1 ],
-        [ 'current',  1, 'missing',  1, 'outdated', 1 ],
+        [ 'current',  1, 'current',  0,1, 'current',  1 ],
+        [ 'current',  0, 'outdated', 1,1, 'outdated', 1 ],
+        [ 'current',  1, 'missing',  1,1, 'outdated', 1 ],
+        [ 'current',  1, 'current',  0,0, 'outdated', 1 ],
+        [ 'current',  0, 'outdated', 1,0, 'outdated', 1 ],
+        [ 'current',  1, 'missing',  1,0, 'current',  1 ],
     );
 
     foreach my $testcase (@testcases) {
         my ($pstate, $ppriv,
-            $cstate, $cpriv,
+            $cstate, $cpriv, $cwanted,
             $estate, $epriv) = @$testcase;
         my $name = join ',', @$testcase;
 
@@ -80,6 +89,7 @@ use ok 'Provision::DSL::Entity';
             name           => 'child',
             parent         => $pe,
             inspector      => [ 'Always', state => $cstate, need_privilege => $cpriv ],
+            wanted         => $cwanted,
         );
 
         $pe->add_child($ce);

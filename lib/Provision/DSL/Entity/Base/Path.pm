@@ -60,6 +60,7 @@ sub remove {
 sub __owner {
     my $self = shift;
     
+    return if !$self->wanted;
     return if !$self->has_user && !$self->has_group;
     
     return $self->create_entity(
@@ -80,6 +81,8 @@ sub __owner {
 sub __permission {
     my $self = shift;
     
+    return if !$self->wanted;
+
     return $self->create_entity(
         Path_Permission => {
             parent     => $self,
