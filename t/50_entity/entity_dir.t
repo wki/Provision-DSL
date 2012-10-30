@@ -5,7 +5,7 @@ use Test::Exception;
 use Path::Class;
 use FindBin;
 
-require "$FindBin::Bin/inc/prepare_app.pl";
+require "$FindBin::Bin/../inc/prepare_app.pl";
 my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
 
 # creating and removing a non-existing directory
@@ -64,7 +64,7 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
             name => "$FindBin::Bin/x/foo",
             mkdir => [qw(abc def ghi/jkl)],
             rmdir => [qw(zz)],
-            content => "$FindBin::Bin/resources/dir1",
+            content => "$FindBin::Bin/../resources/dir1",
         )
     }
     'creating a dir entity with structure lives';
@@ -80,7 +80,7 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     #     for $d->all_children;
 
     is $d->state, 'current', 'state is current after process';
-
+    
     ok $d->is_ok, 'dir with structure is ok after process';
 
     foreach my $child (@{$d->children}) {
