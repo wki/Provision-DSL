@@ -3,7 +3,7 @@ use Moo;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 
-extends 'Provision::DSL::Entity::Base::Backup';
+extends 'Provision::DSL::Entity::Backup';
 with    'Provision::DSL::Role::CommandExecution';
 
 sub create { goto \&change }

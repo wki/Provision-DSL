@@ -1,4 +1,8 @@
 #!/usr/bin/env perl
+#
+# sample provision file for a host named 'box' (my virtual box)
+#     provision.pl -c examples/box.conf
+#
 use Provision::DSL;
 my $WEB_DIR     = '/web/data';
 my $SITE_DIR    = "$WEB_DIR/www.mysite.de";

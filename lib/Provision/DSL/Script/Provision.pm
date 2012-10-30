@@ -50,18 +50,67 @@ sub default_config {
     };
 }
 
+has config_file => (
+    is => 'ro',
+    coerce => to_File,
+    predicate => 'has_config_file',
+);
+
 has config => (
-    is       => 'ro',
-    required => 1,
-    coerce   => sub {
-        my $config = merge do $_[0], default_config;
+    is => 'lazy',
+);
+
+sub _build_config {
+    my $self = shift;
+    
+    my $config_from_file = $self->has_config_file ? do $_[0] : {};
+    
+    my $config = merge $config_from_file, default_config;
         
-        push @{$config->{local}->{ssh_options}},
-            '-R', "$config->{local}->{cpan_http_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_HTTP_PORT}",
-            '-R', "$config->{local}->{rsync_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_RSYNC_PORT}";
-        
-        return $config;
-    },
+    push @{$config->{local}->{ssh_options}},
+        '-R', "$config->{local}->{cpan_http_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_HTTP_PORT}",
+        '-R', "$config->{local}->{rsync_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_RSYNC_PORT}";
+
+    foreach my $arg (@{$self->args}) {
+        if (-f $arg) {
+            $self->provision_file($arg);
+        } elsif ($arg =~ m{\A (.*) @ (.+) \z}xms) {
+            $self->hostname($2);
+            $self->user($1) if $1;
+        }
+    }
+    
+    # manually merge in directly some things entered via commandline
+    $config->{remote}->{hostname} = $self->hostname       if $self->has_hostname;
+    $config->{remote}->{user}     = $self->user           if $self->has_user;
+    $config->{provision_file}     = $self->provision_file if $self->has_provision_file;
+    $config->{name}             //= $config->{provision_file} &&
+                                    $config->{provision_file} =~ m{(\w+) [.] \w+ \z}xms
+                                        ? $1
+                                        : 'default';
+    $config->{provision_file}   //= 'provision.pl';
+    
+    # warn Data::Dumper->Dump([$config, $self->args],['config', 'args']);
+
+    return $config;
+}
+
+# allow to override config
+has hostname => (
+    is => 'rw',
+    predicate => 'has_hostname',
+);
+
+# allow to override config
+has user => (
+    is => 'rw',
+    predicate => 'has_user',
+);
+
+# allow to override config
+has provision_file => (
+    is => 'rw',
+    predicate => 'has_provision_file',
 );
 
 # allow faking arch during tests
@@ -87,6 +136,7 @@ sub _build_root_dir {
         $dir = $dir->parent;
     }
 
+    ### FIXME: could cwd be a good choice?
     die 'cannot guess root_dir, stopping.';
 }
 
@@ -182,10 +232,15 @@ around options => sub {
 
     return (
         $self->$orig,
-        'config|c=s     ; specify a config file (required)',
-        'root_dir|r=s   ; root dir for locating files and resources',
+        'config_file|c=s    ; specify a config file',
+        'root_dir|r=s       ; root dir for locating files and resources',
+        'hostname|H=s       ; hostname for ssh, overrides config setting',
+        'user|u=s           ; user for ssh, overrides config setting',
+        'provision_file|p=s ; provision file to run, overrides config setting',
     );
 };
+
+sub usage_text { '[[user]@hostname] [provision_file.pl]' }
 
 sub run {
     my $self = shift;
