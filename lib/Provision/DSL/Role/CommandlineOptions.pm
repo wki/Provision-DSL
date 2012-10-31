@@ -61,6 +61,7 @@ sub usage {
     $app =~ s{\A .* /}{}xms;
 
     my $options = '';
+    $options .= $class->usage_text if $class->can('usage_text');
     foreach my $option ($class->options) {
         ### FIXME: must get cleaned up a bit
         my ($name, $comment) = split qr{\s*;\s*}xms, $option;
@@ -73,8 +74,7 @@ sub usage {
     $options .= "\n";
 
     say <<EOF;
-$app [options]
-$options
+$app [options] $options
 EOF
     exit 1
 }

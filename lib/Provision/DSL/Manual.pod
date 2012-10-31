@@ -34,6 +34,10 @@ where a minimal configuration file might look like
         ],
     }
 
+If you do not need resources, the provision file and remote hostname options
+can also appear in the command line. Try `provision.pl -h` to see what the
+possible options are.
+
 and your provisioning script could be
 
     #!/usr/bin/env perl
