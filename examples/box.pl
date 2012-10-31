@@ -23,8 +23,8 @@ Dir $WEB_DIR => {
 };
 
 Dir $SITE_DIR => {
-    user => 'vagrant',
-    group => 'vagrant',
+    # user => 'vagrant',
+    # group => 'vagrant',
     content => Resource('files'),
 };
 

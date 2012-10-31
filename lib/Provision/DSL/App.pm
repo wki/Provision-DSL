@@ -25,6 +25,7 @@ has os => (
 has user_has_privilege => (
     is => 'lazy',
     isa => Bool,
+    clearer => 1,
 );
 
 sub _build_user_has_privilege {
@@ -118,7 +119,20 @@ sub install_all_entities {
     croak 'nothing to install'
         unless @{$self->entities_to_install};
 
-    croak 'Privileged user needed for installing'
+    if ($self->install_needs_privilege && !$self->user_has_privilege) {
+        my $user = getpwuid($<);
+        say STDERR "WARNING: privilege needed to run this script.";
+        say STDERR "         an entry like '$user ALL=NOPASSWD: ALL' can get added to /etc/sudoers.";
+        say STDERR "         enter password if wanted, abort otherwise.";
+        say STDERR "";
+        
+        # using system() here because of stdin handling...
+        system SUDO, '-S', '/bin/sh', '-c', "/bin/echo '$user ALL=NOPASSWD: ALL' >> /etc/sudoers";
+        
+        $self->clear_user_has_privilege;
+    }
+    
+    croak 'Privileged user needed for installing but `sudo -n` not working'
         if $self->install_needs_privilege && !$self->user_has_privilege;
 
     ### TODO: we can add a getppid() call here to discover if we are orphaned
