@@ -1,6 +1,6 @@
 Changes for Provision::DSL
 
-0.07    2012-11-01
+0.07    2012-11-01 (launch date of 007 "skyfall")
         * added "append_if_missing" option to file patch
         * added more examples
         * allowed absolute paths for collecting resources
