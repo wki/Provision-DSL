@@ -1,5 +1,13 @@
 Changes for Provision::DSL
 
+0.07    2012-11-01
+        * added "append_if_missing" option to file patch
+        * added more examples
+        * allowed absolute paths for collecting resources
+        * added a modification of "/etc/sudoers" file if current user
+          is not mentioned inside this file. Requires a password at
+          first login.
+
 0.06    2012-10-28
         * changed .tar packing to fetching from a local rsync daemon
           resources, remote script and libraries are copied via rsync
