@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 #
 # sample provision file for a host named 'box' (my virtual box)
+# will require privileges and may prompt for a password at first launch
+#
 #     provision.pl -c examples/box.conf
 #
 use Provision::DSL;

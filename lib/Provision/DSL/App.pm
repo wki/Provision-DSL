@@ -41,7 +41,7 @@ sub _build_user_has_privilege {
     # } catch {
     #     warn "Caught: $_";
     };
-    
+
     return $result;
 }
 
@@ -66,23 +66,23 @@ has _entity_cache => (
 
 around new => sub {
     my ($orig, $class, @args) = @_;
-    
+
     ### is it clean to check for instance() in call hierarchy?
     for (my $i = 0; $i < 10; $i++) {
         my ($package, $filename, $line, $sub) = caller($i);
-        
+
         next if !$sub || $sub !~ m{:: instance \z}xms;
 
         return $class->$orig(@args);
     }
-    
+
     die 'Singleton-App: calling new directly is forbidden';
 };
 
 sub instance {
     my $class = shift;
     state $self = $class->new_with_options(@_);
-    
+
     return $self;
 }
 
@@ -104,39 +104,47 @@ sub install_needs_privilege {
     my $self = shift;
 
     grep { $_->need_privilege } @{$self->entities_to_install};
-    # foreach my $entity (@{$self->entities_to_install}) {
-    #     return 1 if $entity->need_privilege;
-    # }
-    # 
-    # return 0;
+}
+
+sub requested_privilege_present {
+    my $self = shift;
+
+    return !$self->install_needs_privilege || $self->user_has_privilege;
 }
 
 sub install_all_entities {
     my $self = shift;
 
+    croak 'nothing to install' unless @{$self->entities_to_install};
+
+    $self->check_or_enable_privileges;
+
     $self->is_running(1);
-
-    croak 'nothing to install'
-        unless @{$self->entities_to_install};
-
-    if ($self->install_needs_privilege && !$self->user_has_privilege) {
-        my $user = getpwuid($<);
-        say STDERR "WARNING: privilege needed to run this script.";
-        say STDERR "         an entry like '$user ALL=NOPASSWD: ALL' can get added to /etc/sudoers.";
-        say STDERR "         enter password if wanted, abort otherwise.";
-        say STDERR "";
-        
-        # using system() here because of stdin handling...
-        system SUDO, '-S', '/bin/sh', '-c', "/bin/echo '$user ALL=NOPASSWD: ALL' >> /etc/sudoers";
-        
-        $self->clear_user_has_privilege;
-    }
-    
-    croak 'Privileged user needed for installing but `sudo -n` not working'
-        if $self->install_needs_privilege && !$self->user_has_privilege;
-
-    ### TODO: we can add a getppid() call here to discover if we are orphaned
     $_->install for @{$self->entities_to_install};
+}
+
+sub check_or_enable_privileges {
+    my $self = shift;
+
+    return if $self->requested_privilege_present;
+
+    $self->log_dryrun('would prompt for "/etc/sudoers" expansion to gain permission')
+        and return;
+
+    my $user = getpwuid($<);
+    say STDERR "WARNING: privilege needed to run this script.";
+    say STDERR "         an entry like '$user ALL=NOPASSWD: ALL' can get added to /etc/sudoers.";
+    say STDERR "         enter password if wanted, abort otherwise.";
+    say STDERR "";
+
+    # using system() here because of different stdin/stdout/stderr handling...
+    system SUDO, '-S',
+        '/bin/sh', '-c', "/bin/echo '$user ALL=NOPASSWD: ALL' >> /etc/sudoers";
+
+    $self->clear_user_has_privilege;
+
+    croak 'Privileged user needed for installing but `sudo -n` not working'
+        if !$self->requested_privilege_present;
 }
 
 ####################################### Entity handling

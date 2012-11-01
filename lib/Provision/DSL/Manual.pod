@@ -8,7 +8,7 @@ Provision::DSL::Manual - How to use Provision::DSL
 
 fire a script
 
-    $ provision.pl -c path/to/configuration_file
+    $ provision.pl -c path/to/configuration_file.conf
 
 where a minimal configuration file might look like
 
@@ -89,9 +89,43 @@ and your provisioning script could be
 
 Provision::DSL is a simple domain specific language allowing to describe how a
 combination of packages, files, directories and services should look like on a
-*nix machine you like to control. The entities listed in a provisioning script
-are evaluated in source order. Each entity decides on its own if it must 
-C<<< create() >>>, C<<< change() >>> or C<<< remove() >>> itself.
+*nix machine you like to control.
+
+The primary goal is to have a tool requiring a target machine with
+
+=over
+
+=item perl
+
+At least Perl 5.10 must be available on the controlled machine. There is no
+requirement on the modules installed. CORE is just enough.
+
+=item ssh
+
+A SSH daemon must run on the controlled machine and a login must be possible
+somehow. The user on the controlled machine does not need to be root.
+
+=item rsync
+
+The rsync binary must be present and executable.
+
+=item sudo
+
+The sudo binary must be available. Eventually the user is prompted for a
+password at his first connect in order to append a special line to the
+F</etc/sudoers> file. After that, no more prompting will occur.
+
+=back
+
+The central part is a provisioning script which will run on the controlled
+machine. Additionally there may exist a configuration file storing some
+options for controlling the execution on local and remote side. Without a
+configuration file, only a few options can be controlled on the command line.
+This scenario is meant for simple cases.
+
+The entities listed in a provisioning script are evaluated in source order.
+Each entity decides on its own if it must C<<< create() >>>, C<<< change() >>>
+or C<<< remove() >>> itself.
 
 Each entity has a C<wanted> attribute which defaults to a true boolean value
 if an installation is wanted but may be set to some false value when the
