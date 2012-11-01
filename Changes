@@ -3,10 +3,12 @@ Changes for Provision::DSL
 0.07    2012-11-01 (launch date of 007 "skyfall")
         * added "append_if_missing" option to file patch
         * added more examples
-        * allowed absolute paths for collecting resources
+        * allowed absolute paths in config file for collecting resources
         * added a modification of "/etc/sudoers" file if current user
           is not mentioned inside this file. Requires a password at
           first login.
+        * user, hostname and provision script can get entered as
+          commandline options and will override config settings if present.
 
 0.06    2012-10-28
         * changed .tar packing to fetching from a local rsync daemon

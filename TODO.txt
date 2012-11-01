@@ -7,9 +7,6 @@ _Ubuntu::Package
   * aptitude meldet keine Fehler beim Installieren
   * --> Test nach der Installation erforderlich.
 
-Package
-  * wenn kein "wanted" angegeben, nicht zwingend auf aktuelle Version aktualisieren.
-
 Perlbrew:
   * beim Installieren: laufen lassen von local/bin/perlbrew self-install
 
