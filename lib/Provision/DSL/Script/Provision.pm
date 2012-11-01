@@ -8,6 +8,7 @@ use IPC::Run3;
 use Config;
 use Hash::Merge 'merge';
 use Try::Tiny;
+use Time::HiRes qw(gettimeofday tv_interval);
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 use Provision::DSL::Script::Daemon;
@@ -51,8 +52,8 @@ sub default_config {
 }
 
 has config_file => (
-    is => 'ro',
-    coerce => to_File,
+    is        => 'ro',
+    coerce    => to_File,
     predicate => 'has_config_file',
 );
 
@@ -63,7 +64,9 @@ has config => (
 sub _build_config {
     my $self = shift;
     
-    my $config_from_file = $self->has_config_file ? do $self->config_file : {};
+    my $config_from_file = $self->has_config_file
+        ? do "${\$self->config_file}"
+        : {};
     
     my $config = merge $config_from_file, default_config;
         
@@ -80,7 +83,7 @@ sub _build_config {
         }
     }
     
-    # manually merge in directly some things entered via commandline
+    # manually merge in some things entered via commandline
     $config->{remote}->{hostname} = $self->hostname       if $self->has_hostname;
     $config->{remote}->{user}     = $self->user           if $self->has_user;
     $config->{provision_file}     = $self->provision_file if $self->has_provision_file;
@@ -97,19 +100,19 @@ sub _build_config {
 
 # allow to override config
 has hostname => (
-    is => 'rw',
+    is        => 'rw',
     predicate => 'has_hostname',
 );
 
 # allow to override config
 has user => (
-    is => 'rw',
+    is        => 'rw',
     predicate => 'has_user',
 );
 
 # allow to override config
 has provision_file => (
-    is => 'rw',
+    is        => 'rw',
     predicate => 'has_provision_file',
 );
 
@@ -131,13 +134,11 @@ sub _build_root_dir {
 
     while (scalar $dir->dir_list > 1) {
         return $dir
-            if -f $dir->file('Makefile.PL') ||
-               -f $dir->file('dist.ini');
+            if -f $dir->file('Makefile.PL') || -f $dir->file('dist.ini');
         $dir = $dir->parent;
     }
 
-    ### FIXME: could cwd be a good choice?
-    die 'cannot guess root_dir, stopping.';
+    return dir('/tmp');
 }
 
 has cache_dir => (
@@ -227,6 +228,13 @@ sub _build_rsync_daemon {
     );
 }
 
+has started => (
+    is      => 'ro',
+    default => sub { [gettimeofday] },
+);
+
+sub elapsed { tv_interval($_[0]->started, [gettimeofday]) }
+
 around options => sub {
     my ($orig, $self) = @_;
 
@@ -256,10 +264,10 @@ sub run {
     my $result = $self->remote_provision;
 
     $self->log(
-        'Finished Provisioning',
+        sprintf('Finished in %0.1fs', $self->elapsed),
         ($result
-            ? ('Status-Code:', $result)
-            : ())
+            ? "Status-Code: $result"
+            : ()),
     );
     exit $result;
 }
@@ -390,11 +398,6 @@ sub pack_provision_script {
     $self->must_have_valid_syntax($provision_script);
 
     $self->provision_dir->file('provision.pl')->spew($provision_script);
-    # $self->tar->add_data(
-    #     'provision.pl',
-    #     $provision_script,
-    #     { type => FILE, mode => 0755 },
-    # );
 }
 
 sub must_have_valid_syntax {

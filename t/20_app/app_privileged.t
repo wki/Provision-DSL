@@ -5,6 +5,9 @@ use Test::Exception;
 
 use ok 'Provision::DSL::App';
 
+no warnings 'redefine';
+local *Provision::DSL::App::_try_to_modify_sudoers = sub {};
+
 {
     package FakeEntity;
     use Moo;

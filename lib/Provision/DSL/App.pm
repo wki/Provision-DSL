@@ -131,20 +131,27 @@ sub check_or_enable_privileges {
     $self->log_dryrun('would prompt for "/etc/sudoers" expansion to gain permission')
         and return;
 
+    $self->_try_to_modify_sudoers;
+    $self->clear_user_has_privilege;
+
+    croak 'Privileged user needed for installing but `sudo -n` not working'
+        if !$self->requested_privilege_present;
+}
+
+# do not remove! will made inactive during tests
+sub _try_to_modify_sudoers {
+    my $self = shift;
+    
     my $user = getpwuid($<);
     say STDERR "WARNING: privilege needed to run this script.";
-    say STDERR "         an entry like '$user ALL=NOPASSWD: ALL' can get added to /etc/sudoers.";
+    say STDERR "         an entry like '$user ALL=NOPASSWD: ALL'";
+    say STDERR "         can get added to /etc/sudoers.";
     say STDERR "         enter password if wanted, abort otherwise.";
     say STDERR "";
 
     # using system() here because of different stdin/stdout/stderr handling...
     system SUDO, '-S',
         '/bin/sh', '-c', "/bin/echo '$user ALL=NOPASSWD: ALL' >> /etc/sudoers";
-
-    $self->clear_user_has_privilege;
-
-    croak 'Privileged user needed for installing but `sudo -n` not working'
-        if !$self->requested_privilege_present;
 }
 
 ####################################### Entity handling

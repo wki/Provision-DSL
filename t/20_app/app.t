@@ -8,6 +8,9 @@ use Provision::DSL::Entity::TestingOnly;
 
 use ok 'Provision::DSL::App';
 
+no warnings 'redefine';
+local *Provision::DSL::App::_try_to_modify_sudoers = sub {};
+
 # singleton
 {
     dies_ok { Provision::DSL::App->new } 'calling new dies';

@@ -16,7 +16,7 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
 # packing a script from a config
 {
     my $s = Provision::DSL::Script::Provision->new(
-        config => "$FindBin::Bin/../conf/test_config.pl",
+        config_file => "$FindBin::Bin/../conf/test_config.pl",
     );
 
     is_deeply $s->config,
@@ -83,7 +83,7 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
 # env
 {
     my $s = Provision::DSL::Script::Provision->new(
-        config => "$FindBin::Bin/../conf/test_config.pl",
+        config_file => "$FindBin::Bin/../conf/test_config.pl",
     );
 
     foreach my $key (qw(foo bar)) {
@@ -106,8 +106,8 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
 
     my $cache_dir = dir("$FindBin::Bin/../../.provision_testing");
     my $s = Provision::DSL::Script::Provision->new(
-        config => "$FindBin::Bin/../conf/test_config.pl",
-        root_dir => "$FindBin::Bin/../..",
+        config_file => "$FindBin::Bin/../conf/test_config.pl",
+        root_dir    => "$FindBin::Bin/../..",
     );
     $s->config->{local}->{cpanm} = "$FindBin::Bin/../bin/fake_cpanm.pl";
 
@@ -159,11 +159,11 @@ SKIP:
         if $? >> 8;
 
     my $s = Provision::DSL::Script::Provision->new(
-        config    => "$FindBin::Bin/../conf/test_config.pl",
+        config_file => "$FindBin::Bin/../conf/test_config.pl",
         # will create an rsyncd.conf file inside here and refer
         # to resources/ and provision/ directories
-        cache_dir => "$FindBin::Bin/..",
-        archname  => 'xtest-arch'
+        cache_dir   => "$FindBin::Bin/..",
+        archname    => 'xtest-arch'
     );
 
     my ($stdout, $stderr);
