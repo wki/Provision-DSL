@@ -63,7 +63,7 @@ has config => (
 sub _build_config {
     my $self = shift;
     
-    my $config_from_file = $self->has_config_file ? do $_[0] : {};
+    my $config_from_file = $self->has_config_file ? do $self->config_file : {};
     
     my $config = merge $config_from_file, default_config;
         
@@ -443,7 +443,10 @@ sub pack_resources {
 sub pack_resource {
     my ($self, $resource) = @_;
 
-    my $source = $self->root_dir->subdir($resource->{source});
+    my $source_path = dir($resource->{source});
+    my $source = $source_path->is_absolute
+        ? $source_path
+        : $self->root_dir->subdir($source_path);
     $source .= '/' if -d $source;
     
     my $target = 'resources/' . ($resource->{destination} // $resource->{source});

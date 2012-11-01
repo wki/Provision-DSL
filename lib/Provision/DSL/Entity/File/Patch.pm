@@ -10,7 +10,7 @@ has patches => (
     default => sub { [] }
 );
 
-sub inspect { 
+sub inspect {
     my $self = shift;
 
     return !defined $self->current_content
@@ -23,7 +23,7 @@ sub inspect {
 sub create { goto \&change }
 sub change {
     my $self = shift;
-    
+
     $self->write_content($self->apply_modification);
 }
 
@@ -32,19 +32,34 @@ sub apply_modification {
 
     my $content = $self->current_content // '';
 
+    my $i = 1;
     foreach my $patch (@{$self->patches}) {
-        my $match = $patch->{if_line_like}
+        my ($method) = grep { $self->can($_) } map { "patch_$_" } keys %$patch
             or do {
-                warn "Missing 'if_line_like' key, ignoring patch";
+                carp "ignoring File(${$self->name}) patch #$i";
                 next;
             };
 
-        my $nr_replacements =
-            $content =~ s{^ ($match) $}{$self->_replace_with($patch)}exmsg;
+        $content = $self->$method($patch, $content);
 
-        croak "File(${\$self->name}) patch '$match' is ambiguous"
-            if $nr_replacements > 1;
+        $i++;
     }
+
+    return $content;
+}
+
+####################################### various patches ### TODO: make classes?
+
+sub patch_if_line_like {
+    my ($self, $patch, $content) = @_;
+
+    my $match = $patch->{if_line_like};
+
+    my $nr_replacements =
+        $content =~ s{^ ($match) $}{$self->_replace_with($patch)}exmsg;
+
+    croak "File(${\$self->name}) patch '$match' is ambiguous"
+        if $nr_replacements > 1;
 
     return $content;
 }
@@ -70,6 +85,23 @@ sub _replace_with {
     }
 
     return $prefix . $new_line;
+}
+
+sub patch_append_if_missing {
+    my ($self, $patch, $content) = @_;
+    
+    ### FIXME: here we rely on having a Resource(...).
+    my $append_if_missing = $patch->{append_if_missing}->content;
+    
+    my $check_expression = $append_if_missing;
+    $check_expression =~ s{(\S+)}{\\\\Q$1\\\\E}xmsg;
+    $check_expression =~ s{\s+}{\\\\s*}xmsg;
+    
+    if ($content !~ m{$check_expression}xms) {
+        $content =~ s{\s*\z}{"\n$append_if_missing"}exms;
+    }
+    
+    return $content;
 }
 
 1;

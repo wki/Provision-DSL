@@ -2,6 +2,7 @@ package Provision::DSL::Source::Resource;
 use Moo;
 use FindBin;
 use Carp;
+use Path::Class;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 
@@ -14,7 +15,12 @@ has root_dir => (
     coerce => to_ExistingDir,
 );
 
-sub _build_root_dir { "$FindBin::Bin/resources" }
+sub _build_root_dir {
+    my $dir = dir("$FindBin::Bin/resources");
+    $dir->mkpath if !-d $dir;
+    
+    return $dir;
+}
 
 sub rsync_source { "rsync://localhost:${\RSYNC_PORT}/resources/${\$_[0]->name}" }
 
@@ -32,6 +38,7 @@ sub _build_path {
     my $parent_dir = $path->dir;
     $parent_dir->mkpath if !-d $parent_dir;
 
+    # warn "RSYNC ${\$self->rsync_source} => $path";
     $self->run_command(RSYNC, $self->rsync_source, $path)
         if !-e $path;
 
