@@ -88,5 +88,26 @@ Bestandteile:
   * Util                        various utilities
 
 
-Vorbereitung eines Provision Vorganges -- siehe Manual::Remote
 
+Einbindung von Inspektoren/Installern:
+ - 1) bisher implementiert:
+      inspector => 'SomeInspector'
+      inspector => [SomeInspector => ...]
+
+ - 2) besser:
+      inspector => SomeInspector( ... )
+
+    für jede gefundene Inspector-Klasse passend zur Platform muß
+    erzeugt und exportiert werden:
+
+    sub SomeInspector {
+        [ to_Class('Provision::DSL::Inspector')->('SomeInspector'), @_ ];
+    }
+    
+    in Entity gibt es dann nur noch 'inspector', 'inspector_instance'
+    
+    Beispiele:
+      inspector => Always,
+      inspector => ProcessAge(Files('*.jpg')),
+    
+    

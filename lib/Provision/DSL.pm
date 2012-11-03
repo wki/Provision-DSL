@@ -52,7 +52,6 @@ sub import {
 
     warnings->import();
     strict->import();
-    # feature->import(':5.10');
 
     instantiate_app(@ARGV);
     create_and_export_entity_keywords($package);

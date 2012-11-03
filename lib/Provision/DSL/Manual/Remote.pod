@@ -63,7 +63,7 @@ Some details are omitted and almost every part is customizable in the
 =head2 Running the Provision Script
 
 The provision script will get all required libraries and (hopefully) run on
-every perl starting version 5.10.0.
+every perl starting version 5.8.
 
 Depending on the operation running on the remote machine, root provileges
 may be required. `sudo -n -u root` must be executable for the provisioning
