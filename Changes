@@ -1,5 +1,11 @@
 Changes for Provision::DSL
 
+0.08    2012-11-03
+        * removed all absolute paths to executable binaries to be more
+          independant from the *nix flavour
+        * changed all perl-5.10 specific operations to re-enable things
+          when only perl-5.8 is available.
+
 0.07    2012-11-01 (launch date of 007 "skyfall")
         * added "append_if_missing" option to file patch
         * added more examples

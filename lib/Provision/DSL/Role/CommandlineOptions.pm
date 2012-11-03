@@ -1,5 +1,4 @@
 package Provision::DSL::Role::CommandlineOptions;
-use feature ':5.10';
 use Moo::Role;
 use Getopt::Long 'GetOptionsFromArray';
 use Scalar::Util 'blessed';
@@ -73,8 +72,9 @@ sub usage {
     }
     $options .= "\n";
 
-    say <<EOF;
+    print <<EOF;
 $app [options] $options
+
 EOF
     exit 1
 }
@@ -102,7 +102,7 @@ sub _log_if {
     my $condition = shift;
 
     if ($condition) {
-        say join(' ', map { _to_string($_) } @_);
+        print join(' ', map { _to_string($_) } @_) . "\n";
         binmode(STDOUT);
     }
 

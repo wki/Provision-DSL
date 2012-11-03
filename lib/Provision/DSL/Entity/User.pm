@@ -24,7 +24,7 @@ has home_dir => (
 sub _build_home_dir {
     my $self = shift;
     
-    return (getpwuid($self->uid))[7] // "/home/${\$self->name}"; # /
+    return (getpwuid($self->uid))[7] || "/home/${\$self->name}"; # /
 }
 
 sub _build_uid {

@@ -9,7 +9,7 @@ use Test::More;
     
     sub method {
         my $self = shift;
-        my $text = shift // '';
+        my $text = shift || '';
 
         return $text . 'D::m';
     }
@@ -28,7 +28,7 @@ use Test::More;
     around method => sub {
         my $orig = shift;
         my $self = shift;
-        my $text = shift // '';
+        my $text = shift || '';
         
         return 'before/' . $self->$orig($text) . '/after';
     };

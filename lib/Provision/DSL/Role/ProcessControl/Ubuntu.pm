@@ -2,7 +2,7 @@ package Provision::DSL::Role::ProcessControl::Ubuntu;
 use Moo::Role;
 use Path::Class;
 
-sub _proc_file { file('proc', $_[0]->pid // ()) }
+sub _proc_file { file('proc', $_[0]->pid || ()) }
 
 sub is_running {
     my $self = shift;

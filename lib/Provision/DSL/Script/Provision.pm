@@ -1,6 +1,5 @@
 package Provision::DSL::Script::Provision;
 use Moo;
-use feature ':5.10';
 use Path::Class;
 use File::Temp ();
 use Cwd;
@@ -23,7 +22,7 @@ sub default_config {
       # provision_file => 'relative/path/to/file.pl',
 
         local => {
-            ssh             => '/usr/bin/ssh',
+            ssh             => 'ssh',
             ssh_options     => ['-C'],
             cpanm           => 'cpanm',         # search via $PATH
             cpanm_options   => [],
@@ -37,6 +36,13 @@ sub default_config {
         remote => {
           # hostname        => 'box',
           # user            => 'wolfgang',
+          
+          # maybe add some options transported to remote via
+          #     -o option,option,...
+          #
+          # options => {
+          #     modify_sudoers => 1, # append '$user ALL=NOPASSWD: ALL'
+          # },
 
             environment => {
                 PROVISION_RSYNC         => RSYNC,
@@ -87,11 +93,11 @@ sub _build_config {
     $config->{remote}->{hostname} = $self->hostname       if $self->has_hostname;
     $config->{remote}->{user}     = $self->user           if $self->has_user;
     $config->{provision_file}     = $self->provision_file if $self->has_provision_file;
-    $config->{name}             //= $config->{provision_file} &&
+    $config->{name}             ||= $config->{provision_file} &&
                                     $config->{provision_file} =~ m{(\w+) [.] \w+ \z}xms
                                         ? $1
                                         : 'default';
-    $config->{provision_file}   //= 'provision.pl';
+    $config->{provision_file}   ||= 'provision.pl';
     
     # warn Data::Dumper->Dump([$config, $self->args],['config', 'args']);
 
@@ -149,7 +155,7 @@ has cache_dir => (
 sub _build_cache_dir {
     my $self = shift;
 
-    my $cache_dir_name = join '_', '.provision', $self->config->{name} // ();
+    my $cache_dir_name = join '_', '.provision', $self->config->{name} || ();
     my $dir = $self->root_dir->subdir($cache_dir_name);
     $dir->mkpath if !-d $dir;
 
@@ -245,6 +251,8 @@ around options => sub {
         'hostname|H=s       ; hostname for ssh, overrides config setting',
         'user|u=s           ; user for ssh, overrides config setting',
         'provision_file|p=s ; provision file to run, overrides config setting',
+      # 'options|o=s        ; comma separated options [modify_sudoers, TODO:more]'
+      # 'force|f            ; force every entity to execute',
     );
 };
 
@@ -380,7 +388,7 @@ sub _pack_file_or_dir {
 sub pack_provision_script {
     my $self = shift;
 
-    my $provision_file_name = $self->config->{provision_file} // 'provision.pl';
+    my $provision_file_name = $self->config->{provision_file} || 'provision.pl';
     my $provision_dir = $self->root_dir->file($provision_file_name)->dir;
     my $provision_script = scalar $self->root_dir->file($provision_file_name)->slurp;
 
@@ -405,7 +413,7 @@ sub must_have_valid_syntax {
 
     $self->log_debug('Syntax-Checking combined provision script');
 
-    my $perl = $Config{perlpath} // 'perl';
+    my $perl = $Config{perlpath} || 'perl';
 
     my $stderr;
     run3 [$perl, '-c', '-'], \$script, \undef, \$stderr;
@@ -415,7 +423,7 @@ sub must_have_valid_syntax {
 sub _include {
     my $self = shift;
     my $file = shift;
-    my $args = shift // '';
+    my $args = shift || '';
 
     my @content;
     my @variables = (eval $args); # keep order of variables
@@ -452,11 +460,11 @@ sub pack_resource {
         : $self->root_dir->subdir($source_path);
     $source .= '/' if -d $source;
     
-    my $target = 'resources/' . ($resource->{destination} // $resource->{source});
+    my $target = 'resources/' . ($resource->{destination} || $resource->{source});
 
     $self->_pack_file_or_dir(
         $source => $target,
-        $resource->{exclude} // [],
+        $resource->{exclude} || [],
     );
 }
 

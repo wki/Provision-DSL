@@ -1,7 +1,6 @@
 package Provision::DSL;
 use strict;
 use warnings;
-use feature ':5.10';
 use Module::Pluggable search_path => 'Provision::DSL::Entity',
                       sub_name => 'entities';
 use Module::Pluggable search_path => 'Provision::DSL::Source',
@@ -53,7 +52,7 @@ sub import {
 
     warnings->import();
     strict->import();
-    feature->import(':5.10');
+    # feature->import(':5.10');
 
     instantiate_app(@ARGV);
     create_and_export_entity_keywords($package);

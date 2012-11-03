@@ -8,7 +8,7 @@ use Moo;
 # sub _build_home_dir {
 #     my $self = shift;
 #     
-#     return (getpwuid($self->uid))[7] // "/Users/${\$self->name}"; # /
+#     return (getpwuid($self->uid))[7] || "/Users/${\$self->name}"; # /
 # }
 # 
 # before create => sub {

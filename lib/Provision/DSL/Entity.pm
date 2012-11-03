@@ -177,8 +177,8 @@ has wanted => (
 
 sub install {
     my $self   = shift;
-    my $wanted = shift // $self->wanted;
-    my $state  = shift // $self->state;
+    my $wanted = shift; $wanted = $self->wanted if !defined $wanted;
+    my $state  = shift; $state  = $self->state  if !defined $state;
 
     my @log = ( $self, $state );
     unshift @log, ' -' if $self->parent;
@@ -208,8 +208,8 @@ sub install {
 
 sub is_ok {
     my $self   = shift;
-    my $wanted = shift // $self->wanted;
-    my $state  = shift // $self->state;
+    my $wanted = shift; $wanted = $self->wanted if !defined $wanted;
+    my $state  = shift; $state  = $self->state  if !defined $state;
 
     return
          ($state eq 'current' &&  $wanted)

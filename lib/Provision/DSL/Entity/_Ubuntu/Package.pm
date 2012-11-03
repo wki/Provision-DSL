@@ -44,7 +44,7 @@ sub _build_installed_version {
         );
     };
     
-    my ($package, $version, $status) = split qr{\t}, $result // '';
+    my ($package, $version, $status) = split qr{\t}, $result || '';
 
     # 'install ok installed' is a good status text to watch for.
     return $status && $status =~ m{\A install}xms

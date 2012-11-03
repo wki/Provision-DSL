@@ -30,7 +30,8 @@ sub change {
 sub apply_modification {
     my ($self) = @_;
 
-    my $content = $self->current_content // '';
+    my $content = $self->current_content;
+    $content = '' if !defined $content;
 
     my $i = 1;
     foreach my $patch (@{$self->patches}) {
@@ -77,7 +78,7 @@ sub _replace_with {
 
     my $prefix = '';
     if ($original_line ne $new_line) {
-        my $comment_symbol = $patch->{comment_symbol} // '#';
+        my $comment_symbol = $patch->{comment_symbol} || '#';
         my $time = scalar localtime time;
 
         $prefix .= "$comment_symbol MODIFIED BY Provision::DSL at $time\n";
