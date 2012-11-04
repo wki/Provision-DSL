@@ -100,9 +100,7 @@ Einbindung von Inspektoren/Installern:
     für jede gefundene Inspector-Klasse passend zur Platform muß
     erzeugt und exportiert werden:
 
-    sub SomeInspector {
-        [ to_Class('Provision::DSL::Inspector')->('SomeInspector'), @_ ];
-    }
+    sub SomeInspector { return [ 'P::D::I::Xxx', { @_ } ] }
     
     in Entity gibt es dann nur noch 'inspector', 'inspector_instance'
     

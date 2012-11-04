@@ -1,5 +1,11 @@
 Changes for Provision::DSL
 
+0.09    2012-11-04
+        * changed the way how inspectors and installers can get used
+          in a provision script.
+        * updated all tests to match this changed behavior
+        * fixed forgotten changes to perl-5.8 compatibility
+
 0.08    2012-11-03
         * removed all absolute paths to executable binaries to be more
           independant from the *nix flavour

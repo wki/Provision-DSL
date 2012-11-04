@@ -11,7 +11,7 @@ sub _build_state {
 
     my $destination_process = $self->value;
 
-    return 'missing' if !-e $destination_file;
+    return 'missing' if !-e $destination_process;
 
     # ... TODO: Age ermitteln
 
