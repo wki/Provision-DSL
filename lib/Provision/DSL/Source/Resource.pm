@@ -1,8 +1,6 @@
 package Provision::DSL::Source::Resource;
 use Moo;
 use FindBin;
-use Carp;
-use Path::Class;
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 
@@ -15,14 +13,8 @@ has root_dir => (
     coerce => to_ExistingDir,
 );
 
-sub _build_root_dir {
-    my $dir = dir("$FindBin::Bin/resources");
-    $dir->mkpath if !-d $dir;
-    
-    return $dir;
-}
+sub _build_root_dir { "$FindBin::Bin/resources" }
 
-sub rsync_source { "rsync://localhost:${\RSYNC_PORT}/resources/${\$_[0]->name}" }
 
 # Caution: accessing path issues rsync transfer
 # path inside root_dir (Path::Class::File|Dir)
@@ -33,33 +25,21 @@ has path => (
 sub _build_path {
     my $self = shift;
 
-    my $path = $self->root_dir->file($self->name)->cleanup;
+    my $thing = $self->root_dir->subdir($self->name)->cleanup;
+    if (!-d $thing) {
+        $thing = $self->root_dir->file($self->name)->cleanup;
+        die "Resource-path does not exist: '${\$self->name}'"
+            if !-f $thing;
+    }
 
-    my $parent_dir = $path->dir;
-    $parent_dir->mkpath if !-d $parent_dir;
-
-    # warn "RSYNC ${\$self->rsync_source} => $path";
-    $self->run_command(RSYNC, $self->rsync_source, $path)
-        if !-e $path;
-
-    return -f $path
-        ? $path
-        : $self->root_dir->subdir($self->name)->cleanup;
-
-    # my $thing = $self->root_dir->subdir($self->name)->cleanup;
-    # if (!-d $thing) {
-    #     $thing = $self->root_dir->file($self->name)->cleanup;
-    #     croak "Resource-path does not exist: '${\$self->name}'"
-    #         if !-f $thing;
-    # }
-
-    # return $thing->resolve;
+    return $thing->resolve;
 }
 
 sub _build_content {
     my $self = shift;
 
-    return scalar $self->path->slurp;
+    die 'dir-resources cannot retrieve content' if -d $self->path;
+    die 'file-resource does not exist'          if !-f $self->path;
 }
 
 1;

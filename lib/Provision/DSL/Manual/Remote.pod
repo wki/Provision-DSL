@@ -14,29 +14,28 @@ The directory typically has the following layout:
 
     .provision_some_name/
       |
-      +-- provision/                -- everything needed to run the script
+      +-- bin/                  -- misc binaries which may be needed
       |     |
-      |     +-- bin/                -- misc binaries which may be needed
-      |     |     |
-      |     |     +-- install.perlbrew.sh
+      |     +-- install.perlbrew.sh
+      |     
+      +-- lib/
       |     |
-      |     +-- lib/
-      |     |     |
-      |     |     +-- perl5/         -- all perl modules needed remote
-      |     |
-      |     +-- provision.pl        -- the script running remote
+      |     +-- perl5/          -- all perl modules needed remote
       |
-      +-- resources/                -- optional resources for provisioning
+      +-- log/                  -- log files copied back to local
       |
-      +-- rsyncd.conf               -- config file for local rsync daemon
+      +-- provision.pl          -- the script running remote
+      |
+      +-- resources/            -- optional resources for provisioning
+      |
+      +-- rsyncd.conf           -- config file for local rsync daemon
 
 =head2 Daemons
 
-After all needed files have been collected, an rsync daemon is started
-on the local machine using the config file from the temporary directory.
-The rsync daemon supports two modules ("provision" and "resources") that
-simply point to the two identically named directories inside the
-temporary directory. This allows future expansions currently not supported.
+After all needed files have been collected, an rsync daemon is started on the
+local machine using the config file from the temporary directory. The rsync
+daemon supports a module "local" simply pointing to the two directory listed
+above.
 
 The daemon listens to the port '2873' on the loopback interface. The port can
 be customized in the "local" and "remote" section of the config file for
@@ -52,10 +51,10 @@ Basically the ssh connection looks like this shell command. It is split
 into several lines here to be readable.
 
     ssh some_user@hostname
-        export PERL5LIB='/tmp/provision_XXX'
-        mkdir -p /tmp/provision_XXX
-        rsync -r rsync://127.0.0.1:2873/provision /tmp/provision_XXX/
-        perl /tmp/provision_XXX/provision.pl
+        export PERL5LIB='$HOME/.provision_XXX/lib/perl5'
+        rsync -r rsync://127.0.0.1:2873/local $HOME/.provision_XXX/
+        perl $HOME/.provision_XXX/provision.pl
+        ### TODO: rsync log/ back to local
 
 Some details are omitted and almost every part is customizable in the
 "remote" section of the config file.

@@ -1,5 +1,10 @@
 Changes for Provision::DSL
 
+0.10    2012-11-05
+        * simplified the structure of the .provision_XXX director on the
+          local side. Maintaining an identical directory on the remote side.
+          Planning to rsync log entries back to local.
+
 0.09    2012-11-04
         * changed the way how inspectors and installers can get used
           in a provision script.

@@ -3,10 +3,12 @@ TODO for provisioning
 
 Dateien/Verzeichnisse:
   * jetzt schon lokal: $root/.provision_<<name>>
+    rsyncd.conf bietet nur 1 modul "local"
   * remote: $HOME/.provision_<<name>>
     resources/ + provision/ immer via rsync --delete holen
     --> rsync server nicht zur Laufzeit notwendig
     --> replay auf remote Seite jederzeit machbar
+    --> exclude "/rsyncd.conf", "/log"
   * remote: log Directory mit anlegen.
 
 CPAN

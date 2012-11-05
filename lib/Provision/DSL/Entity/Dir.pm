@@ -43,7 +43,7 @@ has ignore => (
 
 has content => (
     is        => 'ro',
-    coerce   => to_RsyncSource,
+    coerce   => to_ExistingDir,
     predicate => 1,
 );
 
