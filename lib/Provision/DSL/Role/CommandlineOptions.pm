@@ -27,6 +27,23 @@ has args => (
     default => sub { [] },
 );
 
+has log_dir => (
+    is => 'rw',
+    coerce => to_ExistingDir,
+    predicate => 1,
+);
+
+has log_filename => (
+    is => 'ro',
+    default => sub { 'provision.log' },
+);
+
+has log_file => (
+    is => 'lazy',
+);
+
+sub _build_log_file { $_[0]->log_dir->file($_[0]->log_filename) }
+
 # expand in class/children/roles via 'around' modifier
 sub options {
     return (
@@ -82,6 +99,7 @@ EOF
 sub log {
     my $self = shift;
 
+    ### TODO: write to logfile (if defined) unless dryrun.
     $self->_log_if($self->verbose || $self->debug, @_);
 }
 

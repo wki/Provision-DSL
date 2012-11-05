@@ -40,6 +40,8 @@ sub _build_content {
 
     die 'dir-resources cannot retrieve content' if -d $self->path;
     die 'file-resource does not exist'          if !-f $self->path;
+
+    return scalar $self->path->slurp;
 }
 
 1;
