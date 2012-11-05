@@ -1,7 +1,7 @@
 Changes for Provision::DSL
 
 0.10    2012-11-05
-        * simplified the structure of the .provision_XXX director on the
+        * simplified the structure of the .provision_XXX directory on the
           local side. Maintaining an identical directory on the remote side.
           Planning to rsync log entries back to local.
 
