@@ -34,8 +34,10 @@ The directory typically has the following layout:
 
 After all needed files have been collected, an rsync daemon is started on the
 local machine using the config file from the temporary directory. The rsync
-daemon supports a module "local" simply pointing to the two directory listed
-above.
+daemon supports a read-only module "local" pointing to the ".provision*"
+directory listed above and a module "log" allowing write-access to the "log"
+subdirectory and will be used after the provisioning process to write back all
+collected log files whoever the user creating them was.
 
 The daemon listens to the port '2873' on the loopback interface. The port can
 be customized in the "local" and "remote" section of the config file for
