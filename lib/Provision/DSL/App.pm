@@ -5,7 +5,6 @@ use Carp;
 use Scalar::Util 'blessed';
 use Role::Tiny ();
 use Try::Tiny;
-use POSIX qw(strftime mktime);
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 use Provision::DSL::Util ();
@@ -79,26 +78,6 @@ around new => sub {
 
     die 'Singleton-App: calling new directly is forbidden';
 };
-
-sub BUILD {
-    my $self = shift;
-    
-    ### TODO: must get enabled.
-    # $self->log_dir("$FindBin::Bin/log");
-    # $self->log_dir->mkpath if !-d $self->log_dir;
-    # 
-    # my $midnight = mktime(0,0,0, (localtime(time))[3..8]);
-    # if (-f $self->log_file && $self->log_file->stat->ctime <= $midnight) {
-    #     my $ctime = $self->log_file->stat->ctime;
-    #     my $archive_dir =
-    #         $self->log_dir->subdir(
-    #             strftime('%Y/%m', localtime($ctime))
-    #         );
-    #     $archive_dir->mkpath if !-d $archive_dir;
-    #     move $self->log_file 
-    #         => $archive_dir->file(sprintf('02d.log', (localtime($ctime))[3]));
-    # }
-}
 
 my $instance;
 sub instance {

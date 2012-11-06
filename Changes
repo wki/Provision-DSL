@@ -1,5 +1,12 @@
 Changes for Provision::DSL
 
+0.11    2012-11-06
+        * added logging to a file inside a log directory if given on the
+          commandline.
+        * enabling file logging as a default
+        * recursive transfer of every log directory content onto the local
+          machine after provision.
+
 0.10    2012-11-05
         * simplified the structure of the .provision_XXX directory on the
           local side. Maintaining an identical directory on the remote side.

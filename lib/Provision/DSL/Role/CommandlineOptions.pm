@@ -2,55 +2,85 @@ package Provision::DSL::Role::CommandlineOptions;
 use Moo::Role;
 use Getopt::Long 'GetOptionsFromArray';
 use Scalar::Util 'blessed';
+use POSIX qw(strftime mktime);
 use Provision::DSL::Types;
 
 has verbose => (
-    is => 'ro',
-    isa => Bool,
+    is      => 'ro',
+    isa     => Bool,
     default => sub { 0 },
 );
 
 has debug => (
-    is => 'ro',
-    isa => Bool,
+    is      => 'ro',
+    isa     => Bool,
     default => sub { 0 },
 );
 
 has dryrun => (
-    is => 'ro',
-    isa => Bool,
+    is      => 'ro',
+    isa     => Bool,
     default => sub { 0 },
 );
 
 has args => (
-    is => 'ro',
+    is      => 'ro',
     default => sub { [] },
 );
 
 has log_dir => (
-    is => 'rw',
-    coerce => to_ExistingDir,
+    is        => 'lazy',
+    coerce    => to_Dir,
     predicate => 1,
 );
 
 has log_filename => (
-    is => 'ro',
+    is      => 'ro',
     default => sub { 'provision.log' },
 );
 
 has log_file => (
-    is => 'lazy',
+    is     => 'lazy',
+    coerce => to_File,
 );
 
-sub _build_log_file { $_[0]->log_dir->file($_[0]->log_filename) }
+sub _build_log_file {
+    my $self = shift;
+
+    $self->log_dir->mkpath if !-d $self->log_dir;
+
+    my $log_file = $self->log_dir->file($self->log_filename);
+
+    my $midnight = mktime(0,0,0, (localtime(time))[3..8]);
+    warn "midnight = $midnight, ctime = " . $log_file->stat->mtime;
+    if (-f $log_file && $log_file->stat->mtime <= $midnight) {
+        my $mtime = $log_file->stat->mtime;
+        my $archive_dir =
+            $self->log_dir->subdir(
+                strftime('%Y/%m', localtime($mtime))
+            );
+        $archive_dir->mkpath if !-d $archive_dir;
+        rename $log_file
+            => $archive_dir->file(sprintf('%02d.log', (localtime($mtime))[3]));
+    }
+
+    return $log_file;
+}
+
+# has log_fh => (
+#     is => 'lazy',
+# );
+# 
+# sub _build_log_fh { $_[0]->log_file->open('>>') }
 
 # expand in class/children/roles via 'around' modifier
 sub options {
     return (
-        'help|h      ; this help',
-        'verbose|v   ; verbose mode - show messages',
-        'dryrun|n    ; dryrun - do not install',
-        'debug       ; show debug output',
+        'help|h     ; this help',
+        'verbose|v  ; verbose mode - show messages',
+        'dryrun|n   ; dryrun - do not install',
+        'log_dir|l=s; set log dir and enable logging to files',
+        'debug      ; show debug output',
     );
 }
 
@@ -99,8 +129,25 @@ EOF
 sub log {
     my $self = shift;
 
-    ### TODO: write to logfile (if defined) unless dryrun.
+    $self->log_to_file(@_);
+
     $self->_log_if($self->verbose || $self->debug, @_);
+}
+
+sub log_to_file {
+    my $self = shift;
+    
+    return if !$self->has_log_dir || $self->dryrun;
+
+    $self->log_file->spew(
+        iomode => '>>',
+        [
+            strftime('%d.%m.%Y %H:%M:%S', localtime(time)),
+            ' - ',
+            join(' ', map { _to_string($_) } @_),
+            "\n"
+        ]
+    );
 }
 
 sub log_debug {

@@ -184,7 +184,9 @@ sub Os { goto &os }
 
 sub Done { goto &done }
 sub done {
+    app->log_to_file('<<< start of Provision <<<');
     app->install_all_entities;
+    app->log_to_file('>>> end of Provision >>>');
 }
 
 sub Defaults { goto &defaults }

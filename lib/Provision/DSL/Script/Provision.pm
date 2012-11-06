@@ -186,6 +186,10 @@ sub _build_rsyncd_config_file {
 use chroot = no
 [local]
     path = ${\$self->cache_dir}
+    read only = true
+[log]
+    path = ${\$self->cache_dir}/log
+    read only = false
 EOF
 
     return $config_file;
@@ -450,9 +454,9 @@ sub pack_resource {
 sub remote_provision {
     my $self = shift;
 
-    my $local           = $self->config->{local};
-    my $remote          = $self->config->{remote};
-    my $provision_dir   = $self->cache_dir->basename;
+    my $local       = $self->config->{local};
+    my $remote      = $self->config->{remote};
+    my $dir_name    = $self->cache_dir->basename;
 
     # Hint: quoted '$VARIABLES' below are expanded on the remote machine!
 
@@ -463,16 +467,16 @@ sub remote_provision {
 
         $remote->{hostname},
 
-        "export provision_dir=\"\$HOME/$provision_dir\";",
-        'export PERL5LIB="$provision_dir/lib/perl5";',
-        # 'echo "H=$HOME, P=$provision_dir";',
+        qq{export dir="\$HOME/$dir_name";},
+        qq{export PERL5LIB="\$dir/lib/perl5";},
         
         (
-            map { "export $_='$remote->{environment}->{$_}';" }
+            map { qq{export $_="$remote->{environment}->{$_}";} }
             keys %{$remote->{environment}}
         ),
 
         # Hint: rsync implicitly does mkdir -p $provision_dir
+        '(',
         '$PROVISION_RSYNC',
             '-cr',
             '--delete',
@@ -480,16 +484,25 @@ sub remote_provision {
             '--exclude', "/lib/perl5/${\$self->archname}",
             '--exclude', '/rsyncd.conf',
             '--exclude', '/log',
-            'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/local' => '$provision_dir/',
+            'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/local' => '$dir/',
 
         '&&',
 
-        '$PROVISION_PERL', '$provision_dir/provision.pl',
+        '$PROVISION_PERL', '$dir/provision.pl',
             ($self->dryrun  ? ' -n' : ()),
             ($self->verbose ? ' -v' : ()),
+            '-l', '$dir/log',
             # TODO: add more options
+        ');',
+        
+        'status=$?;',
 
-        ### TODO: rsync logs back to local and do not forget $?
+        '$PROVISION_RSYNC',
+            '-cr',
+            '--delete',
+            '$dir/log/' => 'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/log/;',
+        
+        'exit $status'
     );
 
     $self->log(' - running provision script on', $remote->{hostname});
