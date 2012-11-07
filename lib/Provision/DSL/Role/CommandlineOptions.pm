@@ -52,7 +52,6 @@ sub _build_log_file {
     my $log_file = $self->log_dir->file($self->log_filename);
 
     my $midnight = mktime(0,0,0, (localtime(time))[3..8]);
-    warn "midnight = $midnight, ctime = " . $log_file->stat->mtime;
     if (-f $log_file && $log_file->stat->mtime <= $midnight) {
         my $mtime = $log_file->stat->mtime;
         my $archive_dir =
