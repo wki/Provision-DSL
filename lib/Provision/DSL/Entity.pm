@@ -103,8 +103,8 @@ sub _build_inspector_instance {
 
     return if !$self->has_inspector;
 
-    my ($class, $args) = @{$self->inspector};
-    return $class->new(entity => $self, %{$args || {}});
+    my ($class, @args) = @{$self->inspector};
+    return $class->new(entity => $self, expected_values => \@args);
 }
 
 # must get overloaded if we are inspecting ourselves

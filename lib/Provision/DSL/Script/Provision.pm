@@ -314,7 +314,8 @@ sub pack_dependent_libs {
 
     my @install_libs = qw(
         autodie Moo Role::Tiny Try::Tiny IPC::Run3
-        HTTP::Tiny Path::Class Template::Simple
+        HTTP::Tiny Template::Simple
+        Path::Class File::Zglob
     );
 
     foreach my $lib (@install_libs) {

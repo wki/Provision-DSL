@@ -13,7 +13,7 @@ has attribute => (
 # may get changed in derieved classes if attribute is different
 sub _build_attribute { 'name' }
 
-# retrieve actual value from entitie's attribute given above
+# retrieve actual value from entity's attribute given above
 sub value { $_[0]->entity->${\$_[0]->attribute} }
 
 # return actual values as list

@@ -159,7 +159,7 @@ sub _create_and_export_xxx_keywords {
         
         no strict 'refs';
         no warnings 'redefine';
-        *{"${package}::${xxx_name}"} = sub { [ $xxx_package, { @_ } ] }
+        *{"${package}::${xxx_name}"} = sub { [ $xxx_package, @_ ] }
     }
 }
 
