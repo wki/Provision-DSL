@@ -1,10 +1,16 @@
-package Provision::DSL::Inspector::PathAge;
+package Provision::DSL::Inspector::PathOlder;
 use Moo;
 use Path::Class;
 
-extends 'Provision::DSL::Inspector';
+extends 'Provision::DSL::Inspector::Base::Glob';
 
 sub _build_attribute { 'path' }
+
+sub filter {
+    my ($class, $path) = @_;
+    
+    -f $path;
+}
 
 sub _build_state {
     my $self = shift;
@@ -14,8 +20,7 @@ sub _build_state {
     return 'missing' if !-e $destination_file;
 
     my $destination_timestamp = $destination_file->stat->mtime;
-    foreach my $compare_file (map { file($_) } $self->expected_values) {
-        next if !-f $compare_file;
+    foreach my $compare_file ($self->expected_values) {
         next if $compare_file->stat->mtime <= $destination_timestamp;
         
         return 'outdated';
