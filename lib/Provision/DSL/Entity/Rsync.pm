@@ -7,7 +7,6 @@ extends 'Provision::DSL::Entity::Base::Dir';
 
 has content => (
     is       => 'ro',
-    coerce   => to_RsyncSource,
     required => 1,
 );
 
@@ -27,8 +26,6 @@ sub inspect {
             '--dry-run',
             '--out-format' => 'copying %n',
         );
-        
-        # warn "Rsync RESULT: $result";
         
         $state = ($result && $result =~ m{^(?:deleting|copying)\s}xms)
         ? 'outdated'

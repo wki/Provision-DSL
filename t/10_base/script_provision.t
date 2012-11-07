@@ -25,7 +25,7 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
             provision_file => 't/conf/include_test.pl',
 
             local => {
-                ssh             => '/usr/bin/ssh',
+                ssh             => 'ssh',
                 ssh_options     => [
                     '-q', '-x',
                     '-C',
@@ -34,7 +34,7 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
                 ],
                 cpanm           => 'cpanm',
                 cpanm_options   => [],
-                rsync           => '/usr/bin/rsync',
+                rsync           => 'rsync',
                 rsync_port      => 2873,
                 rsync_modules   => {},
                 cpan_http_port  => 2080,
@@ -48,9 +48,9 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
                 hostname        => 'box',
 
                 environment => {
-                    PROVISION_RSYNC         => '/usr/bin/rsync',
+                    PROVISION_RSYNC         => 'rsync',
                     PROVISION_RSYNC_PORT    => 2873,
-                    PROVISION_PERL          => '/usr/bin/perl',
+                    PROVISION_PERL          => 'perl',
                     PROVISION_HTTP_PORT     => 2080,
                     PERL_CPANM_OPT          => '--mirror http://localhost:2080 --mirror-only',
                     XX42                    => 'foo',
@@ -76,7 +76,6 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
        dir("$FindBin::Bin")->parent->parent->subdir('.provision_testing')->absolute->resolve->stringify,
        'cache_dir is discovered.';
     ok -d $s->cache_dir, 'cache_dir exists';
-    ok -d $s->provision_dir, 'provision_dir exists';
     ok -d $s->resources_dir, 'resources_dir exists';
 }
 
@@ -111,12 +110,12 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
     );
     $s->config->{local}->{cpanm} = "$FindBin::Bin/../bin/fake_cpanm.pl";
 
-    my $perlbrew_installer = $cache_dir->file("provision/bin/install.perlbrew.sh");
+    my $perlbrew_installer = $cache_dir->file("bin/install.perlbrew.sh");
     ok !-f $perlbrew_installer, 'perlbrew installer not present before';
     $s->pack_perlbrew_installer;
     ok -f $perlbrew_installer, 'perlbrew installer loaded';
 
-    my $lib_dir = $cache_dir->subdir('provision/lib/perl5');
+    my $lib_dir = $cache_dir->subdir('lib/perl5');
     ok !-d $lib_dir, 'lib dir not present before packing';
     $s->pack_dependent_libs;
     $s->pack_provision_libs;
@@ -135,7 +134,7 @@ system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
     ok !-d $resource_dir->subdir('files/dirx'), 'dirx excluded from resources';
 
     $s->pack_provision_script;
-    my $provision_file = $cache_dir->file('provision/provision.pl');
+    my $provision_file = $cache_dir->file('provision.pl');
     ok -f $provision_file, 'provision_file is generated';
     
     is scalar $provision_file->slurp, <<'EOF', 'provision file looks good';
@@ -161,7 +160,7 @@ SKIP:
     my $s = Provision::DSL::Script::Provision->new(
         config_file => "$FindBin::Bin/../conf/test_config.pl",
         # will create an rsyncd.conf file inside here and refer
-        # to resources/ and provision/ directories
+        # to resources/ and ./* directories
         cache_dir   => "$FindBin::Bin/..",
         archname    => 'xtest-arch'
     );

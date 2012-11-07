@@ -1,6 +1,7 @@
 TODO for provisioning
 ---------------------
 
+CPAN
   * lokalen CPAN Server starten / Proxy ???
 
 _Ubuntu::Package

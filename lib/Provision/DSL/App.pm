@@ -1,6 +1,6 @@
 package Provision::DSL::App;
-use feature ':5.10';
 use Moo;
+use FindBin;
 use Carp;
 use Scalar::Util 'blessed';
 use Role::Tiny ();
@@ -79,11 +79,12 @@ around new => sub {
     die 'Singleton-App: calling new directly is forbidden';
 };
 
+my $instance;
 sub instance {
     my $class = shift;
-    state $self = $class->new_with_options(@_);
+    $instance ||= $class->new_with_options(@_);
 
-    return $self;
+    return $instance;
 }
 
 sub DEMOLISH {
@@ -143,12 +144,14 @@ sub _try_to_modify_sudoers {
     my $self = shift;
     
     my $user = getpwuid($<);
-    say STDERR "WARNING: privilege needed to run this script.";
-    say STDERR "         an entry like '$user ALL=NOPASSWD: ALL'";
-    say STDERR "         can get added to /etc/sudoers.";
-    say STDERR "         enter password if wanted, abort otherwise.";
-    say STDERR "";
+    print STDERR <<EOF;
+WARNING: privilege needed to run this script.
+         an entry like '$user ALL=NOPASSWD: ALL'
+         can get added to /etc/sudoers.
+         enter password if wanted, abort otherwise.
+         The password may be readable. You have been warned.
 
+EOF
     # using system() here because of different stdin/stdout/stderr handling...
     system SUDO, '-S',
         '/bin/sh', '-c', "/bin/echo '$user ALL=NOPASSWD: ALL' >> /etc/sudoers";

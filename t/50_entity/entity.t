@@ -4,9 +4,11 @@ use Test::More;
 use Test::Exception;
 
 use ok 'Provision::DSL::Entity';
+use ok 'Provision::DSL::Inspector::Always';
+use ok 'Provision::DSL::Inspector::Never';
+use ok 'Provision::DSL::Installer::Debug';
 
 {
-    #no strict 'refs';
     no warnings 'redefine';
     *Provision::DSL::Types::os = sub { 'OSX' };
 }
@@ -19,12 +21,12 @@ use ok 'Provision::DSL::Entity';
 
 # provided inspector
 {
-    my $entity = Provision::DSL::Entity->new(name => 'bla', inspector => 'Always');
+    my $entity = Provision::DSL::Entity->new(
+        name => 'bla', 
+        inspector => ['Provision::DSL::Inspector::Always']
+    );
     is $entity->state, 'outdated',
         'Always changes state to "outdated"';
-
-    is_deeply $entity->inspector_class, ['Provision::DSL::Inspector::Always', {}],
-        'inspector class and args look good';
 
     isa_ok $entity->inspector_instance, 'Provision::DSL::Inspector::Always',
         'inspector is instantiated right';
@@ -44,7 +46,10 @@ use ok 'Provision::DSL::Entity';
     no warnings 'once';
     local *Provision::DSL::Inspector::Never::need_privilege = sub { 1 };
 
-    ok +Provision::DSL::Entity->new(name => 'bla', inspector => 'Never')->need_privilege,
+    ok +Provision::DSL::Entity->new(
+        name => 'bla', 
+        inspector => ['Provision::DSL::Inspector::Never']
+    )->need_privilege,
         'privilege needed when inspector requests it';
 }
 
@@ -82,13 +87,13 @@ use ok 'Provision::DSL::Entity';
 
         my $pe = Provision::DSL::Entity->new(
             name           => 'parent',
-            inspector      => [ 'Always', state => $pstate, need_privilege => $ppriv ],
+            inspector      => [ 'Provision::DSL::Inspector::Always', {state => $pstate, need_privilege => $ppriv} ],
         );
 
         my $ce = Provision::DSL::Entity->new(
             name           => 'child',
             parent         => $pe,
-            inspector      => [ 'Always', state => $cstate, need_privilege => $cpriv ],
+            inspector      => [ 'Provision::DSL::Inspector::Always', {state => $cstate, need_privilege => $cpriv} ],
             wanted         => $cwanted,
         );
 
@@ -125,8 +130,8 @@ use ok 'Provision::DSL::Entity';
         my $e = Provision::DSL::Entity->new(
             name      => 'entity',
             wanted    => $wanted,
-            inspector => [ 'Always', state => $state ],
-            installer => 'Debug',
+            inspector => [ 'Provision::DSL::Inspector::Always', {state => $state} ],
+            installer => [ 'Provision::DSL::Installer::Debug' ],
         );
 
         if ($is_ok) {

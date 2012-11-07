@@ -1,11 +1,14 @@
 package Provision::DSL;
 use strict;
 use warnings;
-use feature ':5.10';
 use Module::Pluggable search_path => 'Provision::DSL::Entity',
                       sub_name => 'entities';
 use Module::Pluggable search_path => 'Provision::DSL::Source',
                       sub_name => 'sources';
+use Module::Pluggable search_path => 'Provision::DSL::Inspector',
+                      sub_name => 'inspectors';
+use Module::Pluggable search_path => 'Provision::DSL::Installer',
+                      sub_name => 'installers';
 use Module::Load;
 use Path::Class;
 use Provision::DSL::App;
@@ -44,7 +47,7 @@ our %default_for_entity;
 sub app;
 
 END {
-    say STDERR '"Done()" not called or missing. Provisioning failed.'
+    print STDERR "'Done()' not called or missing. Provisioning failed.\n"
         if !$? && !app->is_running;
 }
 
@@ -53,11 +56,12 @@ sub import {
 
     warnings->import();
     strict->import();
-    feature->import(':5.10');
 
     instantiate_app(@ARGV);
     create_and_export_entity_keywords($package);
     create_and_export_source_keywords($package);
+    create_and_export_inspector_keywords($package);
+    create_and_export_installer_keywords($package);
     export_symbols($package);
     turn_on_autoflush($package);
 
@@ -71,22 +75,10 @@ sub app { Provision::DSL::App->instance }
 sub create_and_export_entity_keywords {
     my $package = shift;
 
-    my $os = os();
-    my %package_for;
-    foreach my $entity_package (__PACKAGE__->entities) {
-        my $entity_name = $entity_package;
-        $entity_name =~ s{\A Provision::DSL::Entity::(?:_(\w+)\::)?}{}xms;
-        next if $1 && $1 ne $os;
+    my $package_for = _collect_packages('Entity', 'entities');
+    app->entity_package_for($package_for);
 
-        $entity_name =~ s{::}{_}xmsg;
-
-        next if exists $package_for{$entity_name}
-             && length $package_for{$entity_name} > length $entity_package;
-        $package_for{$entity_name} = $entity_package;
-    }
-    app->entity_package_for(\%package_for);
-
-    while (my ($entity_name, $entity_package) = each %package_for) {
+    while (my ($entity_name, $entity_package) = each %$package_for) {
         load $entity_package;
 
         no strict 'refs';
@@ -110,6 +102,26 @@ sub create_and_export_entity_keywords {
     }
 }
 
+# { Name => P::D::Xxx::Name, ... } filter out foreign OS, favour os to generic
+sub _collect_packages {
+    my ($package_part, $method) = @_;
+    
+    my %package_for;
+    foreach my $package (__PACKAGE__->$method) {
+        my $name = $package;
+        $name =~ s{\A Provision::DSL::${package_part}::(?:_(\w+)\::)?}{}xms;
+        next if $1 && $1 ne os;
+
+        $name =~ s{::}{_}xmsg;
+
+        next if exists $package_for{$name}
+             && length $package_for{$name} > length $package;
+        $package_for{$name} = $package;
+    }
+    
+    return \%package_for;
+}
+
 sub create_and_export_source_keywords {
     my $package = shift;
 
@@ -123,6 +135,31 @@ sub create_and_export_source_keywords {
         no warnings 'redefine'; # occurs during test
         *{"${package}::${source_name}"}   = sub { $source_package->new(@_) };
         *{"${package}::\l${source_name}"} = *{"${package}::${source_name}"};
+    }
+}
+
+sub create_and_export_inspector_keywords {
+    my $package = shift;
+    
+    _create_and_export_xxx_keywords($package, 'Inspector', 'inspectors');
+}
+
+sub create_and_export_installer_keywords {
+    my $package = shift;
+    
+    _create_and_export_xxx_keywords($package, 'Installer', 'installers');
+}
+
+sub _create_and_export_xxx_keywords {
+    my ($package, $package_part, $method) = @_;
+    
+    my $package_for = _collect_packages($package_part, $method);
+    while (my ($xxx_name, $xxx_package) = each %$package_for) {
+        load $xxx_package;
+        
+        no strict 'refs';
+        no warnings 'redefine';
+        *{"${package}::${xxx_name}"} = sub { [ $xxx_package, { @_ } ] }
     }
 }
 
@@ -147,7 +184,9 @@ sub Os { goto &os }
 
 sub Done { goto &done }
 sub done {
+    app->log_to_file('<<< start of Provision <<<');
     app->install_all_entities;
+    app->log_to_file('>>> end of Provision >>>');
 }
 
 sub Defaults { goto &defaults }
@@ -175,7 +214,7 @@ sub files {
 
 sub Include(*;@) { goto &include }
 sub include(*;@) {
-    say STDERR <<EOF;
+    print STDERR <<EOF;
 
 
 You are running the provision script directly which is not allowed.

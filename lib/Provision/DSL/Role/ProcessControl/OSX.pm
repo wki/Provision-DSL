@@ -12,7 +12,7 @@ sub started { _convert_to_epoch($_[0]->_get_ps_column('lstart')) }
 
 sub _get_ps_column {
     my $self   = shift;
-    my $column = shift // 'comm';
+    my $column = shift || 'comm';
     
     return if !$self->pid;
     

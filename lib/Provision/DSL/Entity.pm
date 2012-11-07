@@ -90,18 +90,9 @@ sub _build_need_privilege {
 
 # inspector and args -- set attribute or overload accessor to change
 has inspector => (
-    is      => 'ro',
-    default => sub { undef },
+    is        => 'ro',
+    predicate => 1,
 );
-
-sub has_inspector { defined $_[0]->inspector }
-
-has inspector_class => (
-    is     => 'lazy',
-    coerce => to_ClassAndArgs('Provision::DSL::Inspector'),
-);
-
-sub _build_inspector_class { $_[0]->inspector }
 
 has inspector_instance => (
     is => 'lazy',
@@ -112,8 +103,8 @@ sub _build_inspector_instance {
 
     return if !$self->has_inspector;
 
-    my ($class, $args) = @{$self->inspector_class};
-    return $class->new(entity => $self, %$args);
+    my ($class, $args) = @{$self->inspector};
+    return $class->new(entity => $self, %{$args || {}});
 }
 
 # must get overloaded if we are inspecting ourselves
@@ -121,18 +112,9 @@ sub inspect {}
 
 # installer and args -- set attribute or overload accessor to change
 has installer => (
-    is      => 'ro',
-    default => sub { undef },
+    is        => 'ro',
+    predicate => 1,
 );
-
-sub has_installer { defined $_[0]->installer }
-
-has installer_class => (
-    is     => 'lazy',
-    coerce => to_ClassAndArgs('Provision::DSL::Installer'),
-);
-
-sub _build_installer_class { $_[0]->installer }
 
 has installer_instance => (
     is => 'lazy',
@@ -143,8 +125,8 @@ sub _build_installer_instance {
 
     return if !$self->has_installer;
 
-    my ($class, $args) = @{$self->installer_class};
-    return $class->new(entity => $self, %$args);
+    my ($class, $args) = @{$self->installer};
+    return $class->new(entity => $self, %{$args || {}});
 }
 
 # must get overloaded if we are handling ourselves
@@ -177,8 +159,8 @@ has wanted => (
 
 sub install {
     my $self   = shift;
-    my $wanted = shift // $self->wanted;
-    my $state  = shift // $self->state;
+    my $wanted = shift; $wanted = $self->wanted if !defined $wanted;
+    my $state  = shift; $state  = $self->state  if !defined $state;
 
     my @log = ( $self, $state );
     unshift @log, ' -' if $self->parent;
@@ -208,8 +190,8 @@ sub install {
 
 sub is_ok {
     my $self   = shift;
-    my $wanted = shift // $self->wanted;
-    my $state  = shift // $self->state;
+    my $wanted = shift; $wanted = $self->wanted if !defined $wanted;
+    my $state  = shift; $state  = $self->state  if !defined $state;
 
     return
          ($state eq 'current' &&  $wanted)

@@ -1,8 +1,6 @@
 package Provision::DSL::Script::Provision;
 use Moo;
-use feature ':5.10';
 use Path::Class;
-use File::Temp ();
 use Cwd;
 use IPC::Run3;
 use Config;
@@ -23,7 +21,7 @@ sub default_config {
       # provision_file => 'relative/path/to/file.pl',
 
         local => {
-            ssh             => '/usr/bin/ssh',
+            ssh             => 'ssh',
             ssh_options     => ['-C'],
             cpanm           => 'cpanm',         # search via $PATH
             cpanm_options   => [],
@@ -37,6 +35,13 @@ sub default_config {
         remote => {
           # hostname        => 'box',
           # user            => 'wolfgang',
+
+          # maybe add some options transported to remote via
+          #     -o option,option,...
+          #
+          # options => {
+          #     modify_sudoers => 1, # append '$user ALL=NOPASSWD: ALL'
+          # },
 
             environment => {
                 PROVISION_RSYNC         => RSYNC,
@@ -63,13 +68,13 @@ has config => (
 
 sub _build_config {
     my $self = shift;
-    
+
     my $config_from_file = $self->has_config_file
         ? do "${\$self->config_file}"
         : {};
-    
+
     my $config = merge $config_from_file, default_config;
-        
+
     push @{$config->{local}->{ssh_options}},
         '-R', "$config->{local}->{cpan_http_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_HTTP_PORT}",
         '-R', "$config->{local}->{rsync_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_RSYNC_PORT}";
@@ -82,17 +87,17 @@ sub _build_config {
             $self->user($1) if $1;
         }
     }
-    
+
     # manually merge in some things entered via commandline
     $config->{remote}->{hostname} = $self->hostname       if $self->has_hostname;
     $config->{remote}->{user}     = $self->user           if $self->has_user;
     $config->{provision_file}     = $self->provision_file if $self->has_provision_file;
-    $config->{name}             //= $config->{provision_file} &&
+    $config->{name}             ||= $config->{provision_file} &&
                                     $config->{provision_file} =~ m{(\w+) [.] \w+ \z}xms
                                         ? $1
                                         : 'default';
-    $config->{provision_file}   //= 'provision.pl';
-    
+    $config->{provision_file}   ||= 'provision.pl';
+
     # warn Data::Dumper->Dump([$config, $self->args],['config', 'args']);
 
     return $config;
@@ -149,28 +154,15 @@ has cache_dir => (
 sub _build_cache_dir {
     my $self = shift;
 
-    my $cache_dir_name = join '_', '.provision', $self->config->{name} // ();
+    my $cache_dir_name = join '_', '.provision', $self->config->{name} || ();
     my $dir = $self->root_dir->subdir($cache_dir_name);
-    $dir->mkpath if !-d $dir;
+    if (!-d $dir) {
+        $dir->mkpath;
+        $dir->subdir($_)->mkpath
+            for qw(bin lib log resources);
+    }
 
     return $dir;
-}
-
-has provision_dir => (
-    is     => 'lazy',
-    coerce => to_ExistingDir,
-);
-
-sub _build_provision_dir {
-    my $self = shift;
-
-    my $provision_dir = $self->cache_dir->subdir('provision');
-    if (!-d $provision_dir) {
-        $provision_dir->mkpath;
-        $provision_dir->subdir($_)->mkpath
-            for qw(bin lib);
-    }
-    return $provision_dir;
 }
 
 has resources_dir => (
@@ -178,13 +170,7 @@ has resources_dir => (
     coerce => to_ExistingDir,
 );
 
-sub _build_resources_dir {
-    my $self = shift;
-
-    my $resources_dir = $self->cache_dir->subdir('resources');
-    $resources_dir->mkpath if !-d $resources_dir;
-    return $resources_dir;
-}
+sub _build_resources_dir { $_[0]->cache_dir->subdir('resources') }
 
 has rsyncd_config_file => (
     is     => 'lazy',
@@ -198,10 +184,12 @@ sub _build_rsyncd_config_file {
 
     $config_file->spew(<<EOF);
 use chroot = no
-[provision]
-    path = ${\$self->provision_dir}
-[resources]
-    path = ${\$self->resources_dir}
+[local]
+    path = ${\$self->cache_dir}
+    read only = true
+[log]
+    path = ${\$self->cache_dir}/log
+    read only = false
 EOF
 
     return $config_file;
@@ -245,6 +233,8 @@ around options => sub {
         'hostname|H=s       ; hostname for ssh, overrides config setting',
         'user|u=s           ; user for ssh, overrides config setting',
         'provision_file|p=s ; provision file to run, overrides config setting',
+      # 'options|o=s        ; comma separated options [modify_sudoers, TODO:more]'
+      # 'force|f            ; force every entity to execute',
     );
 };
 
@@ -296,7 +286,7 @@ sub pack_requisites {
 sub pack_perlbrew_installer {
     my $self = shift;
 
-    my $installer_file = $self->provision_dir->file(PERLBREW_INSTALLER);
+    my $installer_file = $self->cache_dir->file(PERLBREW_INSTALLER);
     return if -f $installer_file;
 
     $self->log('loading perlbrew installer');
@@ -330,11 +320,11 @@ sub pack_dependent_libs {
     foreach my $lib (@install_libs) {
         my $lib_filename = "lib/perl5/$lib.pm";
         $lib_filename =~ s{::}{/}xmsg;
-        next if -f $self->provision_dir->file($lib_filename);
+        next if -f $self->cache_dir->file($lib_filename);
 
         run3 [
                 $self->config->{local}->{cpanm},
-                -L => $self->provision_dir, '--notest',
+                -L => $self->cache_dir, '--notest',
                 @{$self->config->{local}->{cpanm_options}},
                 $lib
             ],
@@ -351,12 +341,12 @@ sub pack_provision_libs {
     #   - we do not catch dependencies for the controlling machine
     #   - if add-ons are present, we get them, too
     my $this_file = file(__FILE__)->resolve->absolute;
-    
+
     # points to "Provision/" dir (where Provision::DSL is installed)
     my $provision_dsl_dir = $this_file->dir->parent->parent;
 
     $self->_pack_file_or_dir(
-        $_ => 'provision/lib/perl5/Provision/',
+        $_ => 'lib/perl5/Provision/',
         [ '*.pod' ],
     ) for $provision_dsl_dir->children;
 }
@@ -380,8 +370,8 @@ sub _pack_file_or_dir {
 sub pack_provision_script {
     my $self = shift;
 
-    my $provision_file_name = $self->config->{provision_file} // 'provision.pl';
-    my $provision_dir = $self->root_dir->file($provision_file_name)->dir;
+    my $provision_file_name = $self->config->{provision_file} || 'provision.pl';
+    my $cache_dir = $self->root_dir->file($provision_file_name)->dir;
     my $provision_script = scalar $self->root_dir->file($provision_file_name)->slurp;
 
     $provision_script =~ s{^ \s*
@@ -391,13 +381,13 @@ sub pack_provision_script {
                            \s* ; \s*                # closing semicolon
                            (?: [#] .*? )?           # optional comment
                            $
-                           }{$self->_include($provision_dir->file("$1.pl"), $2)}exmsg;
+                           }{$self->_include($cache_dir->file("$1.pl"), $2)}exmsg;
 
     $self->log(" - packing provision script '$provision_file_name'");
     # warn $provision_script; die 'stop for testing';
     $self->must_have_valid_syntax($provision_script);
 
-    $self->provision_dir->file('provision.pl')->spew($provision_script);
+    $self->cache_dir->file('provision.pl')->spew($provision_script);
 }
 
 sub must_have_valid_syntax {
@@ -405,7 +395,7 @@ sub must_have_valid_syntax {
 
     $self->log_debug('Syntax-Checking combined provision script');
 
-    my $perl = $Config{perlpath} // 'perl';
+    my $perl = $Config{perlpath} || 'perl';
 
     my $stderr;
     run3 [$perl, '-c', '-'], \$script, \undef, \$stderr;
@@ -415,7 +405,7 @@ sub must_have_valid_syntax {
 sub _include {
     my $self = shift;
     my $file = shift;
-    my $args = shift // '';
+    my $args = shift || '';
 
     my @content;
     my @variables = (eval $args); # keep order of variables
@@ -451,12 +441,12 @@ sub pack_resource {
         ? $source_path
         : $self->root_dir->subdir($source_path);
     $source .= '/' if -d $source;
-    
-    my $target = 'resources/' . ($resource->{destination} // $resource->{source});
+
+    my $target = 'resources/' . ($resource->{destination} || $resource->{source});
 
     $self->_pack_file_or_dir(
         $source => $target,
-        $resource->{exclude} // [],
+        $resource->{exclude} || [],
     );
 }
 
@@ -464,12 +454,12 @@ sub pack_resource {
 sub remote_provision {
     my $self = shift;
 
-    my $local    = $self->config->{local};
-    my $remote   = $self->config->{remote};
-    my $temp_dir = File::Temp::tempnam('/tmp', 'provision_');
+    my $local       = $self->config->{local};
+    my $remote      = $self->config->{remote};
+    my $dir_name    = $self->cache_dir->basename;
 
     # Hint: quoted '$VARIABLES' below are expanded on the remote machine!
-    
+
     my @command_and_args = (
         $local->{ssh},
         @{$local->{ssh_options}},
@@ -477,35 +467,42 @@ sub remote_provision {
 
         $remote->{hostname},
 
-        "export PERL5LIB='$temp_dir/lib/perl5';",
-        ( 
-            map { "export $_='$remote->{environment}->{$_}';" }
-            keys %{$remote->{environment}} 
+        qq{export dir="\$HOME/$dir_name";},
+        qq{export PERL5LIB="\$dir/lib/perl5";},
+        
+        (
+            map { qq{export $_="$remote->{environment}->{$_}";} }
+            keys %{$remote->{environment}}
         ),
 
-        # FIXME: is this kind of cleanup wise?
-        RM, '-rf', '/tmp/provision_*',
-
-        '&&',
-
-        MKDIR, '-p', $temp_dir,
-
-        '&&',
-
-        '$PROVISION_RSYNC', '-r',
-            '--exclude', '"*.pod"',
+        # Hint: rsync implicitly does mkdir -p $provision_dir
+        '(',
+        '$PROVISION_RSYNC',
+            '-cr',
+            '--delete',
+            '--exclude', '"/lib/**.pod"',
             '--exclude', "/lib/perl5/${\$self->archname}",
-            'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/provision' => "$temp_dir/",
+            '--exclude', '/rsyncd.conf',
+            '--exclude', '/log',
+            'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/local' => '$dir/',
 
         '&&',
 
-        '$PROVISION_PERL', "$temp_dir/provision.pl",
+        '$PROVISION_PERL', '$dir/provision.pl',
             ($self->dryrun  ? ' -n' : ()),
             ($self->verbose ? ' -v' : ()),
+            '-l', '$dir/log',
+            # TODO: add more options
+        ');',
+        
+        'status=$?;',
 
-        # uncomment as soon as things do work
-        # '&&'
-        # RM, '-rf', $temp_dir,
+        '$PROVISION_RSYNC',
+            '-cr',
+            '--delete',
+            '$dir/log/' => 'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/log/;',
+        
+        'exit $status'
     );
 
     $self->log(' - running provision script on', $remote->{hostname});
@@ -517,7 +514,7 @@ sub remote_provision {
     my $status = $? >> 8;
 
     $self->rsync_daemon->stop;
-    
+
     return $status;
 }
 

@@ -97,7 +97,7 @@ The primary goal is to have a tool requiring a target machine with
 
 =item perl
 
-At least Perl 5.10 must be available on the controlled machine. There is no
+At least Perl 5.8 must be available on the controlled machine. There is no
 requirement on the modules installed. CORE is just enough.
 
 =item ssh
@@ -236,7 +236,7 @@ destination machine to run the provision script on.
 
 Provision::DSL is depending on a few CPAN modules only. Each of these
 modules only has minimal dependencies, all modules are pure perl and
-run starting from Perl 5.10.
+run starting from Perl 5.8.
 
 All required modules, resources and the provision script are packed into a
 temporary directory. Using a locally running rsync daemon, all files are

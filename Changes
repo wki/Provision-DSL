@@ -1,5 +1,29 @@
 Changes for Provision::DSL
 
+0.11    2012-11-06
+        * added logging to a file inside a log directory if given on the
+          commandline.
+        * enabling file logging as a default
+        * recursive transfer of every log directory content onto the local
+          machine after provision.
+
+0.10    2012-11-05
+        * simplified the structure of the .provision_XXX directory on the
+          local side. Maintaining an identical directory on the remote side.
+          Planning to rsync log entries back to local.
+
+0.09    2012-11-04
+        * changed the way how inspectors and installers can get used
+          in a provision script.
+        * updated all tests to match this changed behavior
+        * fixed forgotten changes to perl-5.8 compatibility
+
+0.08    2012-11-03
+        * removed all absolute paths to executable binaries to be more
+          independant from the *nix flavour
+        * changed all perl-5.10 specific operations to re-enable things
+          when only perl-5.8 is available.
+
 0.07    2012-11-01 (launch date of 007 "skyfall")
         * added "append_if_missing" option to file patch
         * added more examples

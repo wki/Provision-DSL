@@ -21,11 +21,9 @@ our @EXPORT = qw(
     to_Array
     to_Content
     to_Channels
-    to_Dir to_ExistingDir to_File to_RsyncSource
+    to_Dir to_ExistingDir to_File
     to_User to_Group
     to_Permission to_PerlVersion
-    to_Class
-    to_ClassAndArgs
 );
 
 sub Str {
@@ -121,14 +119,6 @@ sub to_ExistingDir {
     }
 }
 
-sub to_RsyncSource {
-    return sub {
-        blessed $_[0] && $_[0]->can('rsync_source')
-            ? $_[0]->rsync_source
-            : $_[0]
-    }
-}
-
 sub to_File {
     return sub { file($_[0])->absolute->cleanup }
 }
@@ -169,33 +159,6 @@ sub to_Permission {
 
 sub to_PerlVersion {
     return sub { "perl-$_[0]" };
-}
-
-# convert a string fragment to an existing class name
-sub to_Class {
-    my @prefixes = @_;
-
-    return sub {
-        my $os = os;
-        foreach my $prefix (map { ("$_\::_$os", $_) } @prefixes) {
-            my $class = "$prefix\::$_[0]";
-            eval { load $class; 1; } and return $class;
-        }
-        die "Class '$_[0]' not found ($@)";
-    }
-}
-
-# undef or [ class => {args} ]
-sub to_ClassAndArgs {
-    my @prefixes = @_;
-    
-    return sub {
-        my ($class, @args) = ref $_[0] eq 'ARRAY' ? @{$_[0]} : $_[0];
-        
-        defined $class && $class
-            ? [ to_Class(@prefixes)->($class), { @args } ]
-            : undef
-    }
 }
 
 1;
