@@ -1,22 +1,16 @@
 package Provision::DSL::Inspector::DirExists;
 use Moo;
 
-extends 'Provision::DSL::Inspector::Base::Glob';
+extends 'Provision::DSL::Inspector';
 
-sub filter {
-    my ($class, $path) = @_;
-    
-    -d $path;
-}
+# sub filter {
+#     my ($class, $path) = @_;
+#     
+#     -d $path;
+# }
 
 sub _build_state { 
-    my $self = shift;
-    
-    foreach my $dir ($self->expected_values) {
-        return 'missing' if !-d $dir;
-    }
-    
-    return 'current';
+    (grep { !-d $_ } $_[0]->expected_values) ? 'missing' : 'current' 
 }
 
 1;

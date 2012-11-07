@@ -1,22 +1,10 @@
 package Provision::DSL::Inspector::FileExists;
 use Moo;
 
-extends 'Provision::DSL::Inspector::Base::Glob';
-
-sub filter {
-    my ($class, $path) = @_;
-    
-    -f $path;
-}
+extends 'Provision::DSL::Inspector';
 
 sub _build_state { 
-    my $self = shift;
-    
-    foreach my $file ($self->expected_values) {
-        return 'missing' if !-f $file || -l $file;
-    }
-    
-    return 'current';
+    (grep { !-f $_ || -l $_ } $_[0]->expected_values) ? 'missing' : 'current'
 }
 
 1;

@@ -18,6 +18,7 @@ sub value { $_[0]->entity->${\$_[0]->attribute} }
 
 # return actual values as list
 sub values {
+    map { defined $_ ? $_ : () }
     map { ref $_ eq 'ARRAY' ? @$_ : $_ } $_[0]->value;
 }
 
@@ -26,8 +27,9 @@ has expected_value => (
     predicate => 1,
 );
 
-# return expected values as list
+# return expected values as list of defined values
 sub expected_values {
+    map { defined $_ ? $_ : () }
     map { ref $_ eq 'ARRAY' ? @$_ : $_ } $_[0]->expected_value;
 }
 

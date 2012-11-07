@@ -1,5 +1,12 @@
 Changes for Provision::DSL
 
+0.12    2012-11-07
+        * introduced File::Zglob for traversal thru directories for
+          giving Inspectors simpler parameters an deep file traversal
+        * changed the way Inspectors are instantiated
+        * Added a base class for inspectors with deep file traversal
+        * corrected tests to reflect changes
+
 0.11    2012-11-06
         * added logging to a file inside a log directory if given on the
           commandline.

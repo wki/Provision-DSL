@@ -3,9 +3,11 @@ use Moo;
 
 extends 'Provision::DSL::Inspector';
 
-sub _build_attribute { 'path' }
+# sub _build_attribute { 'path' }
 
-sub _build_state { -e $_[0]->value ? 'current' : 'missing' }
+sub _build_state { 
+    (grep { !-e $_ } $_[0]->expected_values) ? 'missing' : 'current' 
+}
 
 # sub need_privilege {
 #     my $self = shift;

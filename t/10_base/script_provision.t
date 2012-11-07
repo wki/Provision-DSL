@@ -161,9 +161,12 @@ SKIP:
         config_file => "$FindBin::Bin/../conf/test_config.pl",
         # will create an rsyncd.conf file inside here and refer
         # to resources/ and ./* directories
-        cache_dir   => "$FindBin::Bin/..",
+        cache_dir   => "$FindBin::Bin/../provision",
         archname    => 'xtest-arch'
     );
+    
+    # system 'cp', 
+    #     "$FindBin::Bin/../t/provision.pl", "$FindBin::Bin/../.provision_testing/";
 
     my ($stdout, $stderr);
     is $s->remote_provision(\undef, \$stdout, \$stderr),
@@ -172,6 +175,7 @@ SKIP:
     ok !$stderr, 'stderr is empty';
     
     # diag "STDOUT: $stdout";
+    # diag "STDERR: $stderr";
     
     my @forbidden_lines = (
         qr{\Q./lib/perl5/Foo.pod\E},
@@ -180,11 +184,11 @@ SKIP:
     
     my @expected_lines = (
         qr{\Q./lib/perl5/Foo.pm\E},
-        qr{PERL5LIB:\s*/tmp/provision_[^/]+/lib/perl5},
+        qr{PERL5LIB:.*/provision/lib/perl5},
         qr{PERL_CPANM_OPT:\s*--mirror\s+http://localhost:2080\s+--mirror-only},
         qr{PROVISION_HTTP_PORT:\s*2080},
-        qr{PROVISION_PERL:\s*/usr/bin/perl},
-        qr{PROVISION_RSYNC:\s*/usr/bin/rsync},
+        qr{PROVISION_PERL:\s*perl},
+        qr{PROVISION_RSYNC:\s*rsync},
         qr{PROVISION_RSYNC_PORT:\s*2873},
         qr{XX42:\s*foo},
     );

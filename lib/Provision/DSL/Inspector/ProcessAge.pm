@@ -1,4 +1,4 @@
-package Provision::DSL::Inspector::ProcessOlder;
+package Provision::DSL::Inspector::ProcessAge;
 use Moo;
 use Path::Class;
 

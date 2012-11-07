@@ -13,5 +13,7 @@ find sub { -f $_ and print "$File::Find::name\n" }, '.';
 
 print for map "$_: $ENV{$_}\n", sort keys %ENV;
 
+system 'mkdir', '-p', "$FindBin::Bin/log";
+
 # a nonzero exit code for tests
 exit 13;

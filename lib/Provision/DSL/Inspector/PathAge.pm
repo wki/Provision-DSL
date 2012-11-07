@@ -1,4 +1,4 @@
-package Provision::DSL::Inspector::PathOlder;
+package Provision::DSL::Inspector::PathAge;
 use Moo;
 use Path::Class;
 

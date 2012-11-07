@@ -12,18 +12,15 @@ sub BUILDARGS {
     my $class = shift;
     my %args = ref $_[0] eq 'HASH' ? %{$_[0]} : @_;
     
-    if (exists $args{expected_values} 
-        && ref $args{expected_values} eq 'ARRAY'
-        && scalar @{$args{expected_values}})
-    {
-        $args{expected_values} = [
-            grep { $class->filter($_) }
-            map { -d ? dir($_) : file($_) }
-            map { zglob $_ }
-            @{$args{expected_values}}
-        ];
-    }
-    
+    $args{expected_value} = [
+        grep { $class->filter($_) }
+        map { -d $_ ? dir($_) : file($_) }
+        map { zglob $_ }
+        map { ref $_ eq 'ARRAY' ? @$_ : $_ }
+        grep { defined $_ ? $_ : () }
+        $args{expected_value}
+    ];
+
     return \%args;
 }
 

@@ -60,11 +60,11 @@ can_ok 'main',
     }
     
     is_deeply Always(), 
-        ['Provision::DSL::Inspector::Always', {}],
+        ['Provision::DSL::Inspector::Always'],
         'inspector structure w/o args';
 
     is_deeply Always(foo => 'bar'),
-        ['Provision::DSL::Inspector::Always', {foo => 'bar'}],
+        ['Provision::DSL::Inspector::Always', foo => 'bar'],
         'inspector structure w/ args';
 }
 
@@ -78,11 +78,11 @@ can_ok 'main',
     }
     
     is_deeply Debug(), 
-        ['Provision::DSL::Installer::Debug', {}],
+        ['Provision::DSL::Installer::Debug'],
         'installer structure w/o args';
 
     is_deeply Debug(foo => 42),
-        ['Provision::DSL::Installer::Debug', {foo => 42}],
+        ['Provision::DSL::Installer::Debug', foo => 42],
         'installer structure w/ args';
 }
 

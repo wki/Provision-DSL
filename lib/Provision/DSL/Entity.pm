@@ -89,6 +89,9 @@ sub _build_need_privilege {
 }
 
 # inspector and args -- set attribute or overload accessor to change
+# [ inspector_package [, \%extra_args] [, @expected_values] ]
+# typical usage: [ inspector_package, @expected_values ]
+#
 has inspector => (
     is        => 'ro',
     predicate => 1,
@@ -104,7 +107,12 @@ sub _build_inspector_instance {
     return if !$self->has_inspector;
 
     my ($class, @args) = @{$self->inspector};
-    return $class->new(entity => $self, expected_values => \@args);
+    
+    my %args;
+    %args = %{+shift @args} if ref $args[0] eq 'HASH';
+    $args{expected_values} = \@args;
+    
+    return $class->new(entity => $self, %args);
 }
 
 # must get overloaded if we are inspecting ourselves
