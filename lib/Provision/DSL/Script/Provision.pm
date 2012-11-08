@@ -21,9 +21,9 @@ sub default_config {
       # provision_file => 'relative/path/to/file.pl',
 
         local => {
-            ssh             => 'ssh',
+            ssh             => SSH,
             ssh_options     => ['-C'],
-            cpanm           => 'cpanm',         # search via $PATH
+            cpanm           => CPANM,
             cpanm_options   => [],
             rsync           => RSYNC,
             rsync_port      => RSYNC_PORT,
@@ -96,9 +96,8 @@ sub _build_config {
                                     $config->{provision_file} =~ m{(\w+) [.] \w+ \z}xms
                                         ? $1
                                         : 'default';
+    $config->{name}              =~ s{\W+}{_}xmsg;
     $config->{provision_file}   ||= 'provision.pl';
-
-    # warn Data::Dumper->Dump([$config, $self->args],['config', 'args']);
 
     return $config;
 }
@@ -156,11 +155,10 @@ sub _build_cache_dir {
 
     my $cache_dir_name = join '_', '.provision', $self->config->{name} || ();
     my $dir = $self->root_dir->subdir($cache_dir_name);
-    if (!-d $dir) {
-        $dir->mkpath;
-        $dir->subdir($_)->mkpath
-            for qw(bin lib log resources);
-    }
+
+    $_->mkpath for grep { !-d }
+                   map { $dir->subdir($_) }
+                   qw(. bin lib log resources);
 
     return $dir;
 }
@@ -493,6 +491,7 @@ sub remote_provision {
             ($self->dryrun  ? ' -n' : ()),
             ($self->verbose ? ' -v' : ()),
             '-l', '$dir/log',
+            '-U', '"' . ((getpwuid($<))[6]) . '"',
             # TODO: add more options
         ');',
         

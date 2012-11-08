@@ -184,9 +184,11 @@ sub Os { goto &os }
 
 sub Done { goto &done }
 sub done {
-    app->log_to_file('<<< start of Provision <<<');
+    my $user = (app->has_log_user ? "[${\app->log_user}]" : '');
+    
+    app->log_to_file("<<< start of Provision $user");
     app->install_all_entities;
-    app->log_to_file('>>> end of Provision >>>');
+    app->log_to_file(">>> end of Provision $user\n");
 }
 
 sub Defaults { goto &defaults }

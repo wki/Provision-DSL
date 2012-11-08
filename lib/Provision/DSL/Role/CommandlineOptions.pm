@@ -66,6 +66,11 @@ sub _build_log_file {
     return $log_file;
 }
 
+has log_user => (
+    is => 'ro',
+    predicate => 1,
+);
+
 # has log_fh => (
 #     is => 'lazy',
 # );
@@ -75,11 +80,12 @@ sub _build_log_file {
 # expand in class/children/roles via 'around' modifier
 sub options {
     return (
-        'help|h     ; this help',
-        'verbose|v  ; verbose mode - show messages',
-        'dryrun|n   ; dryrun - do not install',
-        'log_dir|l=s; set log dir and enable logging to files',
-        'debug      ; show debug output',
+        'help|h         ; this help',
+        'verbose|v      ; verbose mode - show messages',
+        'dryrun|n       ; dryrun - do not install',
+        'log_dir|l=s    ; set log dir and enable logging to files',
+        'log_user|U=s   ; optional user for log entries',
+        'debug          ; show debug output',
     );
 }
 
@@ -140,12 +146,9 @@ sub log_to_file {
 
     $self->log_file->spew(
         iomode => '>>',
-        [
-            strftime('%d.%m.%Y %H:%M:%S', localtime(time)),
-            ' - ',
-            join(' ', map { _to_string($_) } @_),
-            "\n"
-        ]
+        join ' ',
+             strftime('%d.%m.%Y %H:%M:%S -', localtime(time)),
+             map { _to_string($_) } @_, "\n"
     );
 }
 
