@@ -176,8 +176,6 @@ a point of interruption might be.
 
 Currently the following types of entites are defined:
 
-### TODO: write more
-
 =over
 
 =item Cron
@@ -205,6 +203,9 @@ Currently the following types of entites are defined:
 =item User
 
 =back
+
+For a full list of the available options, please look at
+L<Provision::DSL::Manual::DSL>.
 
 For extending, please consult L<Provision::DSL::Manual::Extending>.
 

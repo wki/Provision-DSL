@@ -35,8 +35,8 @@ sub inspect {
     return $state;
 }
 
-sub create {                         $_[0]->_run_rsync_command }
-sub change { $_[0]->_handle_backups; $_[0]->_run_rsync_command }
+sub create { $_[0]->_run_rsync_command }
+sub change { $_[0]->_run_rsync_command }
 
 sub _run_rsync_command {
     my $self = shift;
@@ -61,15 +61,6 @@ sub _run_rsync_command {
     );
 }
 
-sub _handle_backups {
-    my $self = shift;
-    
-    ### TODO: implement me.
-    ### mkdir backup_dir
-    ### rsync -vcr --link-dest original --links original/ backup_dir/
-    ### remove backups if limit exceeded
-}
-
 sub _exclude_list {
     my $self = shift;
 
@@ -78,6 +69,12 @@ sub _exclude_list {
         $path =~ s{\A / | / \z}{}xmsg;
         my @parts = split qr{/+}, $path;
         
+        #
+        # must also exclude parent directories in order to avoid
+        # reporting of deletions which would never occur
+        # --exclude /foo/bar/baz leads to
+        # --exlude /foo --exclude /foo/bar --exclude /foo/bar/baz
+        #
         push @exclude_list, '--exclude', join '/', '', @parts[0..$_]
             for 0 .. $#parts;
     }

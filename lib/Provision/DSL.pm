@@ -219,7 +219,7 @@ sub include(*;@) {
     print STDERR <<EOF;
 
 
-You are running the provision script directly which is not allowed.
+You are running the provision script directly which is not intended.
 Please use provision.pl and a config file to fire the script on the
 target machine.
 

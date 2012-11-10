@@ -145,11 +145,12 @@ sub _try_to_modify_sudoers {
     
     my $user = getpwuid($<);
     print STDERR <<EOF;
+    
 WARNING: privilege needed to run this script.
          an entry like '$user ALL=NOPASSWD: ALL'
          can get added to /etc/sudoers.
          enter password if wanted, abort otherwise.
-         The password may be readable. You have been warned.
+         The password may be echoed and is readable. You have been warned.
 
 EOF
     # using system() here because of different stdin/stdout/stderr handling...

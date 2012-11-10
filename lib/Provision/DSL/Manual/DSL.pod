@@ -1,0 +1,285 @@
+=head1 NAME
+
+Provision::DSL::Manual::DSL - Description of the DSL
+
+=head1 FILE FORMAT
+
+The DSL used to control a remote machine is pure perl. Therefore, it must
+contain valid syntax. In order to allow the subroutines described below,
+it must use C<Provision::DSL>.
+
+A minimal provision script might look like:
+
+    #!/usr/bin/env perl
+    use Provision::DSL;
+    
+    # place entities here
+    
+    Done;
+
+=head1 AVAILABLE ENTITIES
+
+=head2 Cron
+
+Minimal usage:
+
+    Cron '/path/to/executable.ext' => {
+        minute => '42',
+    };
+
+Available options:
+
+all options listed below are available in singular or plural form. If both
+forms of the same option are listed, the plural form will win.
+
+Every option not used will default to '*'.
+
+=over
+
+=item minute => '...'
+=item minutes => '...'
+
+=item hour => '...'
+=item hours => '...'
+
+=item day_of_week => '...'
+=item days_of_week => '...'
+
+=item month => '...'
+=item months => '...'
+
+=item day_of_month => '...'
+=item days_of_month => '...'
+
+=back
+
+=head2 Dir
+
+Minimal usage:
+
+    Dir '/path/to/directory';
+
+Available options:
+
+=over
+
+=item mkdir => [ 'relative/dir', 'other/dir', ... ]
+
+creates the given direcotries inside the main directory unless present
+
+=item rmdir => [ 'not_needed_dir', ... ]
+
+removes the given directories and their contents inside the main directory
+if present
+
+=item links => { 'link_name' => 'destination', ... }
+
+creates symlinks with the requested names inside the main directory pointing
+to the given destination. The destination is passed to the C<ln> command
+as-is.
+
+=item ignore => [ 'path', ... ]
+
+every path given inside this argument will get added to the exclude-list
+for the rsync command needed to populate this directory's content.
+
+=item content => '/path/to/source' | Resource('path/inside/resource')
+
+fill the directory with content from a path or a resource. Resources basically
+are directories with files prepared on the local side and transported to
+the remote system automatically.
+
+=item backup_dir => 'path/to/backup'
+
+If this directive is used, every change to a directory will create a backup
+inside the given backup_dir. Every backup will reside in a directory named
+with a timestamp and will contain hard-links to every file of the original
+directory.
+
+=back
+
+=head2 Execute
+
+Minimal usage:
+
+    Execute '/path/to/executable' => {
+        inspector => Always,
+    };
+
+Because an executable does not have a state which can get asked, there must
+be a way to decide if the execution should occur. This can get done using
+an inspector. See L<inspectors> below.
+
+Available options:
+
+=over
+
+=item chdir => '/some/directory'
+
+a directory to change the current path to before the executable is started
+
+=item arguments => [ '--list', 'of', 'args' ]
+
+=item args => [ '--list', 'of', 'args' ]
+
+arguments forwarded to the executable. If both forms are used, C<args> will
+win.
+
+=item environment => { ... }
+
+=item env => { ... }
+
+additional environment settings. If both forms are used, C<env> will
+win.
+
+=back
+
+=head2 File
+
+Minimal usage:
+
+    File '/path/to/file' => {
+        content => 'some_content'
+    };
+
+Available options:
+
+=over
+
+=item content => 'path' | Resource('path/to/file') | Template(...)
+
+if this option is given, a file's content will be created from the given
+target.
+
+=item patches => [ ... ]
+
+every patch listed will get applied to the file.
+
+### TODO: write more.
+
+    patches => [
+        # replaces a line matching 'pattern' by 'replacement'
+        {
+            if_line_like => 'pattern'
+            replace_with => 'replacement'
+        },
+        
+        # append a line not present
+        {
+            append_if_missing => 'whatever'
+        }
+    ]
+
+=back
+
+=head2 Group
+
+Minimal usage:
+
+    Group 'name_of_group';
+
+Available options:
+
+=head2 Link
+
+Minimal usage:
+
+    Link 'link_name' => {
+        link_to => 'link_destination'
+    };
+
+Available options:
+
+=over
+
+=item link_to => 'destination'
+
+=back
+
+=head2 Perl_Modules
+
+Minimal usage:
+
+    Perl_Modules '/path/to/distribution' => {
+        perl => 'path/to/perl',
+        cpanm => 'path/to/cpanm,
+    };
+
+Available options:
+
+=over
+
+=item perl
+
+=item cpanm
+
+=item install_dir
+
+=back
+
+=head2 Perlbrew
+
+Minimal usage:
+
+    Perlbrew {
+        wanted => '5.16.2',
+    };
+    
+    # later in the Code, values can get obtained:
+    
+    Some_Thing {
+        perl  => Perlbrew->perl,
+        cpanm => Perlbrew->cpanm,
+        dzil  => Perlbrew->bin('dzil'),
+    };
+
+Available options:
+
+=over
+
+=item install_cpanm => 0|1
+
+=item wanted => perl version
+
+=back
+
+Available accessors:
+
+=over
+
+=item perl
+
+points to the perl binary
+
+=item cpanm
+
+points to the cpanm binary
+
+=item bin('name')
+
+gives back the path to the executable 'name' inside the bin directory
+
+=back
+
+=head2 Service
+
+Minimal usage:
+
+    Service 'nginx' => {
+        inspector => ProcessAge('/etc/nginx/*'),
+    };
+
+=head1 INSPECTORS
+
+... todo: write me
+
+=head1 AUTHOR
+
+Wolfgang Kinkeldei
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

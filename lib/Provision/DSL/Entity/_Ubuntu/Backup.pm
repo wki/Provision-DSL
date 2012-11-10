@@ -14,7 +14,10 @@ sub change {
     
     # this version is 3-4 times faster on linux than the generic version
     $self->run_command_as_user(
-        CP, '-al', $self->source_dir, $self->backup_dir
+        CP,
+        '--archive',   # do not deref links, recursive
+        '--link',      # hard-link files instead of copying
+        $self->source_dir => $self->backup_dir
     );
 }
 
