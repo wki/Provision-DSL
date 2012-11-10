@@ -43,9 +43,9 @@ may be added in a similar way:
 
 All Type Constraints are defined in L<Provision::DSL::Types> and exported
 into the importing namespace. When possible, the names are kept equal to 
-the names, L<Moose::Util::TypeConstraints> uses.
+the names, L<Moose::Util::TypeConstraints|Moose::Util::TypeConstraints> uses.
 
-To fit into the concepts of L<Moo>, every type constraint looks like this:
+To fit into the concepts of L<Moo|Moo>, every type constraint looks like this:
 
     sub TypeName {
         return sub {

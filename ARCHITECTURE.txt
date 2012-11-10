@@ -102,7 +102,7 @@ Einbindung von Inspektoren/Installern:
     
     Beispiele:
       inspector => Always,
-      inspector => ProcessAge(Files('*.jpg')),
+      inspector => ProcessAge('*.jpg'),
     
 
 -- Idee zu Inspectors. Jeder Inspector bekommt einen Array als Argumente.

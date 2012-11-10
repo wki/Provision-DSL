@@ -172,42 +172,18 @@ each other. Every entity must act on its own without any reference to other
 entities. This ensures, that a provisioning process can continue whatever
 a point of interruption might be.
 
-=head2 Types of entities
-
-Currently the following types of entites are defined:
-
-=over
-
-=item Cron
-
-=item Dir
-
-=item Execute
-
-=item File
-
-=item Group
-
-=item Link
-
-=item Package
-
-=item Perl_Modules
-
-=item Perlbrew
-
-=item Rsync
-
-=item Service
-
-=item User
-
-=back
 
 For a full list of the available options, please look at
-L<Provision::DSL::Manual::DSL>.
+L<Provision::DSL::Manual::DSL|Provision::DSL::Manual::DSL>.
 
-For extending, please consult L<Provision::DSL::Manual::Extending>.
+For extending, please consult 
+L<Provision::DSL::Manual::Extending|Provision::DSL::Manual::Extending>.
+
+If you like to fully understand what happens on the remote side please read
+L<Provision::DSL::Manual::Remote|Provision::DSL::Manual::Remote>.
+
+The styles and patterns used are listed here:
+L<Provision::DSL::Manual::Style|Provision::DSL::Manual::Style>.
 
 =head2 Parts of a Provision
 
@@ -243,7 +219,8 @@ All required modules, resources and the provision script are packed into a
 temporary directory. Using a locally running rsync daemon, all files are
 transferred to the remote machine using the established ssh connection.
 
-The process is explained in-depth in L<Provision::DSL::Manual::Remote>
+The process is explained in-depth in 
+L<Provision::DSL::Manual::Remote|Provision::DSL::Manual::Remote>
 
 =cut
 

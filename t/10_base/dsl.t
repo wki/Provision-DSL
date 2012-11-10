@@ -10,7 +10,6 @@ use ok 'Provision::DSL';
 can_ok 'main',
     qw(OS Os os 
        Done done 
-       Files files 
        Include include 
        app 
        Defaults);
@@ -86,12 +85,12 @@ can_ok 'main',
         'installer structure w/ args';
 }
 
-# files
-{
-    is_deeply [ map { $_->basename } @{Files("$FindBin::Bin/../resources")} ],
-        [qw(file3.txt file1.txt file2.txt file.tt file.txt)],
-        'List of files is OK';
-}
+# # files
+# {
+#     is_deeply [ map { $_->basename } @{Files("$FindBin::Bin/../resources")} ],
+#         [qw(file3.txt file1.txt file2.txt file.tt file.txt)],
+#         'List of files is OK';
+# }
 
 # include
 {

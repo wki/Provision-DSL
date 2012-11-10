@@ -2,7 +2,7 @@
 
 Provision::DSL::Manual::DSL - Description of the DSL
 
-=head1 FILE FORMAT
+=head1 INTRO
 
 The DSL used to control a remote machine is pure perl. Therefore, it must
 contain valid syntax. In order to allow the subroutines described below,
@@ -17,7 +17,68 @@ A minimal provision script might look like:
     
     Done;
 
-=head1 AVAILABLE ENTITIES
+=head2 Default attributes
+
+In order to avoid repetitions, the C<Defaults> keyword can get used in order
+to define attributes that will get used for every entity of the given kind
+unless individually defined.
+
+    Defaults {
+        Dir  => { user => 'sites' },
+        File => { user => 'sites' },
+    };
+    
+    # Dir will chown 'sites'
+    Dir '/some/dir';
+    
+    # this one will chown 'root'
+    Dir '/other/dir' => {
+        user => 'root',
+    };
+
+=head2 including snippets from other files
+
+Provision::DSL provides an C<include> keyword that operates very close to
+C's preprocessor directive C<#include>. The inclusion is like a source filter
+and will be done on the local machine in the moment, the files are prepared
+for the target machine. If you look inside your F<.provision_xxx> directory
+you will find the processed file. To ensure the processed file is not corrupt,
+the perl interpreter will get called with the '-c' option to check the
+syntax of the generated file prior to the transfer to the remote machine.
+
+To be compatible with the remaining syntax, both variants, C<include> and
+C<Include> are valid.
+
+If you have an include file F<vars.pl> with this content:
+
+    my $variable = 'some_content';
+    # maybe more variable definitions
+
+and a provision script like:
+
+    #!/usr/bin/env perl
+    use Provision::DSL;
+    
+    include vars, suffix => 'live';
+    
+    Dir "/web/data/website-$suffix";
+    
+    Done;
+
+a provicion process will create a file with this content:
+
+    #!/usr/bin/env perl
+    use Provision::DSL;
+    
+    my $suffix = 'live';
+    my $variable = 'some_content';
+    
+    Dir "/web/data/website-$suffix";
+    
+    Done;
+
+
+=head1 ENTITIES
 
 =head2 Cron
 
@@ -37,18 +98,23 @@ Every option not used will default to '*'.
 =over
 
 =item minute => '...'
+
 =item minutes => '...'
 
 =item hour => '...'
+
 =item hours => '...'
 
 =item day_of_week => '...'
+
 =item days_of_week => '...'
 
 =item month => '...'
+
 =item months => '...'
 
 =item day_of_month => '...'
+
 =item days_of_month => '...'
 
 =back
@@ -108,7 +174,7 @@ Minimal usage:
 
 Because an executable does not have a state which can get asked, there must
 be a way to decide if the execution should occur. This can get done using
-an inspector. See L<inspectors> below.
+an inspector. See L</inspectors> below.
 
 Available options:
 
@@ -271,7 +337,73 @@ Minimal usage:
 
 =head1 INSPECTORS
 
-... todo: write me
+some entities are not able to decide on their own if there is something to do.
+Eg a service depends on its config files. Without knowledge of the files
+a service may not be able to decide if a restart is required. This is where
+inspectors come into play.
+
+=head2 Always
+
+unconditionally forces the entity to run.
+
+=head2 XxxExists ( '/dir', '/dir/subdir' )
+
+check the existence of a list of directories, files, links or any other path.
+Depending on the inspector used (C<DirExists>, C<FileExists>, C<LinkExists)
+or C<PathExists> the arguments given must point to a dir, file or link.
+
+If any of the given paths does not exist, the entity using this inspector
+will switch to an 'outdated' state forcing to run it's construction method.
+
+=head2 Never
+
+Has no influence on the entity. Usually makes no sense to get used.
+
+=head2 PathAge ( '/dir/*', '/dir/**/*.conf' )
+
+Compares all files retrieved either directly or by expanding the (z)globs
+given as arguments with the entity's file mtime. If any of the files is newer
+than the entity given, the entity will get triggered to run.
+
+=head2 ProcessAge ( '/dir/*', '/dir/**/*.conf' )
+
+Compares all files retrieved either directly or by expanding the (z)globs
+given as arguments with the running process's start time. If any of the
+files is newer than the running process, the entity will get triggered
+to run.
+
+=head2 ScriptSuccess ( '/path/to/script', '-x', 'arg1', 'arg2' )
+
+runs the script with all arguments given. If the return status is nonzero,
+forces the entity to run.
+
+=head1 SOURCES
+
+During provisioning, there are many places where files or directories are
+needed as arguments. Usually files are copied to the target machine into
+a hidden directory whose name may be different every time. Therefore
+it makes sense to have an easy way to get the paths to those files.
+
+=head2 Bin ( 'name_of_binary' )
+
+expands to a binary file located inside the F<bin> directory of the resources
+directory. Is a shortcut for C<<< Resource('bin/name_of_binary') >>>.
+
+=head2 Resource ( 'path/inside/resources' )
+
+expands to the given path inside the resource directory. Could point to a
+file or directory and will return a C<Path::Class::Dir> or C<Path::Class::File>
+object.
+
+=head2 Template ( 'template_path', vars => { ... } )
+
+expands to the content of the template file which is located inside the
+resource directory. The templare file must conform to the syntax of
+L<Template::Simple|Template::Simple>.
+
+=head2 Url ( 'http://some.domain.pl/file.ext' )
+
+returns the content of the URL.
 
 =head1 AUTHOR
 

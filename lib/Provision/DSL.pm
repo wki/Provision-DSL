@@ -38,7 +38,6 @@ our @EXPORT = qw(
     Done done 
     OS Os os 
     Defaults defaults
-    Files files 
     Include include 
     app);
 
@@ -198,21 +197,21 @@ sub defaults {
     @default_for_entity{keys %d} = values %d;
 }
 
-sub Files { goto &files }
-sub files {
-    my @files;
-
-    foreach my $dir (map {-d $_ ? dir($_) : () } @_) {
-        $dir->traverse( sub {
-            my ($child, $cont) = @_;
-
-            push @files, $child if -f $child;
-            $cont->();
-        });
-    }
-
-    return \@files;
-}
+# sub Files { goto &files }
+# sub files {
+#     my @files;
+# 
+#     foreach my $dir (map {-d $_ ? dir($_) : () } @_) {
+#         $dir->traverse( sub {
+#             my ($child, $cont) = @_;
+# 
+#             push @files, $child if -f $child;
+#             $cont->();
+#         });
+#     }
+# 
+#     return \@files;
+# }
 
 sub Include(*;@) { goto &include }
 sub include(*;@) {

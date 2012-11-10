@@ -116,12 +116,14 @@ sub requested_privilege_present {
 sub install_all_entities {
     my $self = shift;
 
-    croak 'nothing to install' unless @{$self->entities_to_install};
-
     $self->check_or_enable_privileges;
-
     $self->is_running(1);
-    $_->install for @{$self->entities_to_install};
+
+    if (!@{$self->entities_to_install}) {
+        $self->log('nothing to install, empty provision file');
+    } else {
+        $_->install for @{$self->entities_to_install};
+    }
 }
 
 sub check_or_enable_privileges {

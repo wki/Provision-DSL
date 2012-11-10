@@ -7,9 +7,8 @@ extends 'Provision::DSL::Source::Resource';
 sub _build_root_dir {
     (
         grep { -d }
-        "$FindBin::Bin/local/bin",              # controlled machine
-        "$FindBin::Bin/.provision_lib/bin",     # controlling machine
-        "$FindBin::Bin/bin",                    # while testing
+        "$FindBin::Bin/bin",                    # testing + controlled machine
+        "$FindBin::Bin/.provision_lib/bin",     # WRONG: controlling machine
     )[0]
 }
 

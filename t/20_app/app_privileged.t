@@ -22,7 +22,8 @@ my $e = FakeEntity->new;
 
 is_deeply $app->entities_to_install, [], 'initially nothing to install';
 
-dies_ok { $app->install_all_entities } 'install w/o entities dies';
+# now this is legal.
+# dies_ok { $app->install_all_entities } 'install w/o entities dies';
 
 $app->add_entity_for_install($e);
 
