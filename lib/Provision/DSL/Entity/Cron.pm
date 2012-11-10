@@ -71,49 +71,12 @@ has days_of_month => (
 
 sub _build_days_of_month { $_[0]->day_of_month }
 
-# [ -- entries may be undef
-#    0: all leading lines (up to last variable definition)
-#    1: # autocreated by Provision::DSL -- do not edit
-#    2: lines before our line
-#    3: --> OUR LINE <--
-#    4: lines after our line
-#    5: # end Provision::DSL
-#    6: all trailing lines
-# ]
-
-has crontab_parts => (
+has crontab_content => (
     is => 'lazy',
+    clearer => '1',
 );
 
-sub _build_crontab_parts {
-    # TODO: fill me
-    
-    # wenn "# autocreated..." enthalten, leading, block, trailing einfach
-    #      innerhalb: path wird verwendet, die Zeile als "meine" zu erkennen
-    # sonst: scannen nach var-definitionen, rest.
-}
-
-sub _crontab_line {
-    my $self = shift;
-    
-    join ' ',
-        (
-            map {
-                my $x = join
-                    ',',
-                    grep { defined && length }
-                    map { s{\s+}{}xmsg; $_ }
-                    @{$self->$_};
-                defined $x ? $x : '*';
-            }
-            qw(minutes hours days_of_month months days_of_week)
-        ),
-        ($self->is_root ? 'root' : ()),
-        $self->path,
-        @{$self->args};
-}
-
-sub _get_crontab_text {
+sub _build_contab_content {
     my $self = shift;
     
     my @command_and_args;
@@ -133,6 +96,57 @@ sub _get_crontab_text {
     
     return $crontab_text;
 }
+
+# [ -- entries may be undef
+#    0: all leading lines (up to last variable definition)
+#       # autocreated by Provision::DSL -- do not edit
+#    1: lines before our line
+#    2: --> OUR LINE <--
+#    3: lines after our line
+#       # end Provision::DSL
+#    4: all trailing lines
+# ]
+
+has crontab_parts => (
+    is => 'lazy',
+);
+
+sub _build_crontab_parts {
+    my $self = shift;
+    
+    my @parts = (
+        [],[],[],[],[]
+    );
+    
+    # TODO: fill me
+    
+    # wenn "# autocreated..." enthalten, leading, block, trailing einfach
+    #      innerhalb: path wird verwendet, die Zeile als "meine" zu erkennen
+    # sonst: scannen nach var-definitionen, rest.
+    
+    return \@parts;
+}
+
+sub crontab_line {
+    my $self = shift;
+    
+    join ' ',
+        (
+            map {
+                my $x = join
+                    ',',
+                    grep { defined && length }
+                    map { s{\s+}{}xmsg; $_ }
+                    @{$self->$_};
+                defined $x ? $x : '*';
+            }
+            qw(minutes hours days_of_month months days_of_week)
+        ),
+        ($self->is_root ? 'root' : ()),
+        $self->path,
+        @{$self->args};
+}
+
 
 sub _save_crontab_text {
     my ($self, $text) = @_;

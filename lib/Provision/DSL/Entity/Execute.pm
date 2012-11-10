@@ -9,7 +9,7 @@ with 'Provision::DSL::Role::CommandExecution';
 has path => (
     is     => 'lazy',
     isa    => ExecutableFile,
-    coerce => to_File,
+    coerce => to_ExecutableFile,
 );
 
 sub _build_path { $_[0]->name }

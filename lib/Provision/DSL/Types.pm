@@ -21,7 +21,7 @@ our @EXPORT = qw(
     to_Array
     to_Content
     to_Channels
-    to_Dir to_ExistingDir to_File
+    to_Dir to_ExistingDir to_File to_ExecutableFile
     to_User to_Group
     to_Permission to_PerlVersion
 );
@@ -121,6 +121,18 @@ sub to_ExistingDir {
 
 sub to_File {
     return sub { file($_[0])->absolute->cleanup }
+}
+
+sub to_ExecutableFile {
+    return sub { 
+        -f $_[0]
+            ? file($_[0])->absolute->cleanup
+            : (
+                grep { -f } 
+                map { dir($_)->file($_[0]) } 
+                split ':', $ENV{PATH}
+              )[0]
+    }
 }
 
 sub to_User {

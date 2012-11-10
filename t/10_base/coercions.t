@@ -7,8 +7,14 @@ use FindBin;
 
 use ok 'Provision::DSL::Types';
 
-# my $t_dir = dir($FindBin::Bin)->parent;
+### TODO: add tests for coercions:
 
-### TODO: also test the more trivial cases
+# to_Str
+# to_Array
+# to_Content
+# to_Channels
+# to_Dir to_ExistingDir to_File to_ExecutableFile
+# to_User to_Group
+# to_Permission to_PerlVersion
 
 done_testing;
