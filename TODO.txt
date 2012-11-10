@@ -17,7 +17,7 @@ Service:
     problematisch, wenn sich das dahinter sitzende Script geändert hat
 
 Provision:
-  * -x switch: exchange ssh .pub key
+  * -x switch: exchange ssh .pub key -- clever or stupid?
   * -f switch: alle Entities sind outdated
   * --debug pass thru oder --trace ?
 

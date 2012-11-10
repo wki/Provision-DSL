@@ -98,10 +98,13 @@ sub _crontab_line {
     
     join ' ',
         (
-            map { 
-                my $x = join(',', $self->$_); 
-                $x =~ s{\s+}{}xmsg;
-                $x =~ m{\A \s* \z}xms ? '*' : $x 
+            map {
+                my $x = join
+                    ',',
+                    grep { defined && length }
+                    map { s{\s+}{}xmsg; $_ }
+                    @{$self->$_};
+                defined $x ? $x : '*';
             }
             qw(minutes hours days_of_month months days_of_week)
         ),
