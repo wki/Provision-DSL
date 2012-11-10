@@ -1,0 +1,74 @@
+=head1 NAME
+
+Provision::DSL::Manual::Tricks
+
+=head1 CONFIG FILE TRICKS
+
+=head2 speedup local preparation with minicpan
+
+If you have set up a minicpan mirror on your machine, you can force the
+F<cpanm> utility to access this mirror instead of loading every module
+from the internet. Simply add a simple environment key. Please be tolerant
+with users who do not have a minicpan mirror.
+
+    # inside your config file:
+    
+    local => {
+        environment => {
+            (-d "$ENV{HOME}/minicpan"
+                ? (PERL_CPANM_OPT => 
+                        "--mirror '$ENV{HOME}/minicpan' --mirror-only")
+                : ()),
+    },
+
+
+=head1 PROVISION FILE TRICKS
+
+=head2 Put simple repetitive tasks into a provision file
+
+Assumed you have to add a F</etc/foo.conf> file with the same content to
+a couple of machines. Prepare a provision file F<foo.pl> like:
+
+    #!/usr/bin/env perl
+    use Provision::DSL;
+    
+    File '/etc/foo.conf' => {
+        content => 'whatever',
+    };
+    
+    Done;
+
+And fire a script for every machine:
+
+    $ provision.pl user@hostname foo.pl
+
+=head1 MISC
+
+=head2 use a ssh config file
+
+Many ssh options can get simplified if they are stored in a config file,
+typically residing in F<<< $HOME/.ssh/config >>>.
+
+An entry for a machine you want to access using the name 'box' via a special
+port on yout loopback interface could look like this:
+
+    #
+    # my virtual-box can get accessed with the name 'box'
+    #
+    Host box
+    Hostname 127.0.0.1
+    Port 2222
+    IdentityFile ~/.ssh/id_rsa
+    User your_name_here
+
+
+=head1 AUTHOR
+
+Wolfgang Kinkeldei
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

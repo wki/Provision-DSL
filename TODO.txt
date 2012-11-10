@@ -17,10 +17,9 @@ Service:
     problematisch, wenn sich das dahinter sitzende Script geändert hat
 
 Provision:
+  * -x switch: exchange ssh .pub key
   * -f switch: alle Entities sind outdated
   * --debug pass thru oder --trace ?
-  * bei -v: stdout bei Execute mit anzeigen?
-  * logging in ~/.provision/log/...
 
 Entity::Cron
   Cron '/path/to/executable' => {

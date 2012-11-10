@@ -1,6 +1,7 @@
 package Provision::DSL::Entity::Path::Permission;
 use Moo;
 use Carp;
+use Provision::DSL::Const;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::Path';
@@ -24,7 +25,7 @@ sub change {
     my $self = shift;
     
     $self->run_command_maybe_privileged(
-        $self->find_command('chmod'),
+        CHMOD,
         sprintf('%3o', $self->permission),
         $self->path,
     );

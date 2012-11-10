@@ -1,5 +1,11 @@
 Changes for Provision::DSL
 
+        2012-11-10
+        * added docs
+        * cleanup Rsync: remove backup
+        * Script::Provision cleanup: remove 'Files' keyword
+        * made empty provision file handling more tolerant
+
 0.12    2012-11-07
         * introduced File::Zglob for traversal thru directories for
           giving Inspectors simpler parameters an deep file traversal

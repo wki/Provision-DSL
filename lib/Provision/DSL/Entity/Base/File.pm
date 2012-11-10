@@ -1,6 +1,7 @@
 package Provision::DSL::Entity::Base::File;
 use Moo;
 use Try::Tiny;
+use Provision::DSL::Const;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::Path';
@@ -32,7 +33,7 @@ sub write_content {
     my ($self, $new_content) = @_;
     
     $self->run_command_maybe_privileged(
-        $self->find_command('tee'),
+        TEE,
         { stdin => \$new_content },
         $self->path,
     );

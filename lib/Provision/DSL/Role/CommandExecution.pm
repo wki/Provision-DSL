@@ -1,21 +1,10 @@
 package Provision::DSL::Role::CommandExecution;
 use Moo::Role;
 use Carp;
+use Provision::DSL::Const 'CAT'; # otherwise Role::Tiny complains.
 use Provision::DSL::Command;
 
 # all commands: $executable [, \%options] , @args
-
-sub find_command {
-    my ($self, $command) = @_;
-    
-    my ($executable) =
-        grep { -f $_ }
-        map { "$_/$command" }
-        qw(/usr/bin /bin /usr/sbin /sbin)
-    or carp "Could not find command '$command'";
-    
-    return $executable;
-}
 
 sub command_succeeds {
     my $self = shift;
@@ -106,9 +95,7 @@ sub read_content_of_file {
     my $self = shift;
     my $file = shift;
     
-    return $self->run_command_maybe_privileged(
-        $self->find_command('cat'), $file
-    );
+    return $self->run_command_maybe_privileged(CAT, $file);
 }
 
 1;

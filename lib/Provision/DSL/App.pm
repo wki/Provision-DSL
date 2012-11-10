@@ -36,7 +36,7 @@ sub _build_user_has_privilege {
 
     my $result;
     try {
-        $self->run_command_as_superuser($self->find_command('true'));
+        $self->run_command_as_superuser(TRUE);
         $result = 1;
     # } catch {
     #     warn "Caught: $_";

@@ -233,6 +233,7 @@ around options => sub {
         'provision_file|p=s ; provision file to run, overrides config setting',
       # 'options|o=s        ; comma separated options [modify_sudoers, TODO:more]'
       # 'force|f            ; force every entity to execute',
+      # 'install_key|i=s'   ; put .pub key into ~/.ssh/authorized_keys
     );
 };
 

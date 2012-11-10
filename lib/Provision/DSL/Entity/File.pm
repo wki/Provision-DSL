@@ -1,6 +1,6 @@
 package Provision::DSL::Entity::File;
 use Moo;
-# use Carp;
+use Provision::DSL::Const;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::File';
@@ -37,10 +37,7 @@ sub create {
     
     $self->prepare_for_creation;
     
-    $self->run_command_maybe_privileged(
-        $self->find_command('touch'),
-        $self->path,
-    );
+    $self->run_command_maybe_privileged(TOUCH, $self->path);
     
 }
 

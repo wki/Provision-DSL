@@ -1,6 +1,7 @@
 package Provision::DSL::Entity::Path::Owner;
 use Moo;
 use Carp;
+use Provision::DSL::Const;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::Path';
@@ -25,7 +26,7 @@ sub change {
     
     if ($self->has_user) {
         $self->run_command_as_superuser(
-            $self->find_command('chown'),
+            CHOWN,
             '-R',
             $self->user,
             $self->path,
@@ -33,7 +34,7 @@ sub change {
     }
     if ($self->has_group) {
         $self->run_command_as_superuser(
-            $self->find_command('chgrp'),
+            CHGRP,
             '-R',
             $self->group,
             $self->path,
