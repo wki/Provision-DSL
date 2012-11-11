@@ -63,7 +63,34 @@ my $executable = file("$FindBin::Bin/../bin/args.sh")->cleanup->resolve->stringi
         {
             name  => 'empty',
             file  => 'f1',
-            parts => [[],[],[],[],[]],
+            parts => [
+                [],[],[],[],[]
+            ],
+        },
+        {
+            name  => 'variables only',
+            file  => 'f2',
+            parts => [
+                [
+                '# simple crontab file',
+                'MAILTO = me@dojoe.com',
+                ],
+                [],[],[],[]
+            ],
+        },
+        {
+            name  => 'variables and rule',
+            file  => 'f3',
+            parts => [
+                [
+                    '# empty line following',
+                    '',
+                    'MAILTO=somebody',
+                    '',
+                ],
+                [],[],[],
+                ['0 1 2 3 4 5 /bin/crach boom bang']
+            ],
         },
     );
     
@@ -84,6 +111,7 @@ my $executable = file("$FindBin::Bin/../bin/args.sh")->cleanup->resolve->stringi
             { crontab_content => $lines_for_file{$testcase->{file}} }
         );
         
+        # diag explain $e->crontab_parts;
         is_deeply $e->crontab_parts, $testcase->{parts}, 
             "parts: $testcase->{name}";
         
@@ -95,9 +123,15 @@ my $executable = file("$FindBin::Bin/../bin/args.sh")->cleanup->resolve->stringi
 
 done_testing;
 
-
+# do not remove! every part starts with --- f\d+
 __DATA__
 --- f1
 --- f2
 # simple crontab file
 MAILTO = me@dojoe.com
+--- f3
+# empty line following
+
+MAILTO=somebody
+
+0 1 2 3 4 5 /bin/crach boom bang
