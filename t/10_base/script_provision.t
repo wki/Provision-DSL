@@ -11,7 +11,10 @@ use Config;
 use ok 'Provision::DSL::Script::Provision';
 
 # empty dir created during test
-system '/bin/rm', '-rf', "$FindBin::Bin/../../.provision_testing";
+system 'rm', '-rf', "$FindBin::Bin/../../.provision_testing";
+
+# ensure we have a log-dir to copy back logs at the end of provision script
+system 'mkdir', '-p', "$FindBin::Bin/../provision/log";
 
 # packing a script from a config
 {
@@ -172,7 +175,7 @@ SKIP:
     is $s->remote_provision(\undef, \$stdout, \$stderr),
         13,
         'return status from provision script is given back';
-    ok !$stderr, 'stderr is empty';
+    is $stderr, '', 'stderr is empty';
     
     # diag "STDOUT: $stdout";
     # diag "STDERR: $stderr";
