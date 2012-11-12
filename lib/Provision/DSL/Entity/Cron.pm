@@ -136,12 +136,15 @@ sub _build_crontab_parts {
         } elsif ($line =~ m{\A \s* \w+ \s* =}xms) {
             # variable definition -> keep part and save line
         } elsif ($part == 1) {
-            ### TODO: find if we can decide 2 or 3 ?
-        } else {
+            $part++ 
+                if index($line, $self->path->stringify) > 0;
+        } elsif (!$part) {
             # regular things -> put into trailing lines
             $part = 4;
         }
         push @{$parts[$part]}, $line;
+        
+        $part++ if $part == 2;
     }
     
     return \@parts;
@@ -191,14 +194,18 @@ sub _save_crontab_text {
 # wenn es bereits einen Block gibt, der zu dieser Datei paßt, ersetzen
 # suchen nach der ersten Zeile, die Zeit-Spalten enthält, davor einfügen
 #
-# autocreated by Provision::DSL -- do not edit
-# * * * * * eintraege...
-# end Provision::DSL
+# # autocreated by Provision::DSL -- do not edit
+# * * * * * /path/to/script args
+# # end Provision::DSL
 
-### FIXME: must read /etc/crontab or execute crontab -l and check content
 sub inspect {
     my $self = shift;
     
+    scalar @{$self->crontab_parts->[2]}
+        ? ($self->crontab_parts->[2]->[0] eq $self->crontab_line
+            ? 'current'
+            : 'outdated')
+        : 'missing'
 }
 
 sub need_privilege { $_[0]->is_other_user }
@@ -210,3 +217,6 @@ sub change {}
 sub remove {}
 
 1;
+
+__END__
+
