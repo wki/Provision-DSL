@@ -143,7 +143,7 @@ sub log_to_file {
     my $self = shift;
     
     return if !$self->has_log_dir || $self->dryrun;
-
+    
     $self->log_file->spew(
         iomode => '>>',
         join ' ',

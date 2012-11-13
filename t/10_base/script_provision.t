@@ -55,7 +55,7 @@ system 'mkdir', '-p', "$FindBin::Bin/../provision/log";
                     PROVISION_RSYNC_PORT    => 2873,
                     PROVISION_PERL          => 'perl',
                     PROVISION_HTTP_PORT     => 2080,
-                    PERL_CPANM_OPT          => '--mirror http://localhost:2080 --mirror-only',
+                  # PERL_CPANM_OPT          => '--mirror http://localhost:2080 --mirror-only',
                     XX42                    => 'foo',
                 },
             },
@@ -188,7 +188,7 @@ SKIP:
     my @expected_lines = (
         qr{\Q./lib/perl5/Foo.pm\E},
         qr{PERL5LIB:.*/provision/lib/perl5},
-        qr{PERL_CPANM_OPT:\s*--mirror\s+http://localhost:2080\s+--mirror-only},
+        # qr{PERL_CPANM_OPT:\s*--mirror\s+http://localhost:2080\s+--mirror-only},
         qr{PROVISION_HTTP_PORT:\s*2080},
         qr{PROVISION_PERL:\s*perl},
         qr{PROVISION_RSYNC:\s*rsync},

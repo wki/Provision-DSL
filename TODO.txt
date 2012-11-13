@@ -1,6 +1,17 @@
 TODO for provisioning
 ---------------------
 
+Problems to solve:
+* instantiating some resources depending on others fails.
+  Eg: installing perl modules relies on Perlbrew->perl and has a constraint
+      on 'perl' being an executable file.
+  TODO: find a solution for this, maybe remove constraints.
+  Example: Perlbrew + Perl_Modules afterwards
+
+* Resources arising during install will initially fail, eg. Url(...)
+
+
+
 CPAN
   * lokalen CPAN Server starten / Proxy ???
 

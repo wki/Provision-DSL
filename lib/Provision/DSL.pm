@@ -67,7 +67,12 @@ sub import {
     app->log_debug('init done');
 }
 
-sub instantiate_app { Provision::DSL::App->instance(@_) }
+sub instantiate_app { 
+    Provision::DSL::App->instance(@_);
+    
+    # initiate log dir if logging wanted
+    my $dummy = app->log_file if app->has_log_dir;
+}
 
 sub app { Provision::DSL::App->instance }
 

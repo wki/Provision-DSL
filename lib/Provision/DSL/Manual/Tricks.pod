@@ -17,7 +17,7 @@ with users who do not have a minicpan mirror.
         environment => {
             (-d "$ENV{HOME}/minicpan"
                 ? (PERL_CPANM_OPT => 
-                        "--mirror '$ENV{HOME}/minicpan' --mirror-only")
+                        "--mirror $ENV{HOME}/minicpan --mirror-only")
                 : ()),
     },
 

@@ -48,7 +48,7 @@ sub default_config {
                 PROVISION_RSYNC_PORT    => RSYNC_PORT,
                 PROVISION_PERL          => PERL,
                 PROVISION_HTTP_PORT     => HTTP_PORT,
-                PERL_CPANM_OPT          => "--mirror http://localhost:${\HTTP_PORT} --mirror-only",
+              # PERL_CPANM_OPT          => "--mirror http://localhost:${\HTTP_PORT} --mirror-only",
             },
         },
 
@@ -320,8 +320,10 @@ sub pack_dependent_libs {
     foreach my $lib (@install_libs) {
         my $lib_filename = "lib/perl5/$lib.pm";
         $lib_filename =~ s{::}{/}xmsg;
+        $self->log_debug("checking for lib file '$lib_filename'");
         next if -f $self->cache_dir->file($lib_filename);
 
+        $self->log_debug("packing lib '$lib' into ${\$self->cache_dir}");
         run3 [
                 $self->config->{local}->{cpanm},
                 -L => $self->cache_dir, '--notest',

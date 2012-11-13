@@ -12,7 +12,7 @@ sub change {
     my $self = shift;
     
     $self->run_command_as_user(
-        $self->parent->perl,
+        $self->parent->perl->stringify,
         $self->parent->perlbrew,
         'install-cpanm'
     );
