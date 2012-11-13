@@ -75,8 +75,10 @@ sub _exclude_list {
         # --exclude /foo/bar/baz leads to
         # --exlude /foo --exclude /foo/bar --exclude /foo/bar/baz
         #
-        push @exclude_list, '--exclude', join '/', '', @parts[0..$_]
-            for 0 .. $#parts;
+        # WRONG: will also exclude deeded dirs from transmission.
+        # push @exclude_list, '--exclude', join '/', '', @parts[0..$_]
+        #     for 0 .. $#parts;
+        push @exclude_list, '--exclude', join '/', '', @parts;
     }
 
     return @exclude_list;

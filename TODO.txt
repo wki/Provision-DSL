@@ -10,6 +10,8 @@ Problems to solve:
 
 * Resources arising during install will initially fail, eg. Url(...)
 
+* Rsync reports to be outdated, when adding parent dirs to the exclude list,
+  we do not update them, however...
 
 
 CPAN
