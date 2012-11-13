@@ -80,7 +80,8 @@ my $x_dir = dir($FindBin::Bin)->absolute->resolve->subdir('x');
     #     for $d->all_children;
 
     is $d->state, 'current', 'state is current after process';
-    
+
+    # diag 'remove me'; done_testing; exit;
     ok $d->is_ok, 'dir with structure is ok after process';
 
     foreach my $child (@{$d->children}) {

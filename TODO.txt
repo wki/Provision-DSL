@@ -1,17 +1,13 @@
-TODO for provisioning
----------------------
+TODOs
+-----
 
-Problems to solve:
-* instantiating some resources depending on others fails.
-  Eg: installing perl modules relies on Perlbrew->perl and has a constraint
-      on 'perl' being an executable file.
-  TODO: find a solution for this, maybe remove constraints.
-  Example: Perlbrew + Perl_Modules afterwards
+Bemerkte Probleme
+* Voneinander abhängige Entities können fehlschlagen.
+  Beispiel: Perl-Module brauchen den Pfad zum Perl Interpreter, der ist aber
+            erst nach perlbrew Compilierung bekannt.
 
-* Resources arising during install will initially fail, eg. Url(...)
-
-* Rsync reports to be outdated, when adding parent dirs to the exclude list,
-  we do not update them, however...
+* Auch davon betroffen sind Resourcen, die auf installierte Dinge zurück-
+  greifen, z.B. Url().
 
 
 CPAN

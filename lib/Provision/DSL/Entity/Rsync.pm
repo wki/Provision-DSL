@@ -27,6 +27,30 @@ sub inspect {
             '--out-format' => 'copying %n',
         );
         
+        if ($result && $result !~ m{^copying}xms && $result =~ m{^deleting}xms) {
+            #
+            # rsync behaves strange. If we have "abc/def" in exclude list,
+            #     "abc/" is reported to get deleted.
+            # to resolve this, we remove all lines like 'deleting xxx/'
+            # for every parent dir of all excluded things.
+            # this is only needed if we only have 'deleting...' lines
+            #
+            # warn "MUST CHECK DELETE LINES ($result)";
+            
+            foreach my $path (@{$self->exclude}) {
+                $path =~ s{\A / | / \z}{}xmsg;
+                my @parts = split qr{/+}, $path;
+            
+                # warn "checking ro remove $path";
+                $result =~ s{^deleting \s+ $_ /? $}{}xms
+                    for map { join '/', @parts[0..$_] } 
+                        0 .. $#parts;
+            }
+            
+            # warn "REMOVED LINES, TEST NOW: ($result)";
+        }
+        
+        # warn "RSYNC RESULT: $result";
         $state = ($result && $result =~ m{^(?:deleting|copying)\s}xms)
         ? 'outdated'
         : 'current';

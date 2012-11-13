@@ -56,7 +56,11 @@ has backup_dir => (
 sub inspect { -d $_[0]->path ? 'current'  : 'missing' }
 
 sub remove {
-    ### FIXME: where is a dir entirely removed?
+    my $self = shift;
+    
+    $self->run_command_maybe_privileged(
+        RM, '-rf', $self->path,
+    );
 }
 
 sub change {

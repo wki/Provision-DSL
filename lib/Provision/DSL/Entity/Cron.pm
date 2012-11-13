@@ -136,6 +136,7 @@ sub _build_crontab_parts {
         } elsif ($line =~ m{\A \s* \w+ \s* =}xms) {
             # variable definition -> keep part and save line
         } elsif ($part == 1) {
+            # check if 'our' line is seen
             $part++ 
                 if index($line, $self->path->stringify) > 0;
         } elsif (!$part) {
@@ -167,12 +168,33 @@ sub crontab_line {
         ),
         ($self->is_root ? 'root' : ()),
         $self->path,
+        
+        # TODO: must escape, maybe quote
         @{$self->args};
 }
 
 
 sub _save_crontab_text {
-    my ($self, $text) = @_;
+    my $self = shift;
+    my $wanted = shift;
+
+    my @lines = (
+        @{$self->crontab_parts->[0]},
+        
+        '',
+        '# autocreated by Provision::DSL -- do not edit',
+        
+            @{$self->crontab_parts->[1]},
+            ($wanted ? $self->crontab_line : ()),
+            @{$self->crontab_parts->[3]},
+        
+        '# end Provision::DSL',
+        '',
+        
+        @{$self->crontab_parts->[4]}
+    );
+
+    my $text = join "\n", @lines;
     
     my $command;
     my @args;
@@ -210,13 +232,22 @@ sub inspect {
 
 sub need_privilege { $_[0]->is_other_user }
 
-### FIXME: must change /etc/crontab or execute crontab -e
-# methods must be defined here to definitively override Execute's method
-sub create {}
-sub change {}
-sub remove {}
+sub create {
+    my $self = shift;
+    
+    $self->_save_crontab_text(1);
+}
+
+sub change {
+    my $self = shift;
+    
+    $self->_save_crontab_text(1);
+}
+
+sub remove {
+    my $self = shift;
+    
+    $self->_save_crontab_text(0);
+}
 
 1;
-
-__END__
-
