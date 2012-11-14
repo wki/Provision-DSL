@@ -104,6 +104,7 @@ sub add_entity_for_install {
 sub install_needs_privilege {
     my $self = shift;
 
+    ### FIXME: ignore coderef entities
     grep { $_->need_privilege } @{$self->entities_to_install};
 }
 
@@ -122,6 +123,7 @@ sub install_all_entities {
     if (!@{$self->entities_to_install}) {
         $self->log('nothing to install, empty provision file');
     } else {
+        ### FIXME: expand coderefs before installing
         $_->install for @{$self->entities_to_install};
     }
 }
@@ -185,6 +187,12 @@ sub create_entity {
         if exists $self->_entity_cache->{$entity}
            && exists $self->_entity_cache->{$entity}->{$args->{name}};
 
+    # $self->log_debug("about to create_entity $class from", $args);
+    
+    ### FIXME: some entities die here when coercions fail.
+    ###        add a coderef for constructing the entity defered at the
+    ###        moment it is needed with the risk that permission is treated
+    ###        wrong.
     my $instance = $class->new({ app => $self, %$args });
     my $name = $instance->name;
 
