@@ -42,6 +42,8 @@ sub run {
         @sudo = (
             SUDO,
             '-n',
+            ### FIXME: under Linux, `sudo -n -u user cmd` does not seem to work sometimes
+            ###        instead `sudo -n sudo -u user cmd` works.
             ($self->is_other_user  ? (-u => $self->user)  : ()),
             ($self->is_other_group ? (-g => $self->group) : ()),
             '--'
