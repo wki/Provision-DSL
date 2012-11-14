@@ -40,7 +40,7 @@ sub default_config {
           #     -o option,option,...
           #
           # options => {
-          #     modify_sudoers => 1, # append '$user ALL=NOPASSWD: ALL'
+          #     modify_sudoers => 1, # append '$user ALL=(ALL) NOPASSWD: ALL'
           # },
 
             environment => {

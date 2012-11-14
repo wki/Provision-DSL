@@ -159,7 +159,7 @@ WARNING: privilege needed to run this script.
 EOF
     # using system() here because of different stdin/stdout/stderr handling...
     system SUDO, '-S',
-        '/bin/sh', '-c', "/bin/echo '$user ALL=NOPASSWD: ALL' >> /etc/sudoers";
+        '/bin/sh', '-c', "echo '$user ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
 }
 
 ####################################### Entity handling
