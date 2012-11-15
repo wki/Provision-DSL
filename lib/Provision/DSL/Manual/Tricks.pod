@@ -42,6 +42,42 @@ And fire a script for every machine:
 
     $ provision.pl user@hostname foo.pl
 
+=head2 use templates and include
+
+If you like to deploy a server, you probably will have to install more
+machines soon. In order to allow reusing your work, create a simple
+provision script like this:
+
+    #!/usr/bin/env perl
+    use Provision::DSL;
+    
+    include var, SUFFIX => 'dev', IP => '62.128.10.208';
+    include packages;
+    include dir, FOO_DIRS => [qw(abc def ghi)],
+                 BAR_DIRS => [qw(wer tzu iop)];
+    include perlbrew;
+    include modules;
+    include webserver;
+    
+    Done;
+
+Interesting pieces are declarations like C<include var, ...> which defines
+all key/value pairs as C<<<our $SUFFIX='dev';>>> variables and allows to use
+the variables inside the included and all subsequently included templates.
+
+=head2 make templates versatile and tolerant
+
+Returning to the example above, if you omit the definition C<BAR_DIRS> because
+you do not need them, what happens? Errors because you may use a variable
+which is not defined.
+
+Simply use (ugly) constructs like
+
+    my $x = ${ ${main::}{FOO_DIRS} } // [];
+
+in order to get a default value in case of the absence of a variable. Not
+very beautiful but gives the effect you like to get.
+
 =head1 MISC
 
 =head2 use a ssh config file
