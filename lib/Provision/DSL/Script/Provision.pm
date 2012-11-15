@@ -412,7 +412,7 @@ sub _include {
     my @content;
     my @variables = (eval $args); # keep order of variables
     while (my ($name, $value) = splice @variables, 0, 2) {
-        push @content, 'my ' . Data::Dumper->Dump([$value], [$name]);
+        push @content, 'our ' . Data::Dumper->Dump([$value], [$name]);
     }
 
     push @content, $file->slurp(chomp => 1);

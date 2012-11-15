@@ -144,7 +144,7 @@ system 'mkdir', '-p', "$FindBin::Bin/../provision/log";
 #!/usr/bin/env perl
 
 my $x = 42;
-my $site = 'live';
+our $site = 'live';
 
 my $dir = '/path/to/x';
 Done;
