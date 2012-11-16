@@ -94,11 +94,13 @@ the entity for getting the values they need.
 If an inspector needs additional arguments, it may be added like:
 
     SomeEntity 'name' => {
-        inspector => [ Whatever => more args here ],
+        inspector => Whatever( more args here ),
     };
 
 
 =head1 INSTALLERS
+
+### TODO: write me
 
 =head1 AUTHOR
 

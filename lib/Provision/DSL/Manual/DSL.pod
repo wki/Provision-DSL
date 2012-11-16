@@ -51,7 +51,7 @@ C<Include> are valid.
 
 If you have an include file F<vars.pl> with this content:
 
-    my $variable = 'some_content';
+    our $variable = 'some_content';
     # maybe more variable definitions
 
 and a provision script like:
@@ -65,13 +65,13 @@ and a provision script like:
     
     Done;
 
-a provicion process will create a file with this content:
+a provision process will create a file with this content:
 
     #!/usr/bin/env perl
     use Provision::DSL;
     
-    my $suffix = 'live';
-    my $variable = 'some_content';
+    our $suffix = 'live';
+    our $variable = 'some_content';
     
     Dir "/web/data/website-$suffix";
     
