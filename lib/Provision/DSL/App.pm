@@ -183,6 +183,7 @@ sub create_entity {
     my $class = $self->entity_package_for->{$entity}
         or croak "no class for entity '$entity' found";
 
+    # FIXME: 'name' might be absent here. eg Perlbrew
     croak "cannot re-create entity '$entity' ($args->{name})"
         if exists $self->_entity_cache->{$entity}
            && exists $self->_entity_cache->{$entity}->{$args->{name}};

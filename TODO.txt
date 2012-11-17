@@ -9,6 +9,11 @@ Bemerkte Probleme
 * Auch davon betroffen sind Resourcen, die auf installierte Dinge zurück-
   greifen, z.B. Url().
 
+* Klasse "LazyEntity" (name tbd) verhält sich wie ein Entity-Proxy.
+  --> AUTOLOAD()
+  --> name() wird direkt ausgeliefert
+  --> sonstige: erst versuchen, zu instantiieren, dann laufen lassen.
+      Ausnahme: ->need_privilege wird abgefangen, undef im Fehlerfall
 
 CPAN
   * lokalen CPAN Server starten / Proxy ???
