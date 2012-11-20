@@ -8,7 +8,10 @@ with    'Provision::DSL::Role::CommandExecution',
 
 sub _build_need_privilege { 1 }
 
-sub inspect { $_[0]->is_running ? 'current' : 'missing' }
+sub inspect {
+    # warn "PID FILE: ${\$_[0]->pid_file}";
+    $_[0]->is_running ? 'current' : 'missing'
+}
 
 sub create { $_->_run_service('start') }
 sub change { $_->_run_service('restart') }

@@ -94,7 +94,7 @@ sub __subdirs {
         $self->create_entity(
             Dir => {
                 parent => $self,
-                name   => $_,
+                name   => $self->path->subdir($_)->stringify,
                 path   => $self->path->subdir($_),
                 wanted => $wanted,
                 ($self->has_user  ? (user  => $self->user)  : () ),
@@ -113,7 +113,7 @@ sub __links {
             $self->create_entity(
                 Link => {
                     parent => $self,
-                    name => $_,
+                    name => $self->path->subdir($_)->stringify,
                     path => $self->path->subdir($_),
                     link_to => $self->links->{$_},
                     ($self->has_user  ? (user  => $self->user)  : () ),
