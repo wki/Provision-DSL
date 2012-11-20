@@ -71,8 +71,9 @@ sub change {
     unshift @{$self->children},
         $self->create_entity(
             Backup => { 
-                name       => $self->backup_dir,
-                source_dir => $self->path,
+                name            => $self->backup_dir->stringify,
+                backup_root_dir => $self->backup_dir,
+                source_dir      => $self->path,
             }
         );
 }
