@@ -358,6 +358,12 @@ sub _pack_file_or_dir {
     my $source   = shift;
     my $target   = shift;
     my @exclude  = ref $_[0] eq 'ARRAY' ? @{$_[0]} : @_;
+    
+    # rsync fails when trying to copy something to a destionation
+    # with missing parent directory. Must create the parent directory
+    # for the entity to get copied
+    my $target_dir = $self->cache_dir->file($target)->parent;
+    $target_dir->mkpath if !-d $target_dir;
 
     # Caution: $target might contain a trailing '/'.
     #          therefore we must join strings instead of ->subdir()
