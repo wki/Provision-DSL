@@ -313,6 +313,8 @@ sub pack_dependent_libs {
 
     my @install_libs = qw(
         autodie Moo Role::Tiny Try::Tiny IPC::Run3
+        Module::Pluggable Module::Load
+        MRO::Compat Class::C3 Algorithm::C3
         HTTP::Tiny Template::Simple
         Path::Class File::Zglob
     );
@@ -487,6 +489,7 @@ sub remote_provision {
         '(',
         '$PROVISION_RSYNC',
             '-cr',
+            '--perms',
             '--delete',
             '--exclude', '"/lib/**.pod"',
             '--exclude', "/lib/perl5/${\$self->archname}",

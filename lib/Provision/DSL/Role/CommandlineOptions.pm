@@ -1,6 +1,6 @@
 package Provision::DSL::Role::CommandlineOptions;
 use Moo::Role;
-use Getopt::Long 'GetOptionsFromArray';
+use Getopt::Long; # 'GetOptionsFromArray';
 use Scalar::Util 'blessed';
 use POSIX qw(strftime mktime);
 use Provision::DSL::Types;
@@ -91,18 +91,25 @@ sub options {
 
 sub new_with_options {
     my $class = shift;
-    my @argv = @_;
+    local @ARGV = @_;     # not very polite but needed in order to inject things
 
     my %opt;
     Getopt::Long::Configure('bundling');
-    my $options_ok = GetOptionsFromArray(
-        \@argv => \%opt,
+    # my $options_ok = GetOptionsFromArray(
+    #     \@argv => \%opt,
+    #     map {s{\s*;\s*.*}{}; $_} $class->options
+    # );
+    my $options_ok = GetOptions(
+        \%opt,
         map {s{\s*;\s*.*}{}; $_} $class->options
     );
+    
+    # use Data::Dumper; warn Data::Dumper->Dump([\%opt, \@ARGV], [qw(opt argv)]);
+    # exit;
 
     $class->usage if $opt{help} || !$options_ok;
 
-    return $class->new( { %opt, args => \@argv } );
+    return $class->new( { %opt, args => [ @ARGV ] } );
 }
 
 sub usage {
