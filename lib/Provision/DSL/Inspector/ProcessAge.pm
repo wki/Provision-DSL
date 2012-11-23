@@ -20,6 +20,8 @@ sub _build_state {
 
     foreach my $compare_file ($self->expected_values) {
         next if $compare_file->stat->mtime <= $started;
+        # warn sprintf "File '%s' (%d) > (%d)", 
+        #              $compare_file, $compare_file->stat->mtime, $started;
 
         return 'outdated';
     }

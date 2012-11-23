@@ -30,6 +30,9 @@ sub _build_process {
             ($self->has_pid_file
                 ? (pid_file => $self->pid_file)
                 : ()),
+            ($self->has_inspector
+                ? (inspector => $self->inspector)
+                : ()),
         }
     );
 }

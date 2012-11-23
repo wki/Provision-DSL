@@ -108,9 +108,11 @@ sub _build_inspector_instance {
 
     my ($class, @args) = @{$self->inspector};
     
+    # warn "BUILD INSPECTOR. ref $args[0]=" . (ref $args[0]) . ", args=@args";
+    
     my %args;
     %args = %{+shift @args} if ref $args[0] eq 'HASH';
-    $args{expected_values} = \@args;
+    $args{expected_value} = \@args;
     
     return $class->new(entity => $self, %args);
 }
