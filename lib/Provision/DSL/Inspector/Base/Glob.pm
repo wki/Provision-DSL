@@ -7,7 +7,7 @@ use Module::Load;
 extends 'Provision::DSL::Inspector';
 
 # File::Zglob requires perl 5.8.8 try to get it running
-try { load File::Zglob };
+try { load File::Zglob; File::Zglob->import() };
 
 # may get overloaded in child classes
 sub filter { 1 }
