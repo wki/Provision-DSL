@@ -6,6 +6,12 @@ File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
     - zglob >> regex 
     - $dir->traverse(regex)
 
+* Verzeichnis-Benennung:
+  Evtl. darüber nachdenken, das Verzeichnis auf der Lokalen Maschine anders
+  zu benennen, um Kollissionen zu vermeiden.
+    - .p_name_user@hostname/
+
+  Remote: so belassen.
 
 Bemerkte Probleme
 * Voneinander abhängige Entities können fehlschlagen.
@@ -20,6 +26,10 @@ Bemerkte Probleme
   --> name() wird direkt ausgeliefert
   --> sonstige: erst versuchen, zu instantiieren, dann laufen lassen.
       Ausnahme: ->need_privilege wird abgefangen, undef im Fehlerfall
+
+* Dir
+  - mkdir und andere Optionen verlangen nach einer ArrayRef. Toleranter machen,
+    damit mkdir => 'foo' möglich wird.
 
 CPAN
   * lokalen CPAN Server starten / Proxy ???
