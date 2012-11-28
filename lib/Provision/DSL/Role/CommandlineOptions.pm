@@ -154,7 +154,7 @@ sub log_to_file {
     $self->log_file->spew(
         iomode => '>>',
         join ' ',
-             strftime('%d.%m.%Y %H:%M:%S -', localtime(time)),
+             strftime('%d.%m.%Y %H:%M:%S %Z -', localtime(time)),
              map { _to_string($_) } @_, "\n"
     );
 }
