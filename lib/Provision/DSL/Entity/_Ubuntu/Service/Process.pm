@@ -9,8 +9,12 @@ with    'Provision::DSL::Role::CommandExecution',
 sub _build_need_privilege { 1 }
 
 sub inspect {
-    # warn "PID FILE: ${\$_[0]->pid_file}";
-    $_[0]->is_running ? 'current' : 'missing'
+    # not very cool to introspect parent's secret state, but neccesary.
+    # Reason: _state contains the "running state" during state calculation
+    #         its content is taken to force restart the service
+    $_[0]->is_running 
+        ? $_[0]->parent->_state
+        : 'missing'
 }
 
 sub create { $_->_run_service('start') }

@@ -59,7 +59,7 @@ sub default_config {
 has config_file => (
     is        => 'ro',
     coerce    => to_File,
-    predicate => 'has_config_file',
+    predicate => 1,
 );
 
 has config => (
@@ -72,6 +72,9 @@ sub _build_config {
     my $config_from_file = $self->has_config_file
         ? do "${\$self->config_file}"
         : {};
+    
+    die 'Your config file does not look valid. It must return a Hash-Ref'
+        if ref $config_from_file ne 'HASH';
 
     my $config = merge $config_from_file, default_config;
 
@@ -105,19 +108,19 @@ sub _build_config {
 # allow to override config
 has hostname => (
     is        => 'rw',
-    predicate => 'has_hostname',
+    predicate => 1,
 );
 
 # allow to override config
 has user => (
     is        => 'rw',
-    predicate => 'has_user',
+    predicate => 1,
 );
 
 # allow to override config
 has provision_file => (
     is        => 'rw',
-    predicate => 'has_provision_file',
+    predicate => 1,
 );
 
 # allow faking arch during tests

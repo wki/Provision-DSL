@@ -73,7 +73,7 @@ sub _build_days_of_month { $_[0]->day_of_month }
 
 has crontab_content => (
     is => 'lazy',
-    clearer => '1',
+    clearer => 1,
 );
 
 sub _build_contab_content {

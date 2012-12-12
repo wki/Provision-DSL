@@ -14,8 +14,6 @@ File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
   Remote: so belassen.
 
 Bemerkte Probleme
-* Service: bei Änderung des Datei-Contents muß Service Restarted werden!
-
 * Voneinander abhängige Entities können fehlschlagen.
   Beispiel: Perl-Module brauchen den Pfad zum Perl Interpreter, der ist aber
             erst nach perlbrew Compilierung bekannt.
@@ -42,11 +40,6 @@ _Ubuntu::Package
 
 Perlbrew:
   * beim Installieren: laufen lassen von local/bin/perlbrew self-install
-
-Service:
-  * reload() feststellen.
-    Idee: Prozess-Alter vs. config-file(s)
-    problematisch, wenn sich das dahinter sitzende Script geändert hat
 
 Provision:
   * -x switch: exchange ssh .pub key -- clever or stupid?

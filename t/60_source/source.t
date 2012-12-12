@@ -15,7 +15,7 @@ use ok 'Provision::DSL::Source';
     has a1 => (
         is => 'ro',
         isa => Str,
-        predicate => 'has_a1',
+        predicate => 1,
     );
 }
 

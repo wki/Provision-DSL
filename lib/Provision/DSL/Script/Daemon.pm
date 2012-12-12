@@ -7,8 +7,8 @@ with 'Provision::DSL::Role::CommandAndArgs';
 
 has pid => (
     is        => 'rw',
-    predicate => 'has_pid',
-    clearer   => 'clear_pid',
+    predicate => 1,
+    clearer   => 1,
 );
 
 sub start {
