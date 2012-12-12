@@ -14,6 +14,8 @@ File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
   Remote: so belassen.
 
 Bemerkte Probleme
+* Service: bei Änderung des Datei-Contents muß Service Restarted werden!
+
 * Voneinander abhängige Entities können fehlschlagen.
   Beispiel: Perl-Module brauchen den Pfad zum Perl Interpreter, der ist aber
             erst nach perlbrew Compilierung bekannt.
