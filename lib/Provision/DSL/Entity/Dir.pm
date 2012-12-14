@@ -23,11 +23,13 @@ sub _build_permission { '0755' }
 
 has mkdir => (
     is      => 'rw',
+    coerce  => to_Array,
     default => sub { [] },
 );
 
 has rmdir => (
     is      => 'rw',
+    coerce  => to_Array,
     default => sub { [] },
 );
 
@@ -38,6 +40,7 @@ has links => (
 
 has ignore => (
     is      => 'rw',
+    coerce  => to_Array,
     default => sub { [] },
 );
 

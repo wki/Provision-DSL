@@ -2,8 +2,8 @@ TODOs
 -----
 
 File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
---> evtl. Ersatz dafür selbst machen. 
-    - zglob >> regex 
+--> evtl. Ersatz dafür selbst machen.
+    - zglob >> regex
     - $dir->traverse(regex)
 
 * Verzeichnis-Benennung:
@@ -13,23 +13,26 @@ File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
 
   Remote: so belassen.
 
-Bemerkte Probleme
-* Voneinander abhängige Entities können fehlschlagen.
-  Beispiel: Perl-Module brauchen den Pfad zum Perl Interpreter, der ist aber
-            erst nach perlbrew Compilierung bekannt.
-
-* Auch davon betroffen sind Resourcen, die auf installierte Dinge zurück-
-  greifen, z.B. Url().
-
-* Klasse "LazyEntity" (name tbd) verhält sich wie ein Entity-Proxy.
-  --> AUTOLOAD()
-  --> name() wird direkt ausgeliefert
-  --> sonstige: erst versuchen, zu instantiieren, dann laufen lassen.
-      Ausnahme: ->need_privilege wird abgefangen, undef im Fehlerfall
-
-* Dir
-  - mkdir und andere Optionen verlangen nach einer ArrayRef. Toleranter machen,
-    damit mkdir => 'foo' möglich wird.
+### frühzeitige Instantiierung und verzögerten Lauf rückgängig machen.
+### Bemerkte Probleme
+### * Voneinander abhängige Entities können fehlschlagen.
+###   Beispiel: Perl-Module brauchen den Pfad zum Perl Interpreter, der ist
+###             aber erst nach perlbrew Compilierung existent.
+###
+### * Auch davon betroffen sind Resourcen, die auf installierte Dinge zurück-
+###   greifen, z.B. Url().
+###
+###
+### # * Klasse "LazyEntity" (name tbd) verhält sich wie ein Entity-Proxy.
+### #   --> AUTOLOAD()
+### #   --> name() wird direkt ausgeliefert
+### #   --> sonstige: erst versuchen, zu instantiieren, dann laufen lassen.
+### #       Ausnahme: ->need_privilege wird abgefangen, undef im Fehlerfall
+###
+### besser: Klasse "P::D::Content"
+###   --> enthält subref
+###   --> stringifizierung oder -> stringify() lädt Inhalt
+###
 
 CPAN
   * lokalen CPAN Server starten / Proxy ???
@@ -54,7 +57,7 @@ Entity::Cron
         months          => [1..12],
         days_of_month   => '*/2',
 
-        path            => '/path/to/executable', # copied from name if omitted
+        path            => '/path/to/executable', # default: name
         arguments       => [ ... ],
   };
 

@@ -19,7 +19,7 @@ sub BUILD {
 sub _build_permission { '0644' }
 
 has content => (
-    is        => 'ro',
+    is        => 'ro', # (1) wenn wir das lazy machen, kann Objekt erzeugt werden.
     isa       => Str,
     coerce    => to_Content,
     predicate => 1,
@@ -29,36 +29,36 @@ has patches => (
     is        => 'ro',
     predicate => 1,
 );
- 
+
 sub inspect { -f $_[0]->path ? 'current' : 'missing' }
 
 sub create {
     my $self = shift;
-    
+
     $self->prepare_for_creation;
-    
+
     $self->run_command_maybe_privileged(TOUCH, $self->path);
-    
+
 }
 
 sub __content {
     my $self = shift;
-    
+
     return if !$self->has_content;
-    
+
     return $self->create_entity(
         File_Content => {
             parent  => $self,
             name    => $self->name,
             path    => $self->path,
-            content => $self->content,
+            content => $self->content, # (2) dann sterben wir hier
         }
     );
 }
 
 sub __patch {
     my $self = shift;
-    
+
     return if !$self->has_patches;
 
     return $self->create_entity(
@@ -69,6 +69,6 @@ sub __patch {
             patches => $self->patches,
         }
     );
-}        
+}
 
 1;
