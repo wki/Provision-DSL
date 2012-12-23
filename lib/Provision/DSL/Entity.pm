@@ -2,6 +2,7 @@ package Provision::DSL::Entity;
 use Moo;
 use Module::Load;
 use Scalar::Util 'blessed';
+use Try::Tiny;
 use Provision::DSL::App;
 use Provision::DSL::Types;
 use Provision::DSL::Inspector::Never;
@@ -16,6 +17,23 @@ has parent => (
     predicate => 1,
 );
 
+# children
+has children => (
+    is => 'lazy',
+);
+
+sub _build_children { [] }
+
+sub add_child       { goto \&add_children }
+sub add_children    { push @{ $_[0]->children }, @_[1..$#_] }
+
+sub nr_children     { scalar @{ $_[0]->children } }
+
+sub all_children    { @{ $_[0]->children } }
+
+sub has_no_child    { goto \&has_no_children }
+sub has_no_children { !scalar @{ $_[0]->children } }
+
 # state management
 has state => (
     is => 'lazy',
@@ -24,11 +42,13 @@ has state => (
 
 sub _build_state {
     my $self = shift;
+    
+    ### FIXME: can we return 'N/A' as a state when the following things fail?
 
     $self->_clear_state; # clears _state (!)
 
     $self->add_to_state($self->inspect);
-    $self->add_to_state($self->inspector_instance->state)
+    $self->add_to_state($self->inspector_instance->state) # may fail
         if $self->has_inspector;
 
     $self->add_to_state( $_->is_ok ? 'current' : 'outdated' )
@@ -53,7 +73,7 @@ has default_state => (
 sub _build_default_state { 'current' }
 
 sub add_to_state {
-    my $self = shift;
+    my $self  = shift;
     my $state = shift or return;
 
     if ( !$self->_has_state ) {
@@ -108,8 +128,6 @@ sub _build_inspector_instance {
 
     my ($class, @args) = @{$self->inspector};
     
-    # warn "BUILD INSPECTOR. ref $args[0]=" . (ref $args[0]) . ", args=@args";
-    
     my %args;
     %args = %{+shift @args} if ref $args[0] eq 'HASH';
     $args{expected_value} = \@args;
@@ -139,26 +157,36 @@ sub _build_installer_instance {
     return $class->new(entity => $self, %{$args || {}});
 }
 
+### FIXME: use the same signature for installer/inspector
+has _source => (
+    is        => 'ro',
+    predicate => 'has_source',
+    init_arg  => 'source',
+    # isa     =>  [ $class, @args ]
+);
+
+has source => (
+    is => 'lazy',
+    init_arg => undef,
+);
+
+sub _build_source {
+    my $self = shift;
+    
+    die 'cannot build instance without source'
+        if !$self->has_source;
+    
+    # may occur in child classes
+    return $self->_source if blessed $self->_source;
+    
+    my ($class, @args) = @{ $self->_source };
+    return $class->new(@args);
+}
+
 # must get overloaded if we are handling ourselves
 sub create {}
 sub change {}
 sub remove {}
-
-# children
-has children => (
-    is => 'lazy',
-);
-
-sub _build_children { [] }
-
-sub add_children { goto \&add_child }
-sub add_child { push @{ $_[0]->children }, @_[1..$#_] }
-
-sub nr_children { scalar @{ $_[0]->children } }
-
-sub all_children { @{ $_[0]->children } }
-
-sub has_no_children { !scalar @{ $_[0]->children } }
 
 # installation
 has wanted => (
@@ -169,22 +197,34 @@ has wanted => (
 
 sub install {
     my $self   = shift;
-    my $wanted = shift; $wanted = $self->wanted if !defined $wanted;
-    my $state  = shift; $state  = $self->state  if !defined $state;
-
-    my @log = ( $self, $state );
+    my $wanted = shift; 
+    my $state  = shift; 
+    
+    $wanted = $self->wanted if !defined $wanted;
+    try {
+        $state  = $self->state  if !defined $state;
+    };
+    
+    my @log = ( $self, $state || 'N/A' );
     unshift @log, ' -' if $self->parent;
 
-    if ( $self->is_ok( $wanted, $state ) ) {
+    if ( $state && $self->is_ok( $wanted, $state ) ) {
         $self->log( @log, '- OK' );
         return;
     }
 
     my $action = $wanted
-        ? ( $state eq 'missing' ? 'create' : 'change' )
+        ? ( $state 
+            ? $state eq 'missing' ? 'create' : 'change'
+            : 'probably stop' )
         : 'remove';
 
     $self->log_dryrun( @log, "- would $action" ) and return;
+    if (!$state) {
+        $self->log( @log, 'unknown state, stopping');
+        die 'cannot execute on unknown state';
+    }
+
     $self->log( @log, "=> $action" );
 
     ### FIXME: is this wise? would it be better to let only one

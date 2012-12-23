@@ -13,7 +13,7 @@ Entity Syntax:
 
 
 Bestandteile:
- (+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
+ (attribut, methode(), >: extends, +: Rolle)
 
  * Script::Provision            remote laufendes script
  * DSL                          erzeugt pro Source/Entity eine sub
@@ -22,45 +22,42 @@ Bestandteile:
     ----[ entity creation + caching ]
     ----[ command execution ]
  * Base                         Basisklasse constructor, name-handling
+    name
  * Command                      Kommando-Ausführung mittels IPC::Run3
- * Entity                       Basisklasse von Entities
-    ! App
-    ! User
-    + parent: Entity | unset
-    + children
-    - add_child(), add_children()
-    - nr_children()
-    - all_children()
-    - has_no_children()
+ * Entity > Base+App+User        Basisklasse von Entities
+    parent: Entity | unset
+    children
+    add_child(), add_children()
+    nr_children()
+    all_children()
+    has_no_child(), has_no_children()
     
-    + state: missing | outdated | current
-    + default_state: missing | outdated | current
-    - add_to_state()
+    state: missing | outdated | current # may fail
+    default_state: missing | outdated | current
+    add_to_state()
     
-    + need_privilege
+    need_privilege # may fail
     
-    + wanted
-    - install()
-    - is_ok()
+    wanted
+    install() # may fail
+    is_ok()  # may fail
+    create() # may fail
+    change() # may fail
+    remove() # may fail
     
-    + inspector
-    + inspector_class
-    + inspector_instance
-    - inspect()
+    inspector               // additional inspector
+    inspector_instance
+    inspect() # may fail
     
-    + installer
-    + installer_class
-    + installer_instance
-    - create()
-    - change()
-    - remove()
+    installer               // alternate/additional installer ???
+    installer_instance
+    
+    source                  // a Url, File, Dir, ...
+    source_instance
 
- * Inspector
-    ! Entity
+ * Inspector +Entity
     
- * Installer
-    ! Entity
-    ! CommandExecution
+ * Installer +Entity,CommandExecution
     
  * Role
     * App                       App handling und delegation
@@ -71,9 +68,8 @@ Bestandteile:
     * ProcessControl            pid_file-Attribut und pid() Methode
     * User                      user, group ...
     
- * Source                       Basisklasse von Datenquellen
-      + name: Str
-      + content: Str
+ * Source > Base                Basisklasse von Datenquellen
+      content: Str
     * Bin                       Binary unter /bin im .tar Archiv
     * Resource
         + root_dir: ExistingDir
@@ -122,4 +118,22 @@ ScriptSuccess('file', 'arg1', 'arg2')  exit 0: current, sonst: outdated
 
 -- beim Instantiieren:
 Some::Inspector->new( ..., expected_value => [ ... ] );
+
+
+Ablauf eines Provisioning Scripts
+ * DSL "installieren", d.h. Schlüsselworte definieren
+    * Entity    : sub { app->create_entity(P::D::Entity::xxx)->install }
+    * Source    : sub { "P::D::Source::xxx"->new(@_) }
+          evtl:         +[ "P::D::Inspector::xxx", @_ ]
+    * Inspector : sub { +[ "P::D::Inspector::xxx", @_ ] }
+    * Installer : sub { +[ "P::D::Installer::xxx", @_ ] }
+ * jeden einzelnen Befehl "laufen" lassen
+
+
+Ablauf eines Provisioning Vorganges
+ * Lokal: Module sammeln
+ * Lokal: Resourcen sammeln
+ * Lokal: rsyncd starten
+ * ssh <hole script>, <hole module und recourcen>, starte script, kopiere logs
+ * Lokal: rsyncd stop
 

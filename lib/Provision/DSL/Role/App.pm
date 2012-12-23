@@ -12,6 +12,7 @@ has app => (
             user_has_privilege
             run_command pipe_into_command command_succeeds
         )
+        # FIXME: can we safely remove *command* methods above?
     ],
 );
 

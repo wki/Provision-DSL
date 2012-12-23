@@ -53,6 +53,30 @@ use ok 'Provision::DSL::Installer::Debug';
         'privilege needed when inspector requests it';
 }
 
+# source handling
+{
+    {
+        package S;
+        use Moo;
+        
+        has thing => ( is => 'rw', default => sub { '' } );
+
+        sub add { $_[0]->thing( join '/', $_[0]->thing, $_[1] ) }
+    }
+    
+    my $e = Provision::DSL::Entity->new('foo');
+    ok !$e->has_source, 'element 1 has no source';
+    dies_ok { $e->source } 'accessing source dies w/o source';
+    
+    $e = Provision::DSL::Entity->new('foo', { source => ['S'] });
+    ok $e->has_source, 'element 2 has source';
+    lives_ok { $e->source } 'accessing source lives w/ source';
+    isa_ok $e->source, 'S', 'source isa S';
+    
+    done_testing; exit; #### FIXME: remove
+}
+
+
 # states/privilege/wanted depending on parent/child
 {
     my @testcases = (
