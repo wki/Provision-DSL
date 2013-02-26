@@ -252,7 +252,7 @@ sub run {
 
     $self->prepare_environment;
     $self->pack_requisites;
-
+    
     my $result = $self->remote_provision;
 
     $self->log(
@@ -374,7 +374,7 @@ sub _pack_file_or_dir {
     #          therefore we must join strings instead of ->subdir()
     run3 [
         $self->config->{local}->{rsync},
-        '--checksum', '--recursive', '--perms',
+        '--checksum', '--recursive', '--perms', '--delete',
         ( map { ('--exclude' => $_) } @exclude ),
         $source => join('/', $self->cache_dir, $target),
     ];
