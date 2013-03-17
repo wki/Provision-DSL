@@ -1,6 +1,11 @@
 TODOs
 -----
 
+* Umstellung auf Net::OpenSSH 
+  benötigt openssh 4.1+, ab Sep 2007 verfügbar
+  --> langen SSH Aufruf durch Sequenz von $ssh->... Aufrufen tauschen
+  --> new(..., master_opts => [ -R => ..., ])
+
 File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
 --> evtl. Ersatz dafür selbst machen.
     - zglob >> regex
