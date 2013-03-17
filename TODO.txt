@@ -6,6 +6,8 @@ TODOs
   --> langen SSH Aufruf durch Sequenz von $ssh->... Aufrufen tauschen
   --> new(..., master_opts => [ -R => ..., ])
 
+* bessere Fehlermeldungen einbauen. Optimalerweise im Log mitschreiben.
+
 File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
 --> evtl. Ersatz dafür selbst machen.
     - zglob >> regex
