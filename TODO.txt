@@ -4,9 +4,21 @@ TODOs
 * Umstellung auf Net::OpenSSH 
   benötigt openssh 4.1+, ab Sep 2007 verfügbar
   --> langen SSH Aufruf durch Sequenz von $ssh->... Aufrufen tauschen
-  --> new(..., master_opts => [ -R => ..., ])
+  --> new(..., master_opts => [ -R => 'reverse rsync port forward', ])
 
 * bessere Fehlermeldungen einbauen. Optimalerweise im Log mitschreiben.
+
+* etwas wie "Tasks" einführen. Haupt-Programm ist Task "provision"
+  
+  Attribut "task" bei Entity. Normal: ignorieren
+      Entity name => { ..., task => 'maintenance' };
+  
+  Steuerung im Script:
+    +maintenance,          +no-maintenance (default)
+    +provision (default),  +no-provision
+
+  Status-Abfrage:
+    --status | -s  --> listet nur auf, macht nix. Ein Status pro Task
 
 File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
 --> evtl. Ersatz dafür selbst machen.
@@ -15,7 +27,7 @@ File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
 
 * Verzeichnis-Benennung:
   Evtl. darüber nachdenken, das Verzeichnis auf der Lokalen Maschine anders
-  zu benennen, um Kollissionen zu vermeiden.
+  zu benennen, um Kollissionen mit mehreren Maschinen zu vermeiden.
     - .p_name_user@hostname/
 
   Remote: so belassen.
