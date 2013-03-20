@@ -5,6 +5,11 @@ TODOs
   benötigt openssh 4.1+, ab Sep 2007 verfügbar
   --> langen SSH Aufruf durch Sequenz von $ssh->... Aufrufen tauschen
   --> new(..., master_opts => [ -R => 'reverse rsync port forward', ])
+  --> PerlIO::via::ANSIColor zum Färben von STDOUT/STDERR
+  
+  
+perl -MPerlIO::via::ANSIColor -MNet::OpenSSH -E 'PerlIO::via::ANSIColor->paint(STDOUT, "green"); my $ssh = Net::OpenSSH->new("localhost"); $ssh->system("perl -E \"\$|=1; say q(start); sleep 2; say STDERR q(stop);\"");'
+
 
 * bessere Fehlermeldungen einbauen. Optimalerweise im Log mitschreiben.
 
