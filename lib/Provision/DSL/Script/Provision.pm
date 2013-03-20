@@ -10,6 +10,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Provision::DSL::Types;
 use Provision::DSL::Const;
 use Provision::DSL::Script::Daemon;
+use Provision::DSL::Script::Remote;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 
 with 'Provision::DSL::Role::CommandlineOptions',
@@ -213,6 +214,26 @@ sub _build_rsync_daemon {
                 '--port', $self->config->{local}->{rsync_port},
                 '--config', $self->rsyncd_config_file->stringify,
             ],
+        }
+    );
+}
+
+# a Provision::DSL::Script::Remote object
+has remote => (
+    is => 'lazy',
+);
+
+sub _build_remote {
+    my $self = shift;
+    
+    my $remote_config = $self->config->{remote};
+    
+    return Provision::DSL::Script::Remote->new(
+        $remote_config->{hostname},
+        {
+            options => {
+                ($remote_config->{user} ? (-l => $remote_config->{user}) : ()),
+            },
         }
     );
 }
@@ -463,8 +484,14 @@ sub pack_resource {
     );
 }
 
-# remaining args are passed thru to run3 for testing purposes
 sub remote_provision {
+    my $self = shift;
+    
+    ...
+}
+
+# remaining args are passed thru to run3 for testing purposes
+sub OLD_remote_provision {
     my $self = shift;
 
     my $local       = $self->config->{local};

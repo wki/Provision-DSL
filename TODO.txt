@@ -1,6 +1,17 @@
 TODOs
 -----
 
+* Umbau: Provision::DSL::Script::Provision ist zu groß.
+  - P::D::S::P              wird singleton
+  - P::D::S::P::*           erhält Rolle "script" mit vielen "handles" ...
+  - P::D::S::P::Config      steuert Config Einlesen
+  - P::D::S::P::Requisites  verwaltet notwendige Module
+  - P::D::S::P::Resources   verwaltet notwendige Dateien
+  - P::D::S::P::DSL         kümmert sich ums Script
+  - P::D::S::P::RsyncDaemon konfiguriert, startet, stoppt den Rsync Daemon
+  - P::D::S::P::Remote      repräsentiert den Remote Rechner
+
+
 * Umstellung auf Net::OpenSSH 
   benötigt openssh 4.1+, ab Sep 2007 verfügbar
   --> langen SSH Aufruf durch Sequenz von $ssh->... Aufrufen tauschen
