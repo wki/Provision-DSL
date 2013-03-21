@@ -123,6 +123,11 @@ sub _build_rsync_daemon {
     );
 }
 
+# has timer => (
+#     is => 'ro',
+#     default => sub { warn "\nTIMER\n\n"; Provision::DSL::Script::Timer->new(provision => $_[0]) },
+# );
+
 has timer => ( is => 'lazy' );
 sub _build_timer {
     my $self = shift;
