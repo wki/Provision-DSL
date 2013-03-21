@@ -10,7 +10,8 @@ use Provision::DSL::Const;
 use Provision::DSL::Util ();
 
 with 'Provision::DSL::Role::CommandlineOptions',
-     'Provision::DSL::Role::CommandExecution';
+     'Provision::DSL::Role::CommandExecution',
+     'Provision::DSL::Role::Singleton';
 
 has is_running => (
     is => 'rw',
@@ -61,31 +62,6 @@ has _entity_cache => (
     is => 'rw',
     default => sub { {} },
 );
-
-####################################### Singleton
-
-around new => sub {
-    my ($orig, $class, @args) = @_;
-
-    ### is it clean to check for instance() in call hierarchy?
-    for (my $i = 0; $i < 10; $i++) {
-        my ($package, $filename, $line, $sub) = caller($i);
-
-        next if !$sub || $sub !~ m{:: instance \z}xms;
-
-        return $class->$orig(@args);
-    }
-
-    die 'Singleton-App: calling new directly is forbidden';
-};
-
-my $instance;
-sub instance {
-    my $class = shift;
-    $instance ||= $class->new_with_options(@_);
-
-    return $instance;
-}
 
 sub DEMOLISH {
     my $self = shift;

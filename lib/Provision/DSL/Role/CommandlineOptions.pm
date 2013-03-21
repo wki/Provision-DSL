@@ -95,20 +95,13 @@ sub new_with_options {
 
     my %opt;
     Getopt::Long::Configure('bundling');
-    # my $options_ok = GetOptionsFromArray(
-    #     \@argv => \%opt,
-    #     map {s{\s*;\s*.*}{}; $_} $class->options
-    # );
     my $options_ok = GetOptions(
         \%opt,
         map {s{\s*;\s*.*}{}; $_} $class->options
     );
-    
-    # use Data::Dumper; warn Data::Dumper->Dump([\%opt, \@ARGV], [qw(opt argv)]);
-    # exit;
 
     $class->usage if $opt{help} || !$options_ok;
-
+    
     return $class->new( { %opt, args => [ @ARGV ] } );
 }
 

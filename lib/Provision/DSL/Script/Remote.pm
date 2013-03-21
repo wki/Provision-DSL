@@ -4,13 +4,11 @@ use PerlIO::via::ANSIColor;
 use Net::OpenSSH;
 use IO::Multiplex;
 
-extends 'Provision::DSL::Base';
+with 'Provision::DSL::Role::Provision';
 
 has host => (
-    is => 'lazy',
+    is => 'rw',
 );
-
-sub _build_host { $_[0]->name }
 
 has options => (
     is      => 'ro',
@@ -32,9 +30,9 @@ has ssh => (
     is => 'lazy',
 );
 
-sub _build_ssh { 
+sub _build_ssh {
     my $self = shift;
-    
+
     PerlIO::via::ANSIColor->paint(*STDOUT, $self->stdout_color)
         if $self->has_stdout_color;
 
@@ -46,19 +44,61 @@ sub _build_ssh {
 
 sub run_command {
     my $self = shift;
-    
+
     my ($in, $out, $err, $pid) = $self->ssh->open3(@_);
-    
+
     my $mux = IO::Multiplex->new;
     $mux->add($out);
     $mux->set_callback_object(__PACKAGE__ . '::STDOUT', $out);
-    
+
     $mux->add($err);
     $mux->set_callback_object(__PACKAGE__ . '::STDERR', $err);
 
     # $mux->set_callback_object(__PACKAGE__);
     $mux->loop;
 }
+
+### SET ENV:
+###
+### qq{export dir="\$HOME/$dir_name";},
+### qq{export PERL5LIB="\$dir/lib/perl5";},
+### 
+### (
+###     map { qq{export $_="$remote->{environment}->{$_}";} }
+###     keys %{$remote->{environment}}
+### ),
+
+
+sub pull_cache {
+    # '$PROVISION_RSYNC',
+    #     '-cr',
+    #     '--perms',
+    #     '--delete',
+    #     '--exclude', '"/lib/**.pod"',
+    #     '--exclude', "/lib/perl5/${\$self->archname}",
+    #     '--exclude', '/rsyncd.conf',
+    #     '--exclude', '/log',
+    #     'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/local' => '$dir/'
+}
+
+sub run_dsl {
+    # '$PROVISION_PERL', '$dir/provision.pl',
+    #     ($self->dryrun  ? ' -n' : ()),
+    #     ($self->verbose ? ' -v' : ()),
+    #     '-l', '$dir/log',
+    #     '-U', '"' . ((getpwuid($<))[6]) . '"'
+    #     # TODO: add more options
+}
+
+sub push_logs {
+    # '$PROVISION_RSYNC',
+    #     '-cr',
+    #     '--delete',
+    #     '$dir/log/' => 'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/log/;'
+}
+
+
+# -----------------------------------------------[ Mux stuff
 
 package Provision::DSL::Script::Remote::STDOUT;
 
