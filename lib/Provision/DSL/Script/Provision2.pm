@@ -37,7 +37,7 @@ sub _build_rsync_daemon {}
 has timer => ();
 sub _build_timer {}
 
-# directories with lazy build
+uzgug# directories with lazy build
 has root_dir => ();
 has cache_dir => ();
 
