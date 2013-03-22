@@ -1,14 +1,13 @@
-package Provision::DSL::Script::Provision;
+package Provision::DSL::Local;
 use Moo;
 use Cwd;
 use Config;
 use Path::Class;
-use Provision::DSL::Script::Config;
-use Provision::DSL::Script::Cache;
-use Provision::DSL::Script::DSL;
-use Provision::DSL::Script::RsyncDaemon;
-use Provision::DSL::Script::Remote;
-use Provision::DSL::Script::Timer;
+use Provision::DSL::Local::Config;
+use Provision::DSL::Local::Cache;
+use Provision::DSL::Local::RsyncDaemon;
+use Provision::DSL::Local::Remote;
+use Provision::DSL::Local::Timer;
 use Provision::DSL::Types;
 
 with 'Provision::DSL::Role::CommandlineOptions',
@@ -78,54 +77,32 @@ sub _build_cache_dir {
 # aggregations with lazy build
 has config_file => ( is => 'ro', predicate => 1 );
 has config => ( is => 'lazy' );
-sub _build_config {
-    my $self = shift;
-    
-    Provision::DSL::Script::Config->new(
-        provision => $self,
-    );
-}
+sub _build_config { Provision::DSL::Local::Config->new }
 
 has cache => ( is => 'lazy' );
 sub _build_cache {
     my $self = shift;
     
-    Provision::DSL::Script::Cache->new(
-        provision => $self,
-        dir       => $self->cache_dir,
-    );
-}
-
-has dsl => ( is => 'lazy' );
-sub _build_dsl {
-    my $self = shift;
-    
-    Provision::DSL::Script::DSL->new(
-        provision => $self,
+    Provision::DSL::Local::Cache->new(
+        dir => $self->cache_dir,
     );
 }
 
 has remote => ( is => 'lazy' );
-sub _build_remote {
-    my $self = shift;
-    
-    Provision::DSL::Script::Remote->new(
-        provision => $self,
-    );
-}
+sub _build_remote { Provision::DSL::Local::Remote->new }
 
 has rsync_daemon => ( is => 'lazy' );
-sub _build_rsync_daemon {
+sub _build_rsync_daemon { 
     my $self = shift;
     
-    Provision::DSL::Script::RsyncDaemon->new(
-        provision => $self,
+    Provision::DSL::Local::RsyncDaemon->new(
+        dir => $self->cache_dir,
     );
 }
 
 has timer => (
     is => 'ro',
-    default => sub { Provision::DSL::Script::Timer->new(provision => $_[0]) },
+    default => sub { Provision::DSL::Local::Timer->new },
 );
 
 around options => sub {
@@ -149,7 +126,6 @@ sub run {
     my $self = shift;
 
     $self->cache->populate;
-    $self->dsl->must_have_valid_syntax;
 
     $self->rsync_daemon->start;
         $self->remote->pull_cache;

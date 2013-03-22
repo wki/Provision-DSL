@@ -1,10 +1,10 @@
-package Provision::DSL::Script::Remote;
+package Provision::DSL::Local::Remote;
 use Moo;
 use PerlIO::via::ANSIColor;
 use Net::OpenSSH;
 use IO::Multiplex;
 
-with 'Provision::DSL::Role::Provision';
+with 'Provision::DSL::Role::Local';
 
 has host => (
     is => 'rw',

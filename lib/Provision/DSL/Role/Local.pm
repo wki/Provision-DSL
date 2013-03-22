@@ -1,7 +1,7 @@
-package Provision::DSL::Role::Provision;
+package Provision::DSL::Role::Local;
 use Moo::Role;
 
-has provision => (
+has app => (
     is       => 'lazy',
     handles  => [
         qw(
@@ -11,6 +11,6 @@ has provision => (
     ],
 );
 
-sub _build_provision { Provision::DSL::Script::Provision->instance }
+sub _build_app { Provision::DSL::Local->instance }
 
 1;

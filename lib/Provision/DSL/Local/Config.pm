@@ -1,13 +1,15 @@
-package Provision::DSL::Script::Config;
+package Provision::DSL::Local::Config;
 use Moo;
 use Hash::Merge 'merge';
 use Provision::DSL::Const;
 
-with 'Provision::DSL::Role::Provision';
+with 'Provision::DSL::Role::Local';
 
-has name => (is => 'ro');
-has local => (is => 'ro');
-has remote => (is => 'ro');
+has name           => (is => 'ro');
+has provision_file => (is => 'ro');
+has resources      => (is => 'ro');
+has local          => (is => 'ro');
+has remote         => (is => 'ro');
 
 sub default_config {
     +{
@@ -91,13 +93,6 @@ sub BUILDARGS {
     $provision->log_debug($class, 'BUILDARGS:', $config);
     
     return $config;
-}
-
-sub BUILD {
-    my $self = shift;
-    
-    $self->log_debug('BUILD', ref $self);
-    # TODO: read config
 }
 
 1;

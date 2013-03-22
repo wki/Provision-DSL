@@ -15,7 +15,8 @@ Entity Syntax:
 Bestandteile:
  (+: attribut, -: methode, *: Klasse, !: Rolle, !!: Trait)
 
- * Script::Provision            lokal laufendes script
+ * Local                        lokal laufendes Script
+ * Local::*                     Bestandteile des lokalen Scripts
  * DSL                          erzeugt pro Source/Entity eine sub
  * App                          zentrale Ablaufsteuerung remote
     ----[ logging ]

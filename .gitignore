@@ -13,7 +13,7 @@ META.yml
 MYMETA.yml
 nytprof.out
 pm_to_blib
-local/
+/local/
 Provision-DSL-*/
 Provision-DSL-*.tar.gz
 .provision_lib/

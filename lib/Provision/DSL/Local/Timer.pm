@@ -1,17 +1,13 @@
-package Provision::DSL::Script::Timer;
+package Provision::DSL::Local::Timer;
 use Moo;
 use Time::HiRes qw(gettimeofday tv_interval);
 
-with 'Provision::DSL::Role::Provision';
+with 'Provision::DSL::Role::Local';
 
-has start_time => ( is => 'rw' );
-
-sub BUILD {
-    my $self = shift;
-    
-    $self->log_debug('BUILD', ref $self);
-    $self->start;
-}
+has start_time => (
+    is      => 'rw', 
+    default => sub { [gettimeofday] },
+);
 
 sub start {
     my $self = shift;
