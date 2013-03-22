@@ -123,19 +123,10 @@ sub _build_rsync_daemon {
     );
 }
 
-# has timer => (
-#     is => 'ro',
-#     default => sub { warn "\nTIMER\n\n"; Provision::DSL::Script::Timer->new(provision => $_[0]) },
-# );
-
-has timer => ( is => 'lazy' );
-sub _build_timer {
-    my $self = shift;
-    
-    Provision::DSL::Script::Timer->new(
-        provision => $self,
-    );
-}
+has timer => (
+    is => 'ro',
+    default => sub { Provision::DSL::Script::Timer->new(provision => $_[0]) },
+);
 
 around options => sub {
     my ($orig, $self) = @_;
@@ -156,8 +147,6 @@ sub usage_text { '[[user]@hostname] [provision_file.pl] [(+|-|=) task]' }
 
 sub run {
     my $self = shift;
-
-    $self->timer->start;
 
     $self->cache->populate;
     $self->dsl->must_have_valid_syntax;
