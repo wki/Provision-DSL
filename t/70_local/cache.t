@@ -25,6 +25,12 @@ note 'subdir creation';
 note 'perlbrew installer';
 {
     Provision::DSL::Local->clear_instance;
+
+    no warnings 'redefine';
+    local *Provision::DSL::Script::Provision::http_get =
+        sub { $_[1] };
+    use warnings 'redefine';
+
     my $dir       = Path::Class::tempdir(CLEANUP => 1);
     my $cache     = Provision::DSL::Local::Cache->new(dir => $dir);
     my $installer = $dir->file(PERLBREW_INSTALLER);

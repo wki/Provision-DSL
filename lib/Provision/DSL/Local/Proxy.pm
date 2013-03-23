@@ -45,7 +45,8 @@ sub _build_ssh {
 sub run_command {
     my $self = shift;
 
-    my ($in, $out, $err, $pid) = $self->ssh->open3(@_);
+    my ($in, $out, $err, $pid) =
+        $self->ssh->open3(map { "$_" } @_);
 
     my $mux = IO::Multiplex->new;
     $mux->add($out);
