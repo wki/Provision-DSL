@@ -22,6 +22,12 @@ has provision_file => (
 
 sub _build_provision_file { $_[0]->dir->file('provision.pl') }
 
+has provision_start_script => (
+    is => 'lazy',
+);
+
+sub _build_provision_start_script { $_[0]->dir->file('provision.sh') }
+
 sub BUILD {
     my $self = shift;
     
@@ -38,6 +44,7 @@ sub populate {
     $self->pack_provision_libs;
     $self->pack_resources;
     $self->pack_provision_script;
+    $self->pack_provision_start_script;
 }
 
 sub pack_perlbrew_installer {
@@ -167,7 +174,7 @@ sub pack_resource {
     );
 }
 
-sub pack_provision_script {
+sub pack_provision_file {
     my $self = shift;
 
     my $provision_file_name = $self->config->provision_file || 'provision.pl';
@@ -184,9 +191,39 @@ sub pack_provision_script {
                            }{$self->_include($script_dir->file("$1.pl"), $2)}exmsg;
 
     $self->log(" - packing provision script '$provision_file_name'");
-
+    $self->log_debug('Provision Script:', $provision_script);
+    
     $self->must_have_valid_syntax($provision_script);
     $self->provision_file->spew($provision_script);
+}
+
+sub pack_provision_start_script {
+    my $self = shift;
+    
+    my $dir_name    = $self->dir->basename;
+    my $script_name = $self->provision_file->basename;
+    my $remote      = $self->config->remote;
+    my $environment = $remote->{environment};
+    
+    my $script =
+        join "\n",
+            '#!/bin/sh',
+            '',
+            qq{export dir="\$HOME/$dir_name"},
+            qq{export PERL5LIB="\$dir/lib/perl5"},
+            (
+                map { qq{export $_="$environment->{$_}"} }
+                keys %$environment
+            ),
+            '',
+            qq{cd \$dir},
+            '',
+            qq{$remote_env->{PROVISION_PERL} $script_name \$\@};
+
+    $self->log(" - packing provision start script '$script_name'");
+    $self->log_debug('Provision Script:', $script);
+
+    $self->provision_start_script->spew($script);
 }
 
 sub _include {

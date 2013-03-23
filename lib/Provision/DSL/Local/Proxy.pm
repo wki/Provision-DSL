@@ -3,6 +3,7 @@ use Moo;
 use PerlIO::via::ANSIColor;
 use Net::OpenSSH;
 use IO::Multiplex;
+use Path::Class ();
 
 with 'Provision::DSL::Role::Local';
 
@@ -55,20 +56,8 @@ sub run_command {
     $mux->add($err);
     $mux->set_callback_object(__PACKAGE__ . '::STDERR', $err);
 
-    # $mux->set_callback_object(__PACKAGE__);
     $mux->loop;
 }
-
-### SET ENV:
-###
-### qq{export dir="\$HOME/$dir_name";},
-### qq{export PERL5LIB="\$dir/lib/perl5";},
-### 
-### (
-###     map { qq{export $_="$remote->{environment}->{$_}";} }
-###     keys %{$remote->{environment}}
-### ),
-
 
 sub pull_cache {
     # '$PROVISION_RSYNC',
@@ -83,12 +72,22 @@ sub pull_cache {
 }
 
 sub run_dsl {
-    # '$PROVISION_PERL', '$dir/provision.pl',
-    #     ($self->dryrun  ? ' -n' : ()),
-    #     ($self->verbose ? ' -v' : ()),
-    #     '-l', '$dir/log',
-    #     '-U', '"' . ((getpwuid($<))[6]) . '"'
-    #     # TODO: add more options
+    my $self = shift;
+    
+    my $provision_start_script =
+        Path::Class::File->new(
+            cache->dir->basename,
+            cache->provision_start_script->basename
+        );
+
+    $self->run_command(
+        $provision_start_script,
+        ($self->dryrun  ? '-n' : ()),
+        ($self->verbose ? '-v' : ()),
+        '-l', 'log',
+        '-U', ((getpwuid($<))[6]),
+        @_
+    );
 }
 
 sub push_logs {
@@ -101,7 +100,7 @@ sub push_logs {
 
 # -----------------------------------------------[ Mux stuff
 
-package Provision::DSL::Script::Remote::STDOUT;
+package Provision::DSL::Local::Proxy::STDOUT;
 
 sub mux_input {
     my ($package, $mux, $fh, $input) = @_;
@@ -109,7 +108,7 @@ sub mux_input {
     print $$input;
 }
 
-package Provision::DSL::Script::Remote::STDERR;
+package Provision::DSL::Local::Proxy::STDERR;
 
 sub mux_input {
     my ($package, $mux, $fh, $input) = @_;

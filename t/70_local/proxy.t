@@ -10,7 +10,7 @@ use ok 'Provision::DSL::Local';
 note 'remote execution';
 SKIP: {
     system 'ssh localhost true';
-    skip 'cannot ssh to localhost', 1
+    skip 'cannot ssh to localhost', 5
         if $? >> 8;
 
     system 'ssh localhost false';
@@ -29,7 +29,12 @@ SKIP: {
     ok -f $file, 'touch-file created via ssh';
 
     $proxy->run_command("export XX42=foo; echo \$XX42 > $file");
-    is scalar $file->slurp, "foo\n", 'defining env variables via export works';
+    is scalar $file->slurp, "foo\n", 'env export works';
+
+    $proxy->run_command("export XX42=bar;", "echo \$XX42 > $file; ps ax");
+    is scalar $file->slurp, "bar\n", 'env export works';
+
+    # $proxy->run_command("ps ax 1>&2");
 }
 
 done_testing;
