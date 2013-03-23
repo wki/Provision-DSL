@@ -8,7 +8,8 @@ use Path::Class ();
 with 'Provision::DSL::Role::Local';
 
 has host => (
-    is => 'rw',
+    is       => 'rw',
+    required => 1,
 );
 
 has options => (
@@ -46,6 +47,8 @@ sub _build_ssh {
 sub run_command {
     my $self = shift;
 
+    $self->log_debug('Remote-Executing command: ', @_);
+
     my ($in, $out, $err, $pid) =
         $self->ssh->open3(map { "$_" } @_);
 
@@ -60,24 +63,40 @@ sub run_command {
 }
 
 sub pull_cache {
-    # '$PROVISION_RSYNC',
-    #     '-cr',
-    #     '--perms',
-    #     '--delete',
-    #     '--exclude', '"/lib/**.pod"',
-    #     '--exclude', "/lib/perl5/${\$self->archname}",
-    #     '--exclude', '/rsyncd.conf',
-    #     '--exclude', '/log',
-    #     'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/local' => '$dir/'
+    my $self = shift;
+
+    $self->log(' - Remote: pulling cache');
+
+    my $remote      = $self->config->remote;
+    my $environment = $remote->{environment};
+
+    my $rsync       = $environment->{PROVISION_RSYNC};
+    my $port        = $environment->{PROVISION_RSYNC_PORT};
+    my $dir_name    = $self->app->cache->dir->basename;
+    my $archname    = $self->app->archname;
+
+    $self->run_command(
+        $rsync,
+        '-cr',
+        '--perms',
+        '--delete',
+        '--exclude', '"/lib/**.pod"',
+        '--exclude', "/lib/perl5/$archname",
+        '--exclude', '/rsyncd.conf',
+        '--exclude', '/log',
+        "rsync://127.0.0.1:$port/local" => "$dir_name/"
+    );
 }
 
 sub run_dsl {
     my $self = shift;
-    
+
+    $self->log(' - Remote: running dsl');
+
     my $provision_start_script =
         Path::Class::File->new(
-            cache->dir->basename,
-            cache->provision_start_script->basename
+            $self->app->cache->dir->basename,
+            $self->app->cache->provision_start_script->basename
         );
 
     $self->run_command(
@@ -91,21 +110,47 @@ sub run_dsl {
 }
 
 sub push_logs {
-    # '$PROVISION_RSYNC',
-    #     '-cr',
-    #     '--delete',
-    #     '$dir/log/' => 'rsync://127.0.0.1:$PROVISION_RSYNC_PORT/log/;'
+    my $self = shift;
+
+    $self->log(' - Remote: pushing logs');
+
+    my $remote      = $self->config->remote;
+    my $environment = $remote->{environment};
+
+    my $rsync       = $environment->{PROVISION_RSYNC};
+    my $port        = $environment->{PROVISION_RSYNC_PORT};
+    my $dir_name    = $self->app->cache->dir->basename;
+    my $archname    = $self->app->archname;
+
+    $self->run_command(
+        $rsync,
+        '-cr',
+        '--delete',
+        "$dir_name/log/" => "rsync://127.0.0.1:$port/log/"
+    );
 }
 
 
 # -----------------------------------------------[ Mux stuff
 
 package Provision::DSL::Local::Proxy::STDOUT;
+use Term::ANSIColor;
 
 sub mux_input {
     my ($package, $mux, $fh, $input) = @_;
 
-    print $$input;
+    # uni-colored: # print $$input;
+    foreach my $line (split qr/\n/xms, $$input) {
+        if ($line =~ m{\A (.*\s+) (\w+\s-\sOK) \z}xms) {
+            printf colored ['green'], substr($1 . '.' x 80, 0, 77 - length $2) . ' ';
+            print colored ['reverse green'], "$2\n";
+        } elsif ($line =~ m{\A (.*\s+) (\w+\s(?:-\swould\s\w+ | =>\s+\w+)) \z}xms) {
+            printf colored ['magenta'], substr($1 . '.' x 80, 0, 77 - length $2) . ' ';
+            print colored ['reverse magenta'], "$2\n";
+        } else {
+            print $line;
+        }
+    }
 }
 
 package Provision::DSL::Local::Proxy::STDERR;

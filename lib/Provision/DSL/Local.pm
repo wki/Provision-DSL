@@ -99,7 +99,16 @@ sub _build_cache {
 
 has proxy => ( is => 'lazy' );
 
-sub _build_proxy { Provision::DSL::Local::Proxy->new }
+sub _build_proxy { 
+    my $self = shift;
+    
+    Provision::DSL::Local::Proxy->new(
+        host    => $self->config->remote->{hostname},
+        options => {
+            master_opts => $self->config->local->{ssh_options},
+        },
+    );
+}
 
 has rsync_daemon => ( is => 'lazy' );
 

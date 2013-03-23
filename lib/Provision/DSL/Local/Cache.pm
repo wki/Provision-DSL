@@ -43,7 +43,7 @@ sub populate {
     $self->pack_dependent_libs;
     $self->pack_provision_libs;
     $self->pack_resources;
-    $self->pack_provision_script;
+    $self->pack_provision_file;
     $self->pack_provision_start_script;
 }
 
@@ -195,6 +195,7 @@ sub pack_provision_file {
     
     $self->must_have_valid_syntax($provision_script);
     $self->provision_file->spew($provision_script);
+    chmod 0755, $self->provision_file;
 }
 
 sub pack_provision_start_script {
@@ -218,12 +219,13 @@ sub pack_provision_start_script {
             '',
             qq{cd \$dir},
             '',
-            qq{$remote_env->{PROVISION_PERL} $script_name \$\@};
+            qq{\$PROVISION_PERL $script_name \$\@};
 
     $self->log(" - packing provision start script '$script_name'");
     $self->log_debug('Provision Script:', $script);
 
     $self->provision_start_script->spew($script);
+    chmod 0755, $self->provision_start_script;
 }
 
 sub _include {

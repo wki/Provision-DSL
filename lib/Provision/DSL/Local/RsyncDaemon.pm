@@ -14,7 +14,7 @@ sub _build_name { RSYNC }
 
 sub _build_args {
     my $self = shift;
-    
+
     return [
         '--daemon',
         '--address', '127.0.0.1',
@@ -65,22 +65,24 @@ has pid => (
 
 sub start {
     my $self = shift;
-    
+
     $self->stop if $self->is_running;
-    
+
+    $self->log_debug('starting rsync daemon');
+
     if (my $pid = fork) {
         # parent
         $self->pid($pid);
-        
+
         # must let the daemon try to open the port
         sleep 1;
-        
+
         die "could not start '${\$self->name}' -- port already bound?"
             if waitpid($pid, WNOHANG);
     } else {
         # child
         exec $self->command, @{$self->args};
-        
+
         # never reached, but we are careful...
         exit 1;
     }
@@ -88,12 +90,14 @@ sub start {
 
 sub stop {
     my $self = shift;
-    
+
     return if !$self->is_running;
-    
+
+    $self->log_debug('stopping rsync daemon');
+
     kill 9, $self->pid;
     sleep 1;
-    
+
     $self->clear_pid;
 }
 
