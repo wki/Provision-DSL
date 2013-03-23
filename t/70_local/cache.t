@@ -93,7 +93,7 @@ note 'resources';
     ok !-d $resource_dir->subdir('files/dirx'), 'dirx excluded from resources';
 }
 
-note 'provision script';
+note 'provision file';
 {
     Provision::DSL::Local->clear_instance;
     my $dir   = Path::Class::tempdir(CLEANUP => 1);
@@ -104,7 +104,7 @@ note 'provision script';
     my $provision_file = $dir->file('provision.pl');
     
     ok !-f $provision_file, 'provision.pl not present';
-    $cache->pack_provision_script;
+    $cache->pack_provision_file;
     ok -f $provision_file, 'provision.pl created';
     
     is scalar $provision_file->slurp, <<'EOF', 'provision file looks good';
@@ -117,6 +117,7 @@ my $dir = '/path/to/x';
 Done;
 EOF
     
+    ### TODO: shell script.
 }
 
 done_testing;

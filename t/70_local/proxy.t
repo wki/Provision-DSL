@@ -30,11 +30,6 @@ SKIP: {
 
     $proxy->run_command("export XX42=foo; echo \$XX42 > $file");
     is scalar $file->slurp, "foo\n", 'env export works';
-
-    $proxy->run_command("export XX42=bar;", "echo \$XX42 > $file; ps ax");
-    is scalar $file->slurp, "bar\n", 'env export works';
-
-    # $proxy->run_command("ps ax 1>&2");
 }
 
 done_testing;
