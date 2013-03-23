@@ -70,39 +70,51 @@ sub _build_cache_dir {
     my $cache_dir_name = join '_', '.provision', $self->config->name || ();
     my $dir = $self->root_dir->subdir($cache_dir_name);
     $dir->mkpath if !-d $dir;
-    
+
     return $dir;
 }
 
 # aggregations with lazy build
 has config_file => ( is => 'ro', predicate => 1 );
 has config => ( is => 'lazy' );
-sub _build_config { Provision::DSL::Local::Config->new }
 
-has cache => ( is => 'lazy' );
-sub _build_cache {
+sub _build_config {
     my $self = shift;
     
+    Provision::DSL::Local::Config->new(
+        ($self->has_config_file ? (file => $self->config_file) : ()),
+    ),
+}
+
+has cache => ( is => 'lazy' );
+
+sub _build_cache {
+    my $self = shift;
+
     Provision::DSL::Local::Cache->new(
         dir => $self->cache_dir,
     );
 }
 
 has remote => ( is => 'lazy' );
+
 sub _build_remote { Provision::DSL::Local::Remote->new }
 
 has rsync_daemon => ( is => 'lazy' );
-sub _build_rsync_daemon { 
+
+sub _build_rsync_daemon {
     my $self = shift;
-    
+
     Provision::DSL::Local::RsyncDaemon->new(
         dir => $self->cache_dir,
     );
 }
 
 has timer => (
-    is => 'ro',
-    default => sub { Provision::DSL::Local::Timer->new },
+    is      => 'ro', # not lazy, must initialize at startup
+    default => sub {
+        Provision::DSL::Local::Timer->new
+    },
 );
 
 around options => sub {
@@ -122,6 +134,20 @@ around options => sub {
 
 sub usage_text { '[[user]@hostname] [provision_file.pl] [(+|-|=) task]' }
 
+sub BUILD {
+    my $self = shift;
+    
+    foreach my $arg (@{$self->args}) {
+        if (-f $arg) {
+            $self->provision_file($arg);
+        } elsif ($arg =~ m{\A (.*) @ (.+) \z}xms) {
+            $self->hostname($2);
+            $self->user($1) if $1;
+        }
+        ### TODO: handle tasks
+    }
+}
+
 sub run {
     my $self = shift;
 
@@ -132,7 +158,7 @@ sub run {
         $self->remote->run_dsl;
         $self->remote->push_logs;
     $self->rsync_daemon->stop;
-    
+
     $self->log(sprintf 'Elapsed: %0.1fs', $self->timer->elapsed);
 }
 
