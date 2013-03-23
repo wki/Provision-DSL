@@ -6,7 +6,7 @@ use Path::Class;
 use Provision::DSL::Local::Config;
 use Provision::DSL::Local::Cache;
 use Provision::DSL::Local::RsyncDaemon;
-use Provision::DSL::Local::Remote;
+use Provision::DSL::Local::Proxy;
 use Provision::DSL::Local::Timer;
 use Provision::DSL::Types;
 
@@ -75,12 +75,13 @@ sub _build_cache_dir {
 }
 
 # aggregations with lazy build
-has config_file => ( is => 'ro', predicate => 1 );
+has config_file => ( is => 'rw', predicate => 1 );
+
 has config => ( is => 'lazy' );
 
 sub _build_config {
     my $self = shift;
-    
+
     Provision::DSL::Local::Config->new(
         ($self->has_config_file ? (file => $self->config_file) : ()),
     ),
@@ -96,9 +97,9 @@ sub _build_cache {
     );
 }
 
-has remote => ( is => 'lazy' );
+has proxy => ( is => 'lazy' );
 
-sub _build_remote { Provision::DSL::Local::Remote->new }
+sub _build_proxy { Provision::DSL::Local::Proxy->new }
 
 has rsync_daemon => ( is => 'lazy' );
 
@@ -154,9 +155,9 @@ sub run {
     $self->cache->populate;
 
     $self->rsync_daemon->start;
-        $self->remote->pull_cache;
-        $self->remote->run_dsl;
-        $self->remote->push_logs;
+        $self->proxy->pull_cache;
+        $self->proxy->run_dsl;
+        $self->proxy->push_logs;
     $self->rsync_daemon->stop;
 
     $self->log(sprintf 'Elapsed: %0.1fs', $self->timer->elapsed);

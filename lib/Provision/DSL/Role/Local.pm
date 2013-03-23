@@ -7,6 +7,7 @@ has app => (
         qw(
             verbose dryrun
             log log_to_file log_dryrun log_debug
+            root_dir config
         )
     ],
 );

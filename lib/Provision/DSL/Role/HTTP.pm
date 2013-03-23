@@ -1,7 +1,6 @@
 package Provision::DSL::Role::HTTP;
 use Moo::Role;
 use HTTP::Tiny;
-use Try::Tiny;
 use Carp;
 
 sub http_get {

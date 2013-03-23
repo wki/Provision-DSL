@@ -9,4 +9,8 @@ sub instance {
     return $instance;
 }
 
+sub clear_instance { 
+    undef $instance;
+}
+
 1;

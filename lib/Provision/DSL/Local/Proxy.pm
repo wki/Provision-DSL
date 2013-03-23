@@ -1,4 +1,4 @@
-package Provision::DSL::Local::Remote;
+package Provision::DSL::Local::Proxy;
 use Moo;
 use PerlIO::via::ANSIColor;
 use Net::OpenSSH;
