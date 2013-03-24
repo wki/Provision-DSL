@@ -2,14 +2,13 @@ TODOs
 -----
 
 * Umbau: Provision::DSL::Script::Provision ist zu groß.
-  - P::D::S::P              wird singleton
-  - P::D::S::P::*           erhält Rolle "script" mit vielen "handles" ...
-  - P::D::S::P::Config      steuert Config Einlesen
-  - P::D::S::P::Requisites  verwaltet notwendige Module
-  - P::D::S::P::Resources   verwaltet notwendige Dateien
-  - P::D::S::P::DSL         kümmert sich ums Script
-  - P::D::S::P::RsyncDaemon konfiguriert, startet, stoppt den Rsync Daemon
-  - P::D::S::P::Remote      repräsentiert den Remote Rechner
+  ---> Provision::DSL::Local umbenennen und zusätzliche Klassen hinzu
+  - P::D::L              wird singleton, Assotiationen zu ...::*
+  - P::D::L::Config      steuert Config Einlesen
+  - P::D::L::Cache       verwaltet notwendige Dateien, Module, etc
+  - P::D::L::Proxy       repräsentiert den Remote Rechner
+  - P::D::L::RsyncDaemon konfiguriert, startet, stoppt den Rsync Daemon
+  - P::D::L::Timer       stoppt die Zeit
 
 
 * Umstellung auf Net::OpenSSH 
