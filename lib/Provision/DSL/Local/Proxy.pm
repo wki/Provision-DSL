@@ -1,6 +1,6 @@
 package Provision::DSL::Local::Proxy;
 use Moo;
-use PerlIO::via::ANSIColor;
+# use PerlIO::via::ANSIColor;
 use Net::OpenSSH;
 use IO::Multiplex;
 use Path::Class ();
@@ -17,16 +17,16 @@ has options => (
     default => sub { +{} },
 );
 
-has stderr_color => (
-    is        => 'ro',
-    default   => sub { 'red' },
-    predicate => 1,
-);
-
-has stdout_color => (
-    is        => 'ro',
-    predicate => 1,
-);
+# has stderr_color => (
+#     is        => 'ro',
+#     default   => sub { 'red' },
+#     predicate => 1,
+# );
+# 
+# has stdout_color => (
+#     is        => 'ro',
+#     predicate => 1,
+# );
 
 has ssh => (
     is => 'lazy',
@@ -35,11 +35,11 @@ has ssh => (
 sub _build_ssh {
     my $self = shift;
 
-    PerlIO::via::ANSIColor->paint(*STDOUT, $self->stdout_color)
-        if $self->has_stdout_color;
-
-    PerlIO::via::ANSIColor->paint(*STDERR, $self->stderr_color)
-        if $self->has_stderr_color;
+    # PerlIO::via::ANSIColor->paint(*STDOUT, $self->stdout_color)
+    #     if $self->has_stdout_color;
+    # 
+    # PerlIO::via::ANSIColor->paint(*STDERR, $self->stderr_color)
+    #     if $self->has_stderr_color;
 
     return Net::OpenSSH->new($self->host, %{$self->options});
 }
@@ -142,23 +142,29 @@ sub mux_input {
     # uni-colored: # print $$input;
     foreach my $line (split qr/\n/xms, $$input) {
         if ($line =~ m{\A (.*\s+) (\w+\s-\sOK) \z}xms) {
-            printf colored ['green'], substr($1 . '.' x 80, 0, 77 - length $2) . ' ';
+            printf colored ['green'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
             print colored ['reverse green'], "$2\n";
         } elsif ($line =~ m{\A (.*\s+) (\w+\s(?:-\swould\s\w+ | =>\s+\w+)) \z}xms) {
-            printf colored ['magenta'], substr($1 . '.' x 80, 0, 77 - length $2) . ' ';
+            printf colored ['magenta'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
             print colored ['reverse magenta'], "$2\n";
         } else {
-            print $line;
+            print "$line\n";
         }
     }
+
+    $$input = '';
 }
 
 package Provision::DSL::Local::Proxy::STDERR;
+use Term::ANSIColor;
 
 sub mux_input {
     my ($package, $mux, $fh, $input) = @_;
 
-    print STDERR $$input;
+    # print STDERR $$input;
+    print colored ['red'], $$input;
+    
+    $$input = '';
 }
 
 1;

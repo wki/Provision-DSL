@@ -18,7 +18,7 @@ has parent => (
 
 # state management
 has state => (
-    is => 'lazy',
+    is      => 'lazy',
     clearer => 1,
 );
 
@@ -68,7 +68,7 @@ sub add_to_state {
 
 # privilege aggregation - overload accessor if needed.
 has need_privilege => (
-    is => 'lazy',
+    is  => 'lazy',
     isa => Bool,
 );
 
@@ -172,16 +172,16 @@ sub install {
     my $wanted = shift; $wanted = $self->wanted if !defined $wanted;
     my $state  = shift; $state  = $self->state  if !defined $state;
 
-    my @log = ( $self, $state );
+    my @log = ($self, $state);
     unshift @log, ' -' if $self->parent;
 
-    if ( $self->is_ok( $wanted, $state ) ) {
-        $self->log( @log, '- OK' );
+    if ($self->is_ok($wanted, $state)) {
+        $self->log(@log, '- OK');
         return;
     }
 
     my $action = $wanted
-        ? ( $state eq 'missing' ? 'create' : 'change' )
+        ? ($state eq 'missing' ? 'create' : 'change')
         : 'remove';
 
     $self->log_dryrun( @log, "- would $action" ) and return;

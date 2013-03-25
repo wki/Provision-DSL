@@ -11,6 +11,7 @@ my $SITE_DIR    = "$WEB_DIR/www.mysite.de";
 
 Package 'build-essential';
 
+warn 'a sample warning...';
 # Service 'nginx';
 
 Perlbrew {
@@ -24,6 +25,8 @@ Dir $WEB_DIR => {
     permission => '0755',
 };
 
+warn 'another warning...';
+
 Dir $SITE_DIR => {
     # user => 'vagrant',
     # group => 'vagrant',
@@ -31,6 +34,8 @@ Dir $SITE_DIR => {
 };
 
 Done;
+
+warn 'final warning';
 
 __END__
 
