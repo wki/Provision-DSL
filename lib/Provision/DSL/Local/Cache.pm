@@ -74,7 +74,7 @@ sub pack_perlbrew_installer {
 sub pack_dependent_libs {
     my $self = shift;
 
-    $self->log(' - packing dependent libs');
+    $self->log('packing dependent libs');
 
     my @install_libs = qw(
         autodie Moo Role::Tiny Try::Tiny IPC::Run3
@@ -104,7 +104,7 @@ sub pack_dependent_libs {
 sub pack_provision_libs {
     my $self = shift;
 
-    $self->log(' - packing provision libs');
+    $self->log('packing provision libs');
 
     # Provision::DSL libs are collected manually for two reasons:
     #   - we do not catch dependencies for the controlling machine
@@ -145,7 +145,7 @@ sub _pack_file_or_dir {
 sub pack_resources {
     my $self = shift;
 
-    $self->log(' - packing resources');
+    $self->log('packing resources');
 
     my $resources = $self->config->resources
         or return;
@@ -190,7 +190,7 @@ sub pack_provision_file {
                            $
                            }{$self->_include($script_dir->file("$1.pl"), $2)}exmsg;
 
-    $self->log(" - packing provision script '$provision_file_name'");
+    $self->log("packing provision script '$provision_file_name'");
     $self->log_debug('Provision Script:', $provision_script);
     
     $self->must_have_valid_syntax($provision_script);
@@ -221,7 +221,7 @@ sub pack_provision_start_script {
             '',
             qq{\$PROVISION_PERL $script_name \$\@};
 
-    $self->log(" - packing provision start script '$script_name'");
+    $self->log("packing provision start script '$script_name'");
     $self->log_debug('Provision Script:', $script);
 
     $self->provision_start_script->spew($script);

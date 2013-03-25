@@ -1,6 +1,5 @@
 package Provision::DSL::Local::Proxy;
 use Moo;
-# use PerlIO::via::ANSIColor;
 use Net::OpenSSH;
 use IO::Multiplex;
 use Path::Class ();
@@ -17,29 +16,12 @@ has options => (
     default => sub { +{} },
 );
 
-# has stderr_color => (
-#     is        => 'ro',
-#     default   => sub { 'red' },
-#     predicate => 1,
-# );
-# 
-# has stdout_color => (
-#     is        => 'ro',
-#     predicate => 1,
-# );
-
 has ssh => (
     is => 'lazy',
 );
 
 sub _build_ssh {
     my $self = shift;
-
-    # PerlIO::via::ANSIColor->paint(*STDOUT, $self->stdout_color)
-    #     if $self->has_stdout_color;
-    # 
-    # PerlIO::via::ANSIColor->paint(*STDERR, $self->stderr_color)
-    #     if $self->has_stderr_color;
 
     return Net::OpenSSH->new($self->host, %{$self->options});
 }
@@ -60,12 +42,18 @@ sub run_command {
     $mux->set_callback_object(__PACKAGE__ . '::STDERR', $err);
 
     $mux->loop;
+    
+    waitpid $pid, 0;
+    
+    my $status = $? >> 8;
+    $self->log_debug("Slave SSH-STATUS: $status");
+    return $status;
 }
 
 sub pull_cache {
     my $self = shift;
 
-    $self->log(' - Remote: pulling cache');
+    $self->log('Remote: pulling cache');
 
     my $remote      = $self->config->remote;
     my $environment = $remote->{environment};
@@ -91,7 +79,7 @@ sub pull_cache {
 sub run_dsl {
     my $self = shift;
 
-    $self->log(' - Remote: running dsl');
+    $self->log('Remote: running dsl');
 
     my $provision_start_script =
         Path::Class::File->new(
@@ -112,7 +100,7 @@ sub run_dsl {
 sub push_logs {
     my $self = shift;
 
-    $self->log(' - Remote: pushing logs');
+    $self->log('Remote: pushing logs');
 
     my $remote      = $self->config->remote;
     my $environment = $remote->{environment};
@@ -139,16 +127,15 @@ use Term::ANSIColor;
 sub mux_input {
     my ($package, $mux, $fh, $input) = @_;
 
-    # uni-colored: # print $$input;
     foreach my $line (split qr/\n/xms, $$input) {
         if ($line =~ m{\A (.*\s+) (\w+\s-\sOK) \z}xms) {
-            printf colored ['green'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
+            print colored ['green'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
             print colored ['reverse green'], "$2\n";
         } elsif ($line =~ m{\A (.*\s+) (\w+\s(?:-\swould\s\w+ | =>\s+\w+)) \z}xms) {
-            printf colored ['magenta'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
+            print colored ['magenta'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
             print colored ['reverse magenta'], "$2\n";
         } else {
-            print "$line\n";
+            print colored ['black'], "$line\n";
         }
     }
 
@@ -161,7 +148,6 @@ use Term::ANSIColor;
 sub mux_input {
     my ($package, $mux, $fh, $input) = @_;
 
-    # print STDERR $$input;
     print colored ['red'], $$input;
     
     $$input = '';

@@ -165,11 +165,13 @@ sub run {
 
     $self->rsync_daemon->start;
         $self->proxy->pull_cache;
-        $self->proxy->run_dsl;
+        my $status = $self->proxy->run_dsl;
         $self->proxy->push_logs;
     $self->rsync_daemon->stop;
 
     $self->log(sprintf 'Elapsed: %0.1fs', $self->timer->elapsed);
+    
+    return $status;
 }
 
 1;
