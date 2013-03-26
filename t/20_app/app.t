@@ -13,8 +13,6 @@ local *Provision::DSL::App::_try_to_modify_sudoers = sub {};
 
 # singleton
 {
-    dies_ok { Provision::DSL::App->new } 'calling new dies';
-    
     my $app1 = Provision::DSL::App->instance;
     my $app2 = Provision::DSL::App->instance;
     

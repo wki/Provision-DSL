@@ -17,18 +17,16 @@ local *Provision::DSL::App::_try_to_modify_sudoers = sub {};
     sub install { $_[0]->installed(1) }
 }
 
-my $app = Provision::DSL::App->instance(user_has_privilege => 1);
-my $e = FakeEntity->new;
+# no strict 'refs';
+no warnings 'redefine';
+local *Provision::DSL::App::_build_user_has_privilege = sub { 1 };
+use warnings 'redefine';
 
-is_deeply $app->entities_to_install, [], 'initially nothing to install';
+my $app = Provision::DSL::App->instance();
 
-# now this is legal.
-# dies_ok { $app->install_all_entities } 'install w/o entities dies';
+ok $app->user_has_privilege, 'user has privileges';
 
-$app->add_entity_for_install($e);
 
-ok !$e->installed, 'entity not marked as installed';
-$app->install_all_entities;
-ok $e->installed, 'entity marked as installed';
+### TODO: find something to test.
 
 done_testing;

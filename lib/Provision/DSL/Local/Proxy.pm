@@ -23,7 +23,10 @@ has ssh => (
 sub _build_ssh {
     my $self = shift;
 
-    return Net::OpenSSH->new($self->host, %{$self->options});
+    return Net::OpenSSH->new(
+        $self->host,
+        %{$self->options}
+    );
 }
 
 sub run_command {

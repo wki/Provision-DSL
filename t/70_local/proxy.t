@@ -9,7 +9,7 @@ use ok 'Provision::DSL::Local';
 
 note 'remote execution';
 SKIP: {
-    system 'ssh localhost true';
+    system 'ssh -o BatchMode=true localhost true >/dev/null 2>/dev/null';
     skip 'cannot ssh to localhost', 5
         if $? >> 8;
 

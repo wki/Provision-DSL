@@ -26,9 +26,9 @@ note 'perlbrew installer';
 {
     Provision::DSL::Local->clear_instance;
 
+    no warnings 'once';
     no warnings 'redefine';
-    local *Provision::DSL::Script::Provision::http_get =
-        sub { $_[1] };
+    local *Provision::DSL::Script::Provision::http_get = sub { $_[1] };
     use warnings 'redefine';
 
     my $dir       = Path::Class::tempdir(CLEANUP => 1);
