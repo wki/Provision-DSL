@@ -13,6 +13,13 @@ having a config file like:
         # execute this script on the remote machine
         provision_file => 'box.pl',
         
+        # optional definitions for the local machine, eg. minicpan
+        local => {
+            environment => {
+                PERL_CPANM_OPT => "--mirror $ENV{HOME}/minicpan --mirror-only"
+            },
+        },
+        
         # specifications for the remote machine
         remote => {
             hostname => 'box',
@@ -36,8 +43,9 @@ and a provision file like:
     
     use Provision::DSL;
     
-    # define variables in another file
-    include vars;
+    # define variables in another file in the same directory
+    # with optional global variables
+    include vars, IP => '1.2.3.4', host => 'example.com';
     
     Package 'build-essential';
     # ... more packages
@@ -67,6 +75,10 @@ and a provision file like:
 by firing the shell command:
 
     $ provision.pl -c path/to/config.conf
+
+or:
+
+    $ provision.pl -c path/to/config.conf user@host.tld -v
 
 the destination machine will receive the setup from the provision file.
 During the provisioning process every entity will check if itself already

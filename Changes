@@ -1,5 +1,16 @@
 Changes for Provision::DSL
 
+0.14    2013-03-26
+        * added Platform::Unix as dependency to explicitly inhibit an
+          installation on the forbidden OS
+        * changed name for the .provision_... dir to contain host and user
+          for keeping distinct directories for individual host/user pairs
+        * changed ssh commandline to Net::OpenSSH
+        * executed Entities directly at runtime instead of maintaining a list
+          to prevent Inspectors from failing too early
+        * colorized output of provision run for easier status overview
+        * refactored script to multiple Provision::DSL::Local::* classes
+
         2012-12-12
         * improved restart conditions for Service-Processes under Linux
         * unified clearer/predicate definitions "=> 1" instead of names
