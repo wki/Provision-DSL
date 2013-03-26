@@ -137,6 +137,10 @@ has timer => (
     },
 );
 
+has task => (
+    is => 'ro',
+);
+
 around options => sub {
     my ($orig, $self) = @_;
 
@@ -149,10 +153,12 @@ around options => sub {
         'provision_file|p=s ; provision file to run, overrides config setting',
       # 'options|o=s        ; comma separated options [modify_sudoers, TODO:more]'
       # 'force|f            ; force every entity to execute',
+      # 'status|s'          ; show a status for every task, implies dryrun
+        'task|t=s@          ; specify (no-)tasks to +add, -ignore or =only run',
     );
 };
 
-sub usage_text { '[[user]@hostname] [provision_file.pl] [(+|-|=) task]' }
+sub usage_text { '[[user]@hostname] [provision_file.pl] [ -- (+-=)[no-]task]' }
 
 sub BUILD {
     my $self = shift;
@@ -163,6 +169,8 @@ sub BUILD {
         } elsif ($arg =~ m{\A (.*) @ (.+) \z}xms) {
             $self->hostname($2);
             $self->user($1) if $1;
+        } else {
+            warn "Extra Arg: '$arg'";
         }
         ### TODO: handle tasks
     }
@@ -170,6 +178,9 @@ sub BUILD {
 
 sub run {
     my $self = shift;
+
+    # use Data::Dumper; warn Dumper $self->task;
+    # die 'stop for testing';
 
     $self->cache->populate;
 

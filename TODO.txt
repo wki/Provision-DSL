@@ -8,11 +8,22 @@ TODOs
   Attribut "task" bei Entity. Normal: ignorieren
       Entity name => { ..., task => 'maintenance' };
   
-  Steuerung im Script:
-    +maintenance,          +no-maintenance (default)
-    +provision (default),  +no-provision
+  Arten einer Task-Ausführung (= default):
+    - ignorieren   "-"      (default bei allem außer 'provision')
+    - installieren "+"      (default bei 'provision')
+    - alleine      "="      (default bei 'provision')
+    - entfernen    "no-"    (kein default, nur bei +,= sinnvoll)
+  
+  Kommandozeile:
+    ... -- no-maintenance               # impliziert "="
+    ... -- +db_migration +another -xxx
+    ... -- -cron
+    ... -t no-maintenance
+    ... -t maintenance
+    ... -t +db_migration -t +another -t -xxx
+    ... -t -cron
 
-  Status-Abfrage:
+* Status-Abfrage:
     --status | -s  --> listet nur auf, macht nix. Ein Status pro Task
 
 File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
