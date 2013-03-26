@@ -8,6 +8,7 @@ has path => (
     is     => 'lazy',
     coerce => to_Dir,
 );
+
 sub _build_path { $_[0]->name }
 
 1;

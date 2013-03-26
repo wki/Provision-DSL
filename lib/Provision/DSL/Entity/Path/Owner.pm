@@ -7,7 +7,7 @@ use Provision::DSL::Types;
 extends 'Provision::DSL::Entity::Base::Path';
 
 has path => (
-    is => 'ro',
+    is       => 'ro',
     required => 1,
 );
 
