@@ -59,21 +59,6 @@ sub _build_root_dir {
     return dir('/tmp');
 }
 
-has cache_dir => (
-    is     => 'lazy',
-    coerce => to_ExistingDir,
-);
-
-sub _build_cache_dir {
-    my $self = shift;
-
-    my $cache_dir_name = join '_', '.provision', $self->config->name || ();
-    my $dir = $self->root_dir->subdir($cache_dir_name);
-    $dir->mkpath if !-d $dir;
-
-    return $dir;
-}
-
 # aggregations with lazy build
 has config_file => ( is => 'rw', predicate => 1 );
 
@@ -85,6 +70,27 @@ sub _build_config {
     Provision::DSL::Local::Config->new(
         ($self->has_config_file ? (file => $self->config_file) : ()),
     ),
+}
+
+has cache_dir => (
+    is     => 'lazy',
+    coerce => to_ExistingDir,
+);
+
+sub _build_cache_dir {
+    my $self = shift;
+
+    my $remote = $self->config->remote;
+
+    my $cache_dir_name =
+        join '_', 
+             '.provision', 
+             $self->config->name || (),
+             ($remote->{user} || '') . "\@$remote->{hostname}";
+    my $dir = $self->root_dir->subdir($cache_dir_name);
+    $dir->mkpath if !-d $dir;
+
+    return $dir;
 }
 
 has cache => ( is => 'lazy' );
@@ -102,10 +108,14 @@ has proxy => ( is => 'lazy' );
 sub _build_proxy { 
     my $self = shift;
     
+    my $remote = $self->config->remote;
+    my $local  = $self->config->local;
+    
     Provision::DSL::Local::Proxy->new(
-        host    => $self->config->remote->{hostname},
+        host    => $remote->{hostname},
         options => {
-            master_opts => $self->config->local->{ssh_options},
+            ($remote->{user} ? (user => $remote->{user}) : ()),
+            master_opts => $local->{ssh_options},
         },
     );
 }
