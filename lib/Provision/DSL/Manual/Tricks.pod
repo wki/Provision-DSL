@@ -62,7 +62,7 @@ provision script like this:
     Done;
 
 Interesting pieces are declarations like C<include var, ...> which defines
-all key/value pairs as C<<<our $SUFFIX='dev';>>> variables and allows to use
+all key/value pairs as C<<< our $SUFFIX='dev'; >>> variables and allows to use
 the variables inside the included and all subsequently included templates.
 
 =head2 make templates versatile and tolerant

@@ -1,6 +1,7 @@
 Changes for Provision::DSL
 
 0.14    2013-03-26
+        * updated documentation
         * added Platform::Unix as dependency to explicitly inhibit an
           installation on the forbidden OS
         * changed name for the .provision_... dir to contain host and user

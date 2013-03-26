@@ -349,7 +349,7 @@ unconditionally forces the entity to run.
 =head2 XxxExists ( '/dir', '/dir/subdir' )
 
 check the existence of a list of directories, files, links or any other path.
-Depending on the inspector used (C<DirExists>, C<FileExists>, C<LinkExists)
+Depending on the inspector used (C<DirExists>, C<FileExists>, C<LinkExists>)
 or C<PathExists> the arguments given must point to a dir, file or link.
 
 If any of the given paths does not exist, the entity using this inspector

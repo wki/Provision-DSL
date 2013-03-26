@@ -24,6 +24,8 @@ The directory typically has the following layout:
       |
       +-- log/                  -- log files copied back to local
       |
+      +-- provision.sh          -- a shell script launching provision.pl
+      |
       +-- provision.pl          -- the script running remote
       |
       +-- resources/            -- optional resources for provisioning
@@ -50,13 +52,14 @@ Server or providing a prepared CPAN mirror. It will probably listen on port
 =head2 Connecting to the Remote machine
 
 Basically the ssh connection looks like this shell command. It is split
-into several lines here to be readable.
+into several lines here to be readable. In fact, a master ssh process launches
+several client ssh processes each running one of the commands listed below.
+See L<Net::OpenSSH|Net::OpenSSH> to read about the glory details.
 
     ssh some_user@hostname
-        export PERL5LIB='$HOME/.provision_XXX/lib/perl5'
         rsync -r rsync://127.0.0.1:2873/local $HOME/.provision_XXX/
-        perl $HOME/.provision_XXX/provision.pl
-        ### TODO: rsync log/ back to local
+        $HOME/.provision_XXX/provision.sh
+        rsync $HOME/.provision_XXX/log/ rsync://127.0.0.1:2873/log/
 
 Some details are omitted and almost every part is customizable in the
 "remote" section of the config file.
