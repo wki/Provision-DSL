@@ -1,5 +1,16 @@
 Changes for Provision::DSL
 
+0.15    2013-03-27
+        * defered calling Source-content to avoid exceptions at entity
+          instantiation time
+        * re-enabled entity-saving prior to installation because it is
+          save now
+        * moved install-action from DSL to App in order to allow a dispatcher
+          to switch to different possible tasks operating on the same set
+          of entities
+        * added the concept of tasks allowing a future expansion to filter
+          or enable unsually ignored entities grouped by a task name
+
 0.14    2013-03-26
         * updated documentation
         * added Platform::Unix as dependency to explicitly inhibit an

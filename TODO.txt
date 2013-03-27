@@ -4,6 +4,9 @@ TODOs
 * bessere Fehlermeldungen einbauen. Optimalerweise im Log mitschreiben.
 
 * etwas wie "Tasks" einführen. Haupt-Programm ist Task "provision"
+  $entity->task bereits vorhanden. Liste von Tasks
+  
+  $app->... noch notwendig.
   
   Attribut "task" bei Entity. Normal: ignorieren
       Entity name => { ..., task => 'maintenance' };
