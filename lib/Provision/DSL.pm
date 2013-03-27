@@ -45,10 +45,10 @@ our %default_for_entity;
 
 sub app;
 
-# END {
-#     print STDERR "'Done()' not called or missing. Provisioning failed.\n"
-#         if !$? && !app->is_running;
-# }
+END {
+    print STDERR "'Done()' not called or missing. Provisioning failed.\n"
+        if !$? && !app->is_running;
+}
 
 sub import {
     my $package = caller;
@@ -63,9 +63,6 @@ sub import {
     create_and_export_installer_keywords($package);
     export_symbols($package);
     turn_on_autoflush($package);
-
-    my $user = (app->has_log_user ? "[${\app->log_user}]" : '');
-    app->log_to_file("<<< start of Provision $user");
 
     app->log_debug('init done');
 }
@@ -101,10 +98,9 @@ sub create_and_export_entity_keywords {
 
                 %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
 
-                # app->add_entity_for_install(
-                #     app->create_entity($entity_name, \%args)
-                # );
-                app->create_entity($entity_name, \%args)->install;
+                app->add_entity_for_install(
+                    app->create_entity($entity_name, \%args)
+                );
             }
         };
     }
@@ -192,9 +188,7 @@ sub Os { goto &os }
 
 sub Done { goto &done }
 sub done {
-    my $user = (app->has_log_user ? "[${\app->log_user}]" : '');
-    
-    app->log_to_file(">>> end of Provision $user\n");
+    app->run;
 }
 
 sub Defaults { goto &defaults }

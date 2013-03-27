@@ -4,15 +4,12 @@ use Carp;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::File';
-
-has content => (
-    is       => 'ro',
-    coerce   => to_Content,
-    required => 1,
-);
+with 'Provision::DSL::Role::Content';
 
 sub inspect { 
     my $self = shift;
+
+    die "$self: content is required" if !$self->has_content;
 
     return !defined $self->current_content
         ? 'missing'

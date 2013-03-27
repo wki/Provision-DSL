@@ -19,7 +19,6 @@ our @EXPORT = qw(
 
     to_Str
     to_Array
-    to_Content
     to_Channels
     to_Dir to_ExistingDir to_File to_ExecutableFile
     to_User to_Group
@@ -88,16 +87,6 @@ sub to_Str {
 sub to_Array {
     return sub {
         ref $_[0] eq 'ARRAY' ? $_[0] : [$_[0]]
-    }
-}
-
-sub to_Content {
-    return sub {
-        blessed $_[0] && $_[0]->can('content')
-            ? $_[0]->content
-        : ref $_[0] eq 'Path::Class::File'
-            ? scalar $_[0]->slurp
-        : "$_[0]"
     }
 }
 

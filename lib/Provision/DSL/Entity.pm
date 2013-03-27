@@ -16,6 +16,20 @@ has parent => (
     predicate => 1,
 );
 
+# installation task(s)
+has task => (
+    is => 'lazy',
+    coerce => to_Array,
+);
+
+sub _build_task {
+    my $self = shift;
+    
+    $self->has_parent
+        ? $self->parent->task
+        : 'provision';
+}
+
 # state management
 has state => (
     is      => 'lazy',

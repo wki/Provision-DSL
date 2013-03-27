@@ -43,6 +43,11 @@ sub _build_user_has_privilege {
     return $result;
 }
 
+has entities_to_install => (
+    is => 'rw',
+    default => sub { [] },
+);
+
 # Xxx => Provision::DSL::Entity::Xxx
 has entity_package_for => (
     is      => 'rw',
@@ -59,6 +64,53 @@ sub DEMOLISH {
     my $self = shift;
 
     $self->log_debug('End of Program');
+}
+
+sub run {
+    my $self = shift;
+
+    $self->is_running(1);
+
+    ### TODO: dispatch to the action required
+    $self->install_all_entities;
+}
+####################################### Installation
+
+sub add_entity_for_install {
+    my ($self, $entity) = @_;
+
+    push @{$self->entities_to_install}, $entity;
+}
+
+sub install_needs_privilege {
+    my $self = shift;
+
+    ### FIXME: ignore coderef entities
+    grep { $_->need_privilege } @{$self->entities_to_install};
+}
+
+sub requested_privilege_present {
+    my $self = shift;
+
+    return !$self->install_needs_privilege || $self->user_has_privilege;
+}
+
+sub install_all_entities {
+    my $self = shift;
+
+    croak 'Provileged user needed for provision'
+        if !$self->requested_privilege_present;
+
+    if (!@{$self->entities_to_install}) {
+        print STDERR "nothing to install, empty provision file\n";
+    } else {
+        my $user = ($self->has_log_user ? "[${\$self->log_user}]" : '');
+        $self->log_to_file("<<< start of Provision $user");
+
+        $_->install for @{$self->entities_to_install};
+
+        $self->log_to_file(">>> end of Provision $user\n");
+    }
 }
 
 ####################################### Entity handling

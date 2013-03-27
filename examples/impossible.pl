@@ -10,7 +10,7 @@ use Provision::DSL;
 
 File "$ENV{HOME}/impossible1.txt" => {
     content => 'Foo',
-    user => 'foo',
+    # user => 'foo',
 };
 
 File "$ENV{HOME}/impossible2.txt" => {

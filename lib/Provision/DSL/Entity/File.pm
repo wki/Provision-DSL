@@ -4,6 +4,7 @@ use Provision::DSL::Const;
 use Provision::DSL::Types;
 
 extends 'Provision::DSL::Entity::Base::File';
+with 'Provision::DSL::Role::Content';
 
 sub BUILD {
     my $self = shift;
@@ -17,13 +18,6 @@ sub BUILD {
 }
 
 sub _build_permission { '0644' }
-
-has content => (
-    is        => 'ro', # (1) wenn wir das lazy machen, kann Objekt erzeugt werden.
-    isa       => Str,
-    coerce    => to_Content,
-    predicate => 1,
-);
 
 has patches => (
     is        => 'ro',
@@ -51,7 +45,7 @@ sub __content {
             parent  => $self,
             name    => $self->name,
             path    => $self->path,
-            content => $self->content, # (2) dann sterben wir hier
+            content => $self->_content,
         }
     );
 }

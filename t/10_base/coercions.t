@@ -11,7 +11,6 @@ use ok 'Provision::DSL::Types';
 
 # to_Str
 # to_Array
-# to_Content
 # to_Channels
 # to_Dir to_ExistingDir to_File to_ExecutableFile
 # to_User to_Group
