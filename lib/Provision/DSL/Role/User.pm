@@ -21,7 +21,8 @@ has home_dir => (
 );
 
 sub has_uid { $_[0]->has_user }
-sub uid { getpwnam($_[0]->user) or croak "User '${\$_[0]->user}' is unknown" }
+# FIXME: requires 5.10+
+sub uid { getpwnam($_[0]->user) // croak "User '${\$_[0]->user}' is unknown" }
 
 sub _build_home_dir { 
     $_[0]->has_user 
@@ -30,7 +31,8 @@ sub _build_home_dir {
 }
 
 sub has_gid { $_[0]->has_group }
-sub gid { getgrnam($_[0]->group) or croak "Group '${\$_[0]->group}' is unknown" }
+# FIXME: requires 5.10+
+sub gid { getgrnam($_[0]->group) // croak "Group '${\$_[0]->group}' is unknown" }
 
 sub is_root {
     $< == 0 || ($_[0]->has_user && $_[0]->user eq 'root')

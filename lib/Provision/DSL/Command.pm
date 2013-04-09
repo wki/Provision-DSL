@@ -60,13 +60,14 @@ sub run {
     local %ENV = %old_env;
     @ENV{keys %{$self->env}} = values %{$self->env};
     
+    my ($stdout, $stderr);
     run3 \@command_and_args,
         ($self->has_stdin  ? $self->stdin  : \undef),
-        ($self->has_stdout ? $self->stdout : sub {}),
-        ($self->has_stderr ? $self->stderr : sub {});
+        ($self->has_stdout ? $self->stdout : \$stdout),
+        ($self->has_stderr ? $self->stderr : \$stderr);
 
     $self->_status($? >> 8)
-        and croak "Nonzero exit status while executing '${\$self->command}'";
+        and croak "Nonzero exit status while executing '${\$self->command}', STDERR: $stderr";
     
     if ($self->has_stdout && ref $self->stdout eq 'SCALAR' && defined wantarray) {
         return ${$self->stdout};
