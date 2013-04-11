@@ -31,7 +31,7 @@ has dir => (
 
 has port => (
     is      => 'ro',
-    default => RSYNC_PORT
+    default => sub { RSYNC_PORT },
 );
 
 has rsyncd_config_file => (
