@@ -35,7 +35,9 @@ File::Zglob will Perl 5.8.8 haben -- sollte aber auch mit 5.8.0 gehen.
     - $dir->traverse(regex)
 
 CPAN
-  * lokalen CPAN Server starten / Proxy ???
+  * Zugriff auf minicpan - Verzeichnis
+  * Zugriff auf pinto - Verzeichnis
+  * lokaler Redirect auf http: URL
 
 _Ubuntu::Package
   * aptitude meldet keine Fehler beim Installieren

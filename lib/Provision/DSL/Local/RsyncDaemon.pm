@@ -1,14 +1,10 @@
 package Provision::DSL::Local::RsyncDaemon;
 use Moo;
-use POSIX ':sys_wait_h';
 use Provision::DSL::Const;
 use Provision::DSL::Types;
 
-extends 'Provision::DSL::Base';
-with 'Provision::DSL::Role::Local',
-     'Provision::DSL::Role::CommandAndArgs';
-
-sub DEMOLISH { $_[0]->stop }
+extends 'Provision::DSL::Local::Daemon';
+with 'Provision::DSL::Role::CommandAndArgs';
 
 sub _build_name { RSYNC }
 
@@ -57,50 +53,10 @@ EOF
     return $config_file;
 }
 
-has pid => (
-    is        => 'rw',
-    predicate => 1,
-    clearer   => 1,
-);
-
-sub start {
+sub start_daemon {
     my $self = shift;
 
-    $self->stop if $self->is_running;
-
-    $self->log_debug('starting rsync daemon');
-
-    if (my $pid = fork) {
-        # parent
-        $self->pid($pid);
-
-        # must let the daemon try to open the port
-        sleep 1;
-
-        die "could not start '${\$self->name}' -- port already bound?"
-            if waitpid($pid, WNOHANG);
-    } else {
-        # child
-        exec $self->command, @{$self->args};
-
-        # never reached, but we are careful...
-        exit 1;
-    }
+    exec $self->command, @{$self->args};
 }
-
-sub stop {
-    my $self = shift;
-
-    return if !$self->is_running;
-
-    $self->log_debug('stopping rsync daemon');
-
-    kill 9, $self->pid;
-    sleep 1;
-
-    $self->clear_pid;
-}
-
-sub is_running { $_[0]->has_pid }
 
 1;
