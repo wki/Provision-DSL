@@ -33,13 +33,13 @@ clean_dir();
 done_testing;
 
 sub clean_dir {
-    system '/bin/rm', '-rf', "$FindBin::Bin/xxx";
+    system 'rm', '-rf', "$FindBin::Bin/xxx";
 }
 
 sub prepare_dir {
     clean_dir();
-    system '/bin/mkdir', '-p', "$FindBin::Bin/xxx";
-    system '/usr/bin/touch', '-t', '201203051600', "$FindBin::Bin/xxx/foo"; # oldest
-    system '/usr/bin/touch', '-t', '201203051730', "$FindBin::Bin/xxx/bar"; # mid-age
-    system '/usr/bin/touch', '-t', '201203051842', "$FindBin::Bin/xxx/baz"; # newest
+    system 'mkdir', '-p', "$FindBin::Bin/xxx";
+    system 'touch', '-t', '201203051600', "$FindBin::Bin/xxx/foo"; # oldest
+    system 'touch', '-t', '201203051730', "$FindBin::Bin/xxx/bar"; # mid-age
+    system 'touch', '-t', '201203051842', "$FindBin::Bin/xxx/baz"; # newest
 }

@@ -7,6 +7,14 @@ prove="/usr/bin/prove"
 cpanm="$perl ~/tmp/cpanm"
 cpanm_opts="-L ~/tmp/local -n --mirror http://10.0.2.2:8080 --mirror-only"
 
+# start plack based cpan server
+plackup -M Plack::App::File \
+        --port 8080 \
+        --daemonize \
+        -s Starman \
+        --pid /tmp/starman \
+        -e "Plack::App::File->new(root => '$HOME/minicpan')->to_app"
+
 if [ ! -f $module_dir/Makefile.PL ]; then
     echo "must run dzil build -- be patient"
     dzil build >/dev/null
@@ -34,3 +42,5 @@ ssh box "cd ~/tmp/$module_dir; $cpanm $cpanm_opts --installdeps ."
 
 # forward options of this script to prove call.
 ssh box "cd ~/tmp/$module_dir; PERL5LIB=~/tmp/local/lib/perl5 $prove -lr $*"
+
+kill `cat /tmp/starman`
