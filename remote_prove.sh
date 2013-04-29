@@ -38,9 +38,9 @@ rsync -vcr --delete \
     "box:~/tmp/$module_dir/" >/dev/null
 
 echo "checking deps on target"
-ssh box "cd ~/tmp/$module_dir; $cpanm $cpanm_opts --installdeps ."
+ssh box "cd ~/tmp/$module_dir; $cpanm $cpanm_opts --installdeps -n ."
 
 # forward options of this script to prove call.
-ssh box "cd ~/tmp/$module_dir; PERL5LIB=~/tmp/local/lib/perl5 $prove -lr $*"
+ssh box "cd ~/tmp/$module_dir; PERL5LIB=~/tmp/local/lib/perl5 $prove -lr t $*"
 
 kill `cat /tmp/starman`

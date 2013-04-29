@@ -140,5 +140,6 @@ sub clear_directory_content {
     my $dir = shift;
 
     system "/bin/rm -rf '$dir'";
+    umask 022;
     $dir->mkpath;
 }
