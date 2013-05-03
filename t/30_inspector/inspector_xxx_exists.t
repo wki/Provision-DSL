@@ -10,13 +10,16 @@ use ok 'Provision::DSL::Inspector::DirExists';
 use ok 'Provision::DSL::Inspector::FileExists';
 use ok 'Provision::DSL::Inspector::LinkExists';
 
+my $tempdir = Path::Class::tempdir(CLEANUP => 1);
+
 # PathExists
 {
     my @testcases = (
         { path => '/not/existing/path',     state => 'missing' },
         { path => '/bin',                   state => 'current' },
-        { path => "$FindBin::Bin",          state => 'current' },
-        { path => "$FindBin::Bin/nonsense", state => 'missing' },
+        { path => "$tempdir",               state => 'current' },
+        { path => $tempdir,                 state => 'current' },
+        { path => "$tempdir/nonsense",      state => 'missing' },
     );
 
     clean_dir();
@@ -26,10 +29,10 @@ use ok 'Provision::DSL::Inspector::LinkExists';
 # DirExists
 {
     my @testcases = (
-        { path => "$FindBin::Bin/xxx",     state => 'current' },
-        { path => "$FindBin::Bin/xxx/foo", state => 'current' },
-        { path => "$FindBin::Bin/xxx/bar", state => 'missing' },
-        { path => "$FindBin::Bin/xxx/baz", state => 'missing' },
+        { path => "$tempdir",     state => 'current' },
+        { path => "$tempdir/foo", state => 'current' },
+        { path => "$tempdir/bar", state => 'missing' },
+        { path => "$tempdir/baz", state => 'missing' },
     );
 
     prepare_dir();
@@ -39,9 +42,9 @@ use ok 'Provision::DSL::Inspector::LinkExists';
 # FileExists
 {
     my @testcases = (
-        { path => "$FindBin::Bin/xxx/foo", state => 'missing' },
-        { path => "$FindBin::Bin/xxx/bar", state => 'current' },
-        { path => "$FindBin::Bin/xxx/baz", state => 'missing' },
+        { path => "$tempdir/foo", state => 'missing' },
+        { path => "$tempdir/bar", state => 'current' },
+        { path => "$tempdir/baz", state => 'missing' },
     );
 
     prepare_dir();
@@ -51,9 +54,9 @@ use ok 'Provision::DSL::Inspector::LinkExists';
 # LinkExists
 {
     my @testcases = (
-        { path => "$FindBin::Bin/xxx/foo", state => 'missing' },
-        { path => "$FindBin::Bin/xxx/bar", state => 'missing' },
-        { path => "$FindBin::Bin/xxx/baz", state => 'current', link_to => "$FindBin::Bin/xxx/bar"},
+        { path => "$tempdir/foo", state => 'missing' },
+        { path => "$tempdir/bar", state => 'missing' },
+        { path => "$tempdir/baz", state => 'current', link_to => "$tempdir/bar"},
     );
 
     prepare_dir();
@@ -64,14 +67,14 @@ clean_dir();
 done_testing;
 
 sub clean_dir {
-    system '/bin/rm', '-rf', "$FindBin::Bin/xxx";
+    system '/bin/rm', '-rf', "$tempdir/*";
 }
 
 sub prepare_dir {
     clean_dir();
-    system '/bin/mkdir', '-p', "$FindBin::Bin/xxx/foo";
-    system '/usr/bin/touch',   "$FindBin::Bin/xxx/bar";
-    system '/bin/ln', '-s',    "$FindBin::Bin/xxx/bar", "$FindBin::Bin/xxx/baz";
+    system '/bin/mkdir', '-p', "$tempdir/foo";
+    system '/usr/bin/touch',   "$tempdir/bar";
+    system '/bin/ln', '-s',    "$tempdir/bar", "$tempdir/baz";
 }
 
 sub run_testcases {
