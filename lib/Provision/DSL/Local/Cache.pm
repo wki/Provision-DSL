@@ -3,6 +3,7 @@ use Moo;
 use Try::Tiny;
 use IPC::Run3;
 use Path::Class ();
+use File::ShareDir ':ALL'; #'dist_dir';
 use Config;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 use Provision::DSL::Const;
@@ -28,6 +29,26 @@ has provision_start_script => (
 
 sub _build_provision_start_script { $_[0]->dir->file('provision.sh') }
 
+has share_dir => (
+    is => 'lazy',
+);
+
+sub _build_share_dir {
+    my $share_dir;
+    
+    try {
+        $share_dir = Path::Class::dir(dist_dir('Provision-DSL'));
+    } catch {
+        $share_dir = Path::Class::file(__FILE__)
+            ->dir
+            ->parent->parent->parent->parent
+            ->subdir('share');
+    };
+    
+    return $share_dir->cleanup->absolute;
+}
+
+
 sub BUILD {
     my $self = shift;
     
@@ -50,25 +71,11 @@ sub populate {
 sub pack_perlbrew_installer {
     my $self = shift;
 
-    my $installer_file = $self->dir->file(PERLBREW_INSTALLER);
-    return if -f $installer_file;
-
     $self->log('loading perlbrew installer');
 
-    ### FIXME: does not work.
-    ### HTTP::Tiny version 0.017 works when IO::Socket::SSL is installed
-    # alternative:
-    # curl -L http://install.perlbrew.pl -o .provision_lib/bin/install.perlbrew.sh
-
-    try {
-        $installer_file->dir->mkpath;
-        my $installer = $self->http_get(PERLBREW_INSTALLER_URL);
-        $installer_file->spew($installer);
-        chmod 0755, $installer_file;
-    } catch {
-        die "Could not load Perlbrew installer. (Error: $_)" .
-            'Are you online? Is IO::Socket::SSL installed?';
-    };
+    $self->_pack_file_or_dir(
+        $self->share_dir->file(PERLBREW_INSTALLER) => PERLBREW_INSTALLER,
+    );
 }
 
 sub pack_dependent_libs {
@@ -76,29 +83,14 @@ sub pack_dependent_libs {
 
     $self->log('packing dependent libs');
 
-    my @install_libs = qw(
-        autodie Moo Role::Tiny Try::Tiny IPC::Run3
-        Module::Pluggable Module::Load
-        MRO::Compat Class::C3 Algorithm::C3
-        HTTP::Tiny Template::Simple
-        Path::Class File::Zglob
+    my $lib_dir = $self->share_dir->subdir('lib');
+    
+    die 'could not find dependent libs'
+        if !-d $lib_dir;
+    
+    $self->_pack_file_or_dir(
+        "$lib_dir/" => 'lib',
     );
-
-    foreach my $lib (@install_libs) {
-        my $lib_filename = "lib/perl5/$lib.pm";
-        $lib_filename =~ s{::}{/}xmsg;
-        $self->log_debug("checking for lib file '$lib_filename'");
-        next if -f $self->dir->file($lib_filename);
-
-        $self->log_debug("packing lib '$lib' into ${\$self->dir}");
-        run3 [
-                $self->config->local->{cpanm},
-                -L => $self->dir, '--notest',
-                @{$self->config->local->{cpanm_options}},
-                $lib
-            ],
-            \undef, \undef, \undef;
-    }
 }
 
 sub pack_provision_libs {
