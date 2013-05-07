@@ -66,7 +66,7 @@ sub pack_perlbrew_installer {
         $installer_file->spew($installer);
         chmod 0755, $installer_file;
     } catch {
-        die 'Could not load Perlbrew installer. ' .
+        die "Could not load Perlbrew installer. (Error: $_)" .
             'Are you online? Is IO::Socket::SSL installed?';
     };
 }

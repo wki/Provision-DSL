@@ -6,7 +6,8 @@ use Test::More;
 {
     package P;
     use Moo;
-    with 'Provision::DSL::Role::ProcessControl';
+    with 'Provision::DSL::Role::CommandExecution',
+         'Provision::DSL::Role::ProcessControl';
 
 }
 
