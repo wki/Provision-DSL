@@ -81,7 +81,7 @@ sub pack_dependent_libs {
         Module::Pluggable Module::Load
         MRO::Compat Class::C3 Algorithm::C3
         HTTP::Tiny Template::Simple
-        Path::Class File::Zglob
+        File::Zglob Path::Class
     );
 
     foreach my $lib (@install_libs) {
