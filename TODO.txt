@@ -1,6 +1,9 @@
 TODOs
 -----
 
+* Path::Class depends on File::Spec 3.26 which is not pure perl and not available
+  on legacy target platforms. Find a way to live without.
+
 * bessere Fehlermeldungen einbauen. Optimalerweise im Log mitschreiben.
 
 * etwas wie "Tasks" einführen. Haupt-Programm ist Task "provision"

@@ -7,6 +7,8 @@ require "$FindBin::Bin/../inc/mock_entity.pm";
 
 use ok 'Provision::DSL::Inspector::PathAge';
 
+my $tempdir = Path::Class::tempdir(CLEANUP => 1);
+
 prepare_dir();
 
 my @testcases = (
@@ -19,27 +21,20 @@ my @testcases = (
 );
 
 foreach my $testcase (@testcases) {
-    my $e = E->new(path => file("$FindBin::Bin/xxx/$testcase->{file}"));
+    my $e = E->new(path => $tempdir->file($testcase->{file}));
     my $i = Provision::DSL::Inspector::PathAge->new(
         entity => $e, 
-        expected_value => "$FindBin::Bin/xxx/$testcase->{compare}",
+        expected_value => $tempdir->file($testcase->{compare}),
     );
 
     is $i->state, $testcase->{state},
         "$testcase->{file}: state is $testcase->{state}";
 }
 
-clean_dir();
 done_testing;
 
-sub clean_dir {
-    system 'rm', '-rf', "$FindBin::Bin/xxx";
-}
-
 sub prepare_dir {
-    clean_dir();
-    system 'mkdir', '-p', "$FindBin::Bin/xxx";
-    system 'touch', '-t', '201203051600', "$FindBin::Bin/xxx/foo"; # oldest
-    system 'touch', '-t', '201203051730', "$FindBin::Bin/xxx/bar"; # mid-age
-    system 'touch', '-t', '201203051842', "$FindBin::Bin/xxx/baz"; # newest
+    system 'touch', '-t', '201203051600', "$tempdir/foo"; # oldest
+    system 'touch', '-t', '201203051730', "$tempdir/bar"; # mid-age
+    system 'touch', '-t', '201203051842', "$tempdir/baz"; # newest
 }
