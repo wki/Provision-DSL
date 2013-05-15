@@ -52,7 +52,8 @@ sub run_command_as_user {
         while ($entity) {
             if ($entity->can($attribute)) {
                 if ($entity->$predicate) {
-                    $options{$attribute} = $entity->$attribute->name;
+                    $options{$attribute} = $entity->$attribute;
+                    # $options{$attribute} = $entity->$attribute->name;
                 }
                 next ATTRIBUTE;
             } else {
