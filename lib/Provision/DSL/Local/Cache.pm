@@ -136,7 +136,7 @@ sub _pack_file_or_dir {
     #          therefore we must join strings instead of ->subdir()
     run3 [
         $self->config->local->{rsync},
-        '--checksum', '--recursive', '--perms', '--delete',
+        '--checksum', '--recursive', '--perms', '--times', '--delete',
         ( map { ('--exclude' => $_) } @exclude ),
         $source => join('/', $self->dir, $target),
     ];
