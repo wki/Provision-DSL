@@ -68,8 +68,10 @@ sub pull_cache {
 
     $self->run_command(
         $rsync,
-        '-cr',
+        '--checksum',
+        '--recursive',
         '--perms',
+        '--times',
         '--delete',
         '--exclude', '"/lib/**.pod"',
         '--exclude', "/lib/perl5/$archname",
