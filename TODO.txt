@@ -1,7 +1,11 @@
 TODOs
 -----
 
-* P::D::Command --> env seems to tail, at least under Linux. must check.
+* Rsync operations which "preserve timestamp" make decisions fail which
+  find "old" processes. Must revert.
+  BUT: how to handle files with important time stamps like Templates? (ZIP?)
+
+* P::D::Command --> env seems to fail, at least under Linux. must check.
 
 * Path::Class depends on File::Spec 3.26 which is not pure perl and not available
   on legacy target platforms. Find a way to live without.
