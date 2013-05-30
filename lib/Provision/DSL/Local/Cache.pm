@@ -30,7 +30,7 @@ sub _build_provision_start_script { $_[0]->dir->file('provision.sh') }
 
 sub BUILD {
     my $self = shift;
-    
+
     $_->mkpath for grep { !-d }
                    map { $self->dir->subdir($_) }
                    qw(bin lib log resources);
@@ -38,7 +38,7 @@ sub BUILD {
 
 sub populate {
     my $self = shift;
-    
+
     $self->pack_perlbrew_installer;
     $self->pack_dependent_libs;
     $self->pack_provision_libs;
@@ -110,7 +110,7 @@ sub pack_provision_libs {
     #   - we do not catch dependencies for the controlling machine
     #   - if add-ons are present, we get them, too
     my $this_file = Path::Class::File->new(__FILE__)->resolve->absolute;
-    
+
     # points to "Provision/" dir (where Provision::DSL is installed)
     my $provision_dsl_dir = $this_file->dir->parent->parent;
 
@@ -125,7 +125,7 @@ sub _pack_file_or_dir {
     my $source   = shift;
     my $target   = shift;
     my @exclude  = ref $_[0] eq 'ARRAY' ? @{$_[0]} : @_;
-    
+
     # rsync fails when trying to copy something to a destination
     # with missing parent directory. Must create the parent directory
     # for the entity to get copied
@@ -136,7 +136,10 @@ sub _pack_file_or_dir {
     #          therefore we must join strings instead of ->subdir()
     run3 [
         $self->config->local->{rsync},
-        '--checksum', '--recursive', '--perms', '--times', '--delete',
+        '--checksum',
+        '--recursive',
+        '--perms',
+        '--delete',
         ( map { ('--exclude' => $_) } @exclude ),
         $source => join('/', $self->dir, $target),
     ];
@@ -149,7 +152,7 @@ sub pack_resources {
 
     my $resources = $self->config->resources
         or return;
-    
+
     if (ref $resources eq 'ARRAY') {
         $self->pack_resource($_) for @$resources;
     } else {
@@ -192,7 +195,7 @@ sub pack_provision_file {
 
     $self->log("packing provision script '$provision_file_name'");
     $self->log_debug('Provision Script:', $provision_script);
-    
+
     $self->must_have_valid_syntax($provision_script);
     $self->provision_file->spew($provision_script);
     chmod 0755, $self->provision_file;
@@ -200,12 +203,12 @@ sub pack_provision_file {
 
 sub pack_provision_start_script {
     my $self = shift;
-    
+
     my $dir_name    = $self->dir->basename;
     my $script_name = $self->provision_file->basename;
     my $remote      = $self->config->remote;
     my $environment = $remote->{environment};
-    
+
     my $script =
         join "\n",
             '#!/bin/sh',
@@ -246,7 +249,7 @@ sub _include {
 
 sub must_have_valid_syntax {
     my ($self, $dsl) = @_;
-    
+
     $self->log_debug('Syntax-Checking DSL script');
 
     my $perl = $Config{perlpath} || 'perl';

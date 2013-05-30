@@ -69,7 +69,6 @@ sub _run_rsync_command {
         '--checksum',
         '--recursive',
         '--perms',
-        '--times',
         '--delete',
         @_,
         $self->_exclude_list,
