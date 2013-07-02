@@ -2,14 +2,13 @@ package Provision::DSL::Const;
 use base 'Exporter';
 
 our @EXPORT = qw(
-    PERLBREW_INSTALLER_URL PERLBREW_INSTALLER
+    PERLBREW_INSTALLER
     RSYNC RSYNC_PORT PERL HTTP_PORT 
     CAT CRONTAB CHMOD CHOWN CHGRP CP CPANM CRONTAB
     LN MKDIR PS RM SH SSH SUDO TEE TOUCH TRUE
 );
 
-use constant PERLBREW_INSTALLER_URL => 'http://install.perlbrew.pl';
-use constant PERLBREW_INSTALLER     => 'bin/install.perlbrew.sh';
+use constant PERLBREW_INSTALLER => 'bin/install.perlbrew.sh';
 
 # always transported to controlled machine
 use constant RSYNC      => $ENV{PROVISION_RSYNC}        || 'rsync';
