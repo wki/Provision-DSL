@@ -1,6 +1,8 @@
 TODOs
 -----
 
+* P::D::Command --> env seems to tail, at least under Linux. must check.
+
 * Path::Class depends on File::Spec 3.26 which is not pure perl and not available
   on legacy target platforms. Find a way to live without.
 

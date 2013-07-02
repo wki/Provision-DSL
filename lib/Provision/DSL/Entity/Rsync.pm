@@ -68,9 +68,9 @@ sub _run_rsync_command {
     my @args = (
         '--checksum',
         '--recursive',
-        '--delete',
         '--perms',
-        # FIXME: does '--chmod=D644,Fxxx' make sense?
+        '--times',
+        '--delete',
         @_,
         $self->_exclude_list,
         "${\$self->content}/" => "${\$self->path}/",
