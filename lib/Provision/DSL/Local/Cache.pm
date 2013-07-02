@@ -39,6 +39,7 @@ sub _build_share_dir {
     try {
         $share_dir = Path::Class::dir(dist_dir('Provision-DSL'));
     } catch {
+        # we seem to run inside the distribution.
         $share_dir = Path::Class::file(__FILE__)
             ->dir
             ->parent->parent->parent->parent
