@@ -23,7 +23,7 @@ sub _build__file_content {
     my $content = do "${\$self->file}";
     if (!defined $content) {
         $content = {};
-        warn "Could not read config file '${\$self->file}': $@$!";
+        die "Could not read config file '${\$self->file}'";
     }
     
     return $content;
