@@ -1,5 +1,10 @@
 Changes for Provision::DSL
 
+0.17    2013-07-05
+        * share/libs is packed into a .tar file in order to avoid cpan
+          servers (like Pinto) to scan the contained packages and get
+          confused.
+
 0.16    2013-07-02
         * merge with pre_packed_dists branch. From now on, we have all
           dependencies and the perlbrew install script "on board".

@@ -4,6 +4,7 @@ use Try::Tiny;
 use IPC::Run3;
 use Path::Class ();
 use File::ShareDir ':ALL'; #'dist_dir';
+use Archive::Tar;
 use Config;
 use Data::Dumper; $Data::Dumper::Sortkeys = 1;
 use Provision::DSL::Const;
@@ -72,7 +73,7 @@ sub populate {
 sub pack_perlbrew_installer {
     my $self = shift;
 
-    $self->log('loading perlbrew installer');
+    $self->log('packing perlbrew installer');
 
     $self->_pack_file_or_dir(
         $self->share_dir->file(PERLBREW_INSTALLER) => PERLBREW_INSTALLER,
@@ -85,13 +86,25 @@ sub pack_dependent_libs {
     $self->log('packing dependent libs');
 
     my $lib_dir = $self->share_dir->subdir('lib');
-    
-    die 'could not find dependent libs'
-        if !-d $lib_dir;
-    
-    $self->_pack_file_or_dir(
-        "$lib_dir/" => 'lib',
-    );
+    my $lib_tar = $self->share_dir->file('dependencies.tar');
+    if (-d $lib_dir) {
+        $self->_pack_file_or_dir(
+            "$lib_dir/" => 'lib',
+        );
+    } elsif (-f $lib_tar) {
+        my $tar = Archive::Tar->new;
+        $tar->read($lib_tar);
+        foreach my $path ($tar->list_files) {
+            my $destination_file = 
+                Path::Class::File->new($path)
+                    ->relative('share')
+                    ->absolute($self->dir);
+            $self->log_debug("would pack '$path' --> $destination_file");
+            $tar->extract_file($path => $destination_file);
+        }
+    } else {
+        die 'could not find dependent libs'
+    }
 }
 
 sub pack_provision_libs {
