@@ -18,7 +18,7 @@ has _file_content => (
 sub _build__file_content {
     my $self = shift;
     
-    return {} if !$self->has_file;
+    return {} if !$self->has_file || !-f $self->file;
     
     my $content = do "${\$self->file}";
     if (!defined $content) {

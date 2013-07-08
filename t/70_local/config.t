@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use Test::Exception;
 use FindBin;
 use Path::Class;
 
@@ -32,10 +33,8 @@ note 'config file handling';
         {},
         'missing config file defaults to {}';
 
-    is_deeply 
-        +Provision::DSL::Local::Config->new(file => $invalid_config_file)->_file_content,
-        {},
-        'invalid config file defaults to {}';
+    dies_ok { Provision::DSL::Local::Config->new(file => $invalid_config_file)->_file_content }
+        'invalid config file dies';
 
     my $c = Provision::DSL::Local::Config->new(file => $good_config_file);
     is ref $c->_file_content, 'HASH', 'config is HASH';
