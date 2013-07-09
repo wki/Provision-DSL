@@ -67,7 +67,7 @@ sub run {
         ($self->has_stderr ? $self->stderr : \$stderr);
 
     $self->_status($? >> 8)
-        and croak "Nonzero exit status while executing '${\$self->command}', STDERR: $stderr";
+        and croak "Nonzero exit status while executing '${\$self->command}', STDERR: ${\$stderr || '- nothing -'}";
     
     if ($self->has_stdout && ref $self->stdout eq 'SCALAR' && defined wantarray) {
         return ${$self->stdout};
