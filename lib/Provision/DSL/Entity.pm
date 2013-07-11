@@ -2,7 +2,6 @@ package Provision::DSL::Entity;
 use Moo;
 use Module::Load;
 use Scalar::Util 'blessed';
-use Provision::DSL::App;
 use Provision::DSL::Types;
 use Provision::DSL::Inspector::Never;
 
