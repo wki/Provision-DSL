@@ -18,6 +18,7 @@ has options => (
 
 has ssh => (
     is => 'lazy',
+    handles => [ 'error' ],
 );
 
 sub _build_ssh {
@@ -27,6 +28,12 @@ sub _build_ssh {
         $self->host,
         %{$self->options}
     );
+}
+
+sub capture {
+    my $self = shift;
+    
+    return $self->ssh->capture(@_);
 }
 
 sub run_command {

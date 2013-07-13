@@ -3,6 +3,7 @@ use Moo;
 use Cwd;
 use Config;
 use Path::Class;
+use List::Util 'max';
 use Provision::DSL::Local::Config;
 use Provision::DSL::Local::Cache;
 use Provision::DSL::Local::RsyncDaemon;
@@ -81,13 +82,15 @@ sub _build_cache_dir {
     my $self = shift;
 
     my $remote = $self->config->remote;
+    my $hostname = $remote->{hostname} || 'unknown';
 
     my $cache_dir_name =
-        join '_', 
-             '.provision', 
+        join '_',
+             '.provision',
              $self->config->name || (),
-             ($remote->{user} || '') . "\@$remote->{hostname}";
+             ($remote->{user} || '') . "\@$hostname";
     my $dir = $self->root_dir->subdir($cache_dir_name);
+
     $dir->mkpath if !-d $dir;
 
     return $dir;
@@ -105,12 +108,12 @@ sub _build_cache {
 
 has proxy => ( is => 'lazy' );
 
-sub _build_proxy { 
+sub _build_proxy {
     my $self = shift;
-    
+
     my $remote = $self->config->remote;
     my $local  = $self->config->local;
-    
+
     Provision::DSL::Local::Proxy->new(
         host    => $remote->{hostname},
         options => {
@@ -141,6 +144,10 @@ has task => (
     is => 'ro',
 );
 
+has show_info => (
+    is => 'ro',
+);
+
 around options => sub {
     my ($orig, $self) = @_;
 
@@ -155,6 +162,7 @@ around options => sub {
       # 'force|f            ; force every entity to execute',
       # 'status|s'          ; show a status for every task, implies dryrun
         'task|t=s@          ; specify (no-)tasks to +add, -ignore or =only run',
+        'show_info          ; print diagnostic info and stop',
     );
 };
 
@@ -162,7 +170,7 @@ sub usage_text { '[[user]@hostname] [provision_file.pl] [ -- (+-=)[no-]task]' }
 
 sub BUILD {
     my $self = shift;
-    
+
     foreach my $arg (@{$self->args}) {
         if (-f $arg) {
             $self->provision_file($arg);
@@ -179,8 +187,18 @@ sub BUILD {
 sub run {
     my $self = shift;
 
+    if ($self->show_info) {
+        $self->show_info_text;
+        return;
+    }
+
     # use Data::Dumper; warn Dumper $self->task;
     # die 'stop for testing';
+
+    if ($self->proxy->error) {
+        print STDERR "Can not connect to remote: '${\$self->proxy->error}'\n";
+        return 1;
+    }
 
     $self->cache->populate;
 
@@ -191,8 +209,76 @@ sub run {
     $self->rsync_daemon->stop;
 
     $self->log(sprintf 'Elapsed: %0.1fs', $self->timer->elapsed);
-    
+
     return $status;
+}
+
+sub show_info_text {
+    my $self = shift;
+
+    my @infos_to_show = (
+        'Global',
+        [ version => $Provision::DSL::VERSION || '(unknown)' ],
+        (
+            map { _attr_from($self, $_) }
+            qw(
+                root_dir cache_dir
+                hostname user
+                provision_file config_file
+                archname task
+            )
+        ),
+        
+        'Config',
+        (
+            [ hostname       => $self->config->remote->{hostname} ],
+            [ name           => $self->config->name ],
+            [ provision_file => $self->config->provision_file ],
+        ),
+        
+        'Cache',
+        (
+            map { _attr_from($self->cache, $_) }
+            qw(
+                provision_file provision_start_script
+                share_dir
+            )
+        ),
+        
+        'Proxy',
+        (
+            [ connect => $self->proxy->ssh->error 
+                ? 'not possible' 
+                : 'OK' ],
+            [ perl_version => $self->proxy->ssh->error
+                ? 'N/A' 
+                : $self->proxy->capture(q{perl -e 'print $^V'}) ],
+        ),
+    );
+
+    my $length = 1 + max map { ref $_ eq 'ARRAY' ? length $_->[0] : 0 } @infos_to_show;
+
+    foreach my $info (@infos_to_show) {
+        if (ref $info eq 'ARRAY') {
+            printf "%-${length}s: %s\n", @$info;
+        } else {
+            print "\n$info\n";
+        }
+    }
+    print "\n";
+}
+
+sub _attr_from {
+    my ($object, $attr_name) = @_;
+    
+    my $predicate = "has_$attr_name";
+
+    return [
+        $attr_name,
+        ($object->can($predicate)
+            ? $object->$predicate ? $object->$attr_name : '(not set)'
+            : $object->$attr_name) || '(undef)'
+    ]
 }
 
 1;
