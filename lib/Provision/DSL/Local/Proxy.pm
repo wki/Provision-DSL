@@ -101,7 +101,7 @@ sub run_dsl {
     $self->run_command(
         $provision_start_script,
         ($self->dryrun  ? '-n' : ()),
-        ($self->verbose ? '-v' : ()),
+        ($self->verbose ? '-' . 'v' x $self->verbose : ()),
         '-l', 'log',
         '-U', ((getpwuid($<))[6]),
         @_

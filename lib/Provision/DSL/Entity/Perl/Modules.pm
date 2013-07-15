@@ -34,7 +34,10 @@ sub _build_install_dir { $_->app_dir->subdir('local') }
 sub inspect {
     my $self = shift;
     
-    return 'missing' if !-d $self->install_dir || !scalar($self->install_dir->children);
+    if (!-d $self->install_dir || !scalar($self->install_dir->children)) {
+        $self->log_info('module_dir missing or empty');
+        return 'missing';
+    }
     
     # Strategy:
     #   - list all direct dependencies of our app

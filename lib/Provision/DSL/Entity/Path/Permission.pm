@@ -14,10 +14,21 @@ has path => (
 sub inspect { 
     my $self = shift;
     
-    return 'missing' if !defined $self->path || !-e $self->path;
-    return ($self->path->stat->mode & 511) != ($self->permission & 511)
-        ? 'outdated'
-        : 'current'
+    if (!defined $self->path || !-e $self->path) {
+        $self->log_info('path missing');
+        return 'missing';
+    }
+    
+    if (($self->path->stat->mode & 511) != ($self->permission & 511)) {
+        $self->log_info(
+            sprintf 'path permisson is %o, should be %o',
+                $self->path->stat->mode & 511,
+                $self->permission & 511
+        );
+        return 'outdated';
+    }
+    
+    return 'current';
 }
 
 sub create { goto \&change }

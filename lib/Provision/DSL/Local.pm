@@ -222,6 +222,7 @@ sub show_info_text {
         (
             map { _attr_from($self, $_) }
             qw(
+                verbose debug
                 root_dir cache_dir
                 hostname user
                 provision_file config_file

@@ -81,7 +81,7 @@ has log_user => (
 sub options {
     return (
         'help|h         ; this help',
-        'verbose|v      ; verbose mode - show messages',
+        'verbose|v+     ; verbose mode - show messages',
         'dryrun|n       ; dryrun - do not install',
         'log_dir|l=s    ; set log dir and enable logging to files',
         'log_user|U=s   ; optional user for log entries',
@@ -155,7 +155,13 @@ sub log_to_file {
 sub log_debug {
     my $self = shift;
 
-    $self->_log_if($self->debug, 'DEBUG:', @_);
+    $self->_log_if($self->debug || $self->verbose > 2, 'DEBUG:', @_);
+}
+
+sub log_info {
+    my $self = shift;
+
+    $self->_log_if($self->verbose > 1, @_);
 }
 
 sub log_dryrun {

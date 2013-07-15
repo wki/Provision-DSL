@@ -74,7 +74,7 @@ sub prepare_dir {
     clean_dir();
     system '/bin/mkdir', '-p', "$tempdir/foo";
     system '/usr/bin/touch',   "$tempdir/bar";
-    system '/bin/ln', '-s',    "$tempdir/bar", "$tempdir/baz";
+    system '/bin/ln', '-sf',    "$tempdir/bar", "$tempdir/baz";
 }
 
 sub run_testcases {

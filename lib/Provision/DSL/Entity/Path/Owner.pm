@@ -14,9 +14,26 @@ has path => (
 sub inspect { 
     my $self = shift;
 
-    return 'missing'  if !defined $self->path || !-e $self->path;
-    return 'outdated' if $self->has_user && $self->path->stat->uid != $self->uid;
-    return 'outdated' if $self->has_group && $self->path->stat->gid != $self->gid;
+    if (!defined $self->path || !-e $self->path) {
+        $self->log_info('path missing');
+        return 'missing';
+    }
+    if ($self->has_user && $self->path->stat->uid != $self->uid) {
+        $self->log_info(
+            sprintf 'uid is %d should be %d', 
+                $self->path->stat->uid,
+                $self->uid
+        );
+        return 'outdated';
+    }
+    if ($self->has_group && $self->path->stat->gid != $self->gid) {
+        $self->log_info(
+            sprintf 'gid is $d, should be %d',
+                $self->path->stat->gid,
+                $self->gid
+        );
+        return 'outdated';
+    }
     return 'current'
 }
 
