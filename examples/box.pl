@@ -30,6 +30,10 @@ Dir $SITE_DIR => {
     content => Resource('files'),
 };
 
+Message 'Completed';    # always visible
+Info 'Completed';       # visible in verbose mode
+Note 'Completed';       # visible in -vv mode
+
 # die 'stop for testing';
 
 Done;

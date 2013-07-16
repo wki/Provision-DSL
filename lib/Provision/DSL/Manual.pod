@@ -83,6 +83,12 @@ and your provisioning script could be
         content  => Template('etc/mydaemon.tt', { vars => { ... } }),
     };
     
+    Message 'This message is always printed';
+    
+    Note 'Only printed in verbose mode';
+    
+    Info 'Print if verbose level is higher';
+    
     Done;
 
 =head1 DESCRIPTION

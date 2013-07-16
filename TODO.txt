@@ -1,18 +1,6 @@
 TODOs
 -----
 
-* additional pseudo-Entity to generate messages always or in verbose mode only
-    Message 'This message prints always';
-    Note 'This message prints in verbose mode only';
-    Info 'This message prints in -vv mode only';
-    
-    all of the above messages may have an additional hashref like:
-    {
-        task => 'maintenance',       # only when maintenance task is run
-        wanted => 0,                 # to suppress the message generally
-        inspector => FileAge(...),   # an additional inspector decides
-    }
-
 * better info messages when -vv is set (->log_info(...))
 
 * Rsync operations which "preserve timestamp" make decisions fail which
