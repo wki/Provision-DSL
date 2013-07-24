@@ -58,7 +58,8 @@ sub inspect {
             $self->perl->stringify,
             '-I' => $self->install_dir->subdir('lib/perl5'),
             '-n',
-            '-e' => 's{~.*|\\s+\\z}{}xms; eval "require $_" or exit 1'
+            '-e' => 's{~}{ }xms; eval "use $_; 1" or exit 1'
+            # OLD: '-e' => 's{~.*|\\s+\\z}{}xms; eval "require $_" or exit 1'
         );
         $has_all_modules = 1;
     };
