@@ -62,7 +62,7 @@ sub BUILD {
 sub populate {
     my $self = shift;
 
-    $self->pack_perlbrew_installer;
+    $self->pack_bin_files;
     $self->pack_dependent_libs;
     $self->pack_provision_libs;
     $self->pack_resources;
@@ -70,13 +70,13 @@ sub populate {
     $self->pack_provision_start_script;
 }
 
-sub pack_perlbrew_installer {
+sub pack_bin_files {
     my $self = shift;
 
-    $self->log('packing perlbrew installer');
+    $self->log('packing bin files');
 
     $self->_pack_file_or_dir(
-        $self->share_dir->file(PERLBREW_INSTALLER) => PERLBREW_INSTALLER,
+        $self->share_dir->subdir('bin') => '',
     );
 }
 

@@ -57,14 +57,16 @@ sub inspect {
             $required_modules,
             $self->perl->stringify,
             '-I' => $self->install_dir->subdir('lib/perl5'),
-            '-n',
-            '-e' => 's{~}{ }xms; eval "use $_; 1" or exit 1'
+            Provision::DSL::Source::Bin->new('dist_install_check.pl')->path->stringify,
+            # '-n',
+            # '-e' => 's{~}{ }xms; eval "use $_; 1" or exit 1'
             # OLD: '-e' => 's{~.*|\\s+\\z}{}xms; eval "require $_" or exit 1'
         );
         $has_all_modules = 1;
+    } catch {
+        $self->log($_);
     };
     
-    # FIXME: not entirely correct as we do not version-check the modules
     return $has_all_modules ? 'current' : 'outdated';
 }
 
