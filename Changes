@@ -1,5 +1,9 @@
 Changes for Provision::DSL
 
+0.20    2013-08-09
+        * added options keyword to Perl_Modules entity to specify additional
+          options for cpanm run.
+
         2013-07-16
         * added Message, Info and Note keywords usable like an entity but
           printing their string message always, under verbose and under

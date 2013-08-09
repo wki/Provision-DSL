@@ -31,6 +31,11 @@ has install_dir => (
 
 sub _build_install_dir { $_->app_dir->subdir('local') }
 
+has options => (
+    is => 'ro',
+    default => sub { [] },
+);
+
 sub inspect {
     my $self = shift;
     
@@ -59,7 +64,7 @@ sub inspect {
             '-I' => $self->install_dir->subdir('lib/perl5'),
             '-n',
             '-e' => 's{~}{ }xms; eval "use $_; 1" or exit 1'
-            # OLD: '-e' => 's{~.*|\\s+\\z}{}xms; eval "require $_" or exit 1'
+            # OLD: '-e' => 's{~.*|\\s+\\z}{}xms; eval "require $_" or exit 1',
         );
         $has_all_modules = 1;
     };
@@ -83,6 +88,7 @@ sub change {
         $self->cpanm->stringify,
         '-q',
         '-L' => $self->install_dir->stringify,
+        @{$self->options},
         '--installdeps' => $self->app_dir->stringify);
 }
 
