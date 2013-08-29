@@ -12,8 +12,6 @@ has link_to => (
 
 sub inspect {
     
-    warn 'LINK now: ' . readlink $_[0]->path;
-    
     -l $_[0]->path && readlink $_[0]->path eq $_[0]->link_to
         ? 'current'
         : 'missing'
