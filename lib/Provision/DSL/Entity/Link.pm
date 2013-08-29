@@ -11,6 +11,9 @@ has link_to => (
 );
 
 sub inspect {
+    
+    warn 'LINK now: ' . readlink $_[0]->path;
+    
     -l $_[0]->path && readlink $_[0]->path eq $_[0]->link_to
         ? 'current'
         : 'missing'
@@ -24,7 +27,7 @@ sub create {
 
     $self->run_command_maybe_privileged(
         LN,
-        '-s', $self->link_to, $self->path
+        '-sf', $self->link_to, $self->path
     );
 }
 
