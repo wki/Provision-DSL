@@ -1,1 +1,3 @@
 template [% var1 %] done
+
+[% INCLUDE file2 %]

@@ -16,6 +16,8 @@ my $t = Provision::DSL::Source::Template->new(
     }
 );
 
-is $t->content, 'template 42 done', 'template rendered right';
+is $t->content,
+    "template 42 done\n\ninclude done\n",
+    'template rendered right';
 
 done_testing;
