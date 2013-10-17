@@ -11,6 +11,8 @@ use Test::More;
 
 }
 
+### TODO: add a test for not existing pid file and another for empty pid file
+
 # an existing process (this one)
 {
     my $pid_file = file('/tmp/process_control.pid');

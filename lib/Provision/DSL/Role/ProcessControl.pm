@@ -16,7 +16,7 @@ sub pid {
     my $self = shift;
     
     return $self->has_pid_file && -f $self->pid_file
-        ? $self->read_content_of_file($self->pid_file) + 0
+        ? ($self->read_content_of_file($self->pid_file) || 0) + 0
         : undef;
 }
 

@@ -1,6 +1,9 @@
 TODOs
 -----
 
+* Role::ProcessControl -- make more robust against empty or non numeric PID
+  files.
+
 * better info messages when -vv is set (->log_info(...))
 
 * Rsync operations which "preserve timestamp" make decisions fail which
