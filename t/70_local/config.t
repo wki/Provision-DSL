@@ -134,6 +134,7 @@ sub merged_config {
         },
         remote => {
             environment => {
+                PROVISION_HTTP_HOST  => '127.0.0.1',
                 PROVISION_HTTP_PORT  => 2080,
                 PROVISION_PERL       => 'perl',
                 PROVISION_RSYNC      => 'rsync',

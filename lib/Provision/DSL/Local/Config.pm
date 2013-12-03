@@ -66,6 +66,7 @@ sub _build__defaults {
                 PROVISION_RSYNC_PORT    => RSYNC_PORT,
                 PROVISION_PERL          => PERL,
                 PROVISION_HTTP_PORT     => HTTP_PORT,
+                PROVISION_HTTP_HOST     => '127.0.0.1',
               # PERL_CPANM_OPT          => "--mirror http://localhost:${\HTTP_PORT} --mirror-only",
             },
         },
@@ -84,7 +85,7 @@ sub _build__merged_config {
     my $config = merge $self->_file_content, $self->_defaults;
     
     push @{$config->{local}->{ssh_options}},
-        '-R', "$config->{local}->{cpan_http_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_HTTP_PORT}",
+        '-R', "$config->{local}->{cpan_http_port}:$config->{remote}->{environment}->{PROVISION_HTTP_HOST}:$config->{remote}->{environment}->{PROVISION_HTTP_PORT}",
         '-R', "$config->{local}->{rsync_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_RSYNC_PORT}";
     
     # manually merge in some things entered via commandline
