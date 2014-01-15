@@ -1,6 +1,9 @@
 TODOs
 -----
 
+* Packing of resources -- excluded files must get deleted in local resources
+  directory if previously present.
+
 * Role::ProcessControl -- make more robust against empty or non numeric PID
   files.
 
