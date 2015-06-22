@@ -1,5 +1,9 @@
 Changes for Provision::DSL
 
+0.22    2013-06-22
+        * removed a failing test. TODO: recode this test
+        * improved Perl Module checkin of installed modules
+
 0.21    2013-12-02
         * added a PROVISION_HTTP_HOST environment variable allowing to
           specify the host to contact for cpanm module installs from the
