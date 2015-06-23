@@ -15,7 +15,7 @@ sub inspect {
     my $self = shift;
     
     if (!defined $self->path || !-e $self->path) {
-        $self->log_info('path missing');
+        $self->log_info('path missing:', $self->path->stringify);
         return 'missing';
     }
     

@@ -1,5 +1,9 @@
 Changes for Provision::DSL
 
+0.23    2013-06-23
+        * added log_info message for rsync command
+        * improved log_info message for dir creation
+        
 0.22    2013-06-22
         * removed a failing test. TODO: recode this test
         * improved Perl Module checkin of installed modules

@@ -40,7 +40,7 @@ sub inspect {
     my $self = shift;
     
     if (!-d $self->install_dir || !scalar($self->install_dir->children)) {
-        $self->log_info('module_dir missing or empty');
+        $self->log_info('module_dir missing or empty:', $self->install_dir->stringify);
         return 'missing';
     }
     

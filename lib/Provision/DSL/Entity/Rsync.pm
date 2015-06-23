@@ -75,13 +75,14 @@ sub _run_rsync_command {
         "${\$self->content}/" => "${\$self->path}/",
     );
     
-    # FIXME: do we need privileges?
-    # warn "rsync @args...";
-    return $self->run_command_maybe_privileged(
+    my $result = $self->run_command_maybe_privileged(
         RSYNC, 
-        # {stdout => sub { warn @_ }},
         @args
     );
+    
+    $self->log_info(join "\n", grep { m{\A (copying|deleting) }xms } split qr{[\r\n]+}xms, $result);
+    
+    return $result;
 }
 
 sub _exclude_list {

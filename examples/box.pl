@@ -9,15 +9,15 @@ use Provision::DSL;
 my $WEB_DIR     = '/web/data';
 my $SITE_DIR    = "$WEB_DIR/www.mysite.de";
 
-Package 'build-essential';
+# Package 'build-essential';
 
 # Service 'nginx';
 
-Perlbrew {
-    # install_cpanm => 1,
-    # wanted  => '5.14.2',
-    wanted  => '5.16.0',
-};
+# Perlbrew {
+#     # install_cpanm => 1,
+#     # wanted  => '5.14.2',
+#     wanted  => '5.16.0',
+# };
 
 Dir $WEB_DIR => {
     user => 'root',

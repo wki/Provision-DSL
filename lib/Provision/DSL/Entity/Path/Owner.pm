@@ -15,7 +15,7 @@ sub inspect {
     my $self = shift;
 
     if (!defined $self->path || !-e $self->path) {
-        $self->log_info('path missing');
+        $self->log_info('path missing:', $self->path->stringify);
         return 'missing';
     }
     if ($self->has_user && $self->path->stat->uid != $self->uid) {
@@ -28,7 +28,7 @@ sub inspect {
     }
     if ($self->has_group && $self->path->stat->gid != $self->gid) {
         $self->log_info(
-            sprintf 'gid is $d, should be %d',
+            sprintf 'gid is %d, should be %d',
                 $self->path->stat->gid,
                 $self->gid
         );
