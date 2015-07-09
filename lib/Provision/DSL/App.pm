@@ -43,6 +43,8 @@ sub _build_user_has_privilege {
     return $result;
 }
 
+# to be precise, only name/arg pairs are stored here
+# as hashref: { name => $name, args => \%args }
 has entities_to_install => (
     is => 'rw',
     default => sub { [] },
@@ -76,30 +78,24 @@ sub run {
 }
 ####################################### Installation
 
-sub add_entity_for_install {
-    my ($self, $entity) = @_;
-
-    push @{$self->entities_to_install}, $entity;
+sub add_entity {
+    my ($self, $name, $args) = @_;
+    
+    push @{$self->entities_to_install}, { name => $name, args => $args };
 }
 
-sub install_needs_privilege {
-    my $self = shift;
-
-    ### FIXME: ignore coderef entities
-    grep { $_->need_privilege } @{$self->entities_to_install};
-}
-
-sub requested_privilege_present {
-    my $self = shift;
-
-    return !$self->install_needs_privilege || $self->user_has_privilege;
-}
+# sub _requested_privilege_present {
+#     my $self = shift;
+# 
+#     return $self->user_has_privilege
+#         || !grep { $_->need_privilege } @{$self->entities_to_install};
+# }
 
 sub install_all_entities {
     my $self = shift;
 
-    croak 'Provileged user needed for provision'
-        if !$self->requested_privilege_present;
+    # croak 'Provileged user needed for provision'
+    #     if !$self->_requested_privilege_present;
 
     if (!@{$self->entities_to_install}) {
         print STDERR "nothing to install, empty provision file\n";
@@ -107,7 +103,19 @@ sub install_all_entities {
         my $user = ($self->has_log_user ? "[${\$self->log_user}]" : '');
         $self->log_to_file("<<< start of Provision $user");
 
-        $_->install for @{$self->entities_to_install};
+        foreach my $entity_info (@{$self->entities_to_install}) {
+            my $entity;
+            try {
+                $entity = $self->create_entity($entity_info->{name}, $entity_info->{args});
+            } catch {
+                my $name = join ':',
+                    $entity_info->{name},
+                    $entity_info->{args}->{name} // ();
+                
+                $entity = $self->create_entity(Error => { name => $name, args => $entity_info->{args} });
+            };
+            $entity->install;
+        }
 
         $self->log_to_file(">>> end of Provision $user\n");
     }

@@ -142,6 +142,9 @@ sub mux_input {
         if ($line =~ m{\A (.*\s+) (\w+\s-\sOK) \z}xms) {
             print colored ['green'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
             print colored ['reverse green'], "$2\n";
+        } elsif ($line =~ m{\A (.*\s+) (\w+\s-\scould\swork) \z}xms) {
+            print colored ['blue'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
+            print colored ['reverse blue'], "$2\n";
         } elsif ($line =~ m{\A (.*\s+) (\w+\s(?:-\swould\s\w+ | =>\s+\w+)) \z}xms) {
             print colored ['magenta'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
             print colored ['reverse magenta'], "$2\n";
