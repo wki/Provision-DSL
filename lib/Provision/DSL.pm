@@ -98,9 +98,7 @@ sub create_and_export_entity_keywords {
 
                 %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
 
-                app->add_entity_for_install(
-                    app->create_entity($entity_name, \%args)
-                );
+                app->add_entity($entity_name, \%args);
             }
         };
     }

@@ -22,6 +22,8 @@ my $SITE_DIR    = "$WEB_DIR/www.mysite.de";
 Dir $WEB_DIR => {
     user => 'root',
     permission => '0755',
+    # activate to test failing
+    # content => '/tmp/xxx/foo'
 };
 
 Dir $SITE_DIR => {

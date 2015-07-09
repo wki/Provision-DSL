@@ -1,6 +1,11 @@
 Changes for Provision::DSL
 
-0.23    2013-06-23
+0.24    2015-07-09
+        * improved dryrun handling for entities not executable by defering
+          entity instantiation until the latest possible moment
+        * added info-logging in combination with -vv switch
+
+0.23    2015-06-23
         * added log_info message for rsync command
         * improved log_info message for dir creation
         
