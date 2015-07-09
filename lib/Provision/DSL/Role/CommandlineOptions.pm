@@ -161,7 +161,7 @@ sub log_debug {
 sub log_info {
     my $self = shift;
 
-    $self->_log_if($self->verbose > 1, @_);
+    $self->_log_if($self->verbose > 1, 'INFO:', @_);
 }
 
 sub log_dryrun {

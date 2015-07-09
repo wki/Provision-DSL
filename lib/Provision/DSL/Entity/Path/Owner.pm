@@ -15,11 +15,11 @@ sub inspect {
     my $self = shift;
 
     if (!defined $self->path || !-e $self->path) {
-        $self->log_info('path missing:', $self->path->stringify);
+        $self->add_info_line('path missing:', $self->path->stringify);
         return 'missing';
     }
     if ($self->has_user && $self->path->stat->uid != $self->uid) {
-        $self->log_info(
+        $self->add_info_line(
             sprintf 'uid is %d should be %d', 
                 $self->path->stat->uid,
                 $self->uid
@@ -27,7 +27,7 @@ sub inspect {
         return 'outdated';
     }
     if ($self->has_group && $self->path->stat->gid != $self->gid) {
-        $self->log_info(
+        $self->add_info_line(
             sprintf 'gid is %d, should be %d',
                 $self->path->stat->gid,
                 $self->gid

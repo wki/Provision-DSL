@@ -50,7 +50,11 @@ sub inspect {
             # warn "REMOVED LINES, TEST NOW: ($result)";
         }
         
-        # warn "RSYNC RESULT: $result";
+        $self->add_info_line($_)
+            for map { s{\A copying}{copy}xms; s{\A deleting}{delete}xms; $_ }
+                grep { m{\A (copying|deleting) }xms }
+                split qr{[\r\n]+}xms, $result;
+
         $state = ($result && $result =~ m{^(?:deleting|copying)\s}xms)
         ? 'outdated'
         : 'current';
@@ -79,9 +83,7 @@ sub _run_rsync_command {
         RSYNC, 
         @args
     );
-    
-    $self->log_info(join "\n", grep { m{\A (copying|deleting) }xms } split qr{[\r\n]+}xms, $result);
-    
+
     return $result;
 }
 

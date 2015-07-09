@@ -180,6 +180,29 @@ has wanted => (
     default => sub { 1 }
 );
 
+has info_lines => (
+    is      => 'rw',
+    default => sub { +[] },
+);
+
+sub add_info_line {
+    my $self = shift;
+    
+    push @{$self->info_lines}, @_;
+}
+
+sub all_info_lines { @{$_[0]->info_lines} }
+
+sub log_info_lines {
+    my $self = shift;
+
+    $self->log_info($_)
+        for $self->all_info_lines;
+        
+    $_->log_info_lines
+        for $self->all_children;
+}
+
 sub install {
     my $self   = shift;
     my $wanted = shift; $wanted = $self->wanted if !defined $wanted;
@@ -197,18 +220,24 @@ sub install {
         ? ($state eq 'missing' ? 'create' : 'change')
         : 'remove';
 
-    $self->log_dryrun( @log, "- would $action" ) and return;
-    $self->log( @log, "=> $action" );
+    if ($self->dryrun) {
+        $self->log(@log, "- would $action");
+        $self->log_info_lines;
+    } else {
+        $self->log(@log, "=> $action");
+        $self->log_info_lines;
 
-    ### FIXME: is this wise? would it be better to let only one
-    ###        action run? Either installer *OR* self
-    
-    if (!$wanted) { $_->install(0) for reverse $self->all_children }
-    $self->$action();
-    $self->installer_instance->$action() if $self->has_installer;
-    if ($wanted) { $_->install for $self->all_children }
-
-    $self->clear_state;
+        ### FIXME: is this wise? would it be better to let only one
+        ###        action run? Either installer *OR* self
+        
+        if (!$wanted) { $_->install(0) for reverse $self->all_children }
+        $self->$action();
+        $self->installer_instance->$action() if $self->has_installer;
+        
+        if ($wanted) { $_->install for $self->all_children }
+        
+        $self->clear_state;
+    }
 }
 
 sub is_ok {

@@ -15,12 +15,12 @@ sub inspect {
     my $self = shift;
     
     if (!defined $self->path || !-e $self->path) {
-        $self->log_info('path missing:', $self->path->stringify);
+        $self->add_info_line('path missing:', $self->path->stringify);
         return 'missing';
     }
     
     if (($self->path->stat->mode & 511) != ($self->permission & 511)) {
-        $self->log_info(
+        $self->add_info_line(
             sprintf 'path permisson is %o, should be %o',
                 $self->path->stat->mode & 511,
                 $self->permission & 511
