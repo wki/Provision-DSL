@@ -28,10 +28,8 @@ note 'config file handling';
         {},
         'no config file defaults to {}';
 
-    is_deeply 
-        +Provision::DSL::Local::Config->new(file => $missing_config_file)->_file_content,
-        {},
-        'missing config file defaults to {}';
+    dies_ok { Provision::DSL::Local::Config->new(file => $missing_config_file)->_file_content }
+        'missing config file dies';
 
     dies_ok { Provision::DSL::Local::Config->new(file => $invalid_config_file)->_file_content }
         'invalid config file dies';

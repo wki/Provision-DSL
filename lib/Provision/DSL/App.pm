@@ -13,11 +13,6 @@ with 'Provision::DSL::Role::CommandlineOptions',
      'Provision::DSL::Role::CommandExecution',
      'Provision::DSL::Role::Singleton';
 
-has is_running => (
-    is      => 'rw',
-    default => sub { 0 },
-);
-
 has os => (
     is      => 'ro',
     default => \&Provision::DSL::Util::os
@@ -68,20 +63,43 @@ sub DEMOLISH {
     $self->log_debug('End of Program');
 }
 
-sub run {
-    my $self = shift;
-
-    $self->is_running(1);
-
-    ### TODO: dispatch to the action required
-    $self->install_all_entities;
-}
 ####################################### Installation
 
-sub add_entity {
+sub log_start {
+    my $self = shift;
+    
+    $self->log_to_file('<<< start of Provision', $self->_get_log_user);
+    
+}
+
+sub log_finish {
+    my $self = shift;
+    
+    $self->log_to_file('>>> end of Provision', $self->_get_log_user, "\n");
+}
+
+sub _get_log_user {
+    my $self = shift;
+
+    return $self->has_log_user
+        ? "[${\$self->log_user}]"
+        : ();
+}
+
+sub install_entity {
     my ($self, $name, $args) = @_;
     
-    push @{$self->entities_to_install}, { name => $name, args => $args };
+    my $entity;
+    try {
+        $entity = $self->create_entity($name, $args);
+    } catch {
+        my $error_name = join ':',
+            $name,
+            $args->{name} // ();
+        
+        $entity = $self->create_entity(Error => { name => $error_name, args => $args });
+    };
+    $entity->install;
 }
 
 # sub _requested_privilege_present {
@@ -90,36 +108,6 @@ sub add_entity {
 #     return $self->user_has_privilege
 #         || !grep { $_->need_privilege } @{$self->entities_to_install};
 # }
-
-sub install_all_entities {
-    my $self = shift;
-
-    # croak 'Provileged user needed for provision'
-    #     if !$self->_requested_privilege_present;
-
-    if (!@{$self->entities_to_install}) {
-        print STDERR "nothing to install, empty provision file\n";
-    } else {
-        my $user = ($self->has_log_user ? "[${\$self->log_user}]" : '');
-        $self->log_to_file("<<< start of Provision $user");
-
-        foreach my $entity_info (@{$self->entities_to_install}) {
-            my $entity;
-            try {
-                $entity = $self->create_entity($entity_info->{name}, $entity_info->{args});
-            } catch {
-                my $name = join ':',
-                    $entity_info->{name},
-                    $entity_info->{args}->{name} // ();
-                
-                $entity = $self->create_entity(Error => { name => $name, args => $entity_info->{args} });
-            };
-            $entity->install;
-        }
-
-        $self->log_to_file(">>> end of Provision $user\n");
-    }
-}
 
 ####################################### Entity handling
 

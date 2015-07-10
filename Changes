@@ -1,5 +1,14 @@
 Changes for Provision::DSL
 
+0.26    2915-07-10
+        * improved config file handling
+
+0.25    2015-07-10
+        * added possibility to modify config sections via ENV variables
+          PROVISION_REMOTE_HOSTNAME
+          PROVISION_REMOTE_USER
+          PROVISION_REMOTE_ENV_<<env-variable>
+          
 0.24    2015-07-09
         * improved dryrun handling for entities not executable by defering
           entity instantiation until the latest possible moment

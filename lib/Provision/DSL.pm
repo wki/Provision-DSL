@@ -45,11 +45,6 @@ our %default_for_entity;
 
 sub app;
 
-END {
-    print STDERR "'Done()' not called or missing. Provisioning failed.\n"
-        if !$? && !app->is_running;
-}
-
 sub import {
     my $package = caller;
 
@@ -65,6 +60,8 @@ sub import {
     turn_on_autoflush($package);
 
     app->log_debug('init done');
+    
+    app->log_start;
 }
 
 sub instantiate_app { 
@@ -98,7 +95,7 @@ sub create_and_export_entity_keywords {
 
                 %args = (%args, ref $_[0] eq 'HASH' ? %{$_[0]} : @_);
 
-                app->add_entity($entity_name, \%args);
+                app->install_entity($entity_name, \%args);
             }
         };
     }
@@ -186,7 +183,7 @@ sub Os { goto &os }
 
 sub Done { goto &done }
 sub done {
-    app->run;
+    app->log_finish;
 }
 
 sub Defaults { goto &defaults }

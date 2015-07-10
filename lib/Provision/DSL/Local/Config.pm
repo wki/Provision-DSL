@@ -1,5 +1,6 @@
 package Provision::DSL::Local::Config;
 use Moo;
+use Carp;
 use Hash::Merge 'merge';
 # use Try::Tiny;
 use Provision::DSL::Const;
@@ -18,7 +19,10 @@ has _file_content => (
 sub _build__file_content {
     my $self = shift;
     
-    return {} if !$self->has_file || !-f $self->file;
+    return {} if !$self->has_file;
+
+    croak "could not open config file '${\$self->file}' -- file not found"
+        if !-f $self->file;
     
     my $content = do "${\$self->file}";
     if (!defined $content) {
@@ -87,6 +91,19 @@ sub _build__merged_config {
     push @{$config->{local}->{ssh_options}},
         '-R', "$config->{local}->{cpan_http_port}:$config->{remote}->{environment}->{PROVISION_HTTP_HOST}:$config->{remote}->{environment}->{PROVISION_HTTP_PORT}",
         '-R', "$config->{local}->{rsync_port}:127.0.0.1:$config->{remote}->{environment}->{PROVISION_RSYNC_PORT}";
+    
+    # manually merge in some things from ENV
+    # PROVISION_REMOTE_   HOSTNAME | USER | ENV_*
+    foreach my $env_varname (grep { m{\A PROVISION_REMOTE_}xms } keys %ENV) {
+        my $key = $env_varname;
+        $key =~ s{\A PROVISION_REMOTE_}{}xms;
+        
+        if (exists $config->{remote}->{lc $key}) {
+            $config->{remote}->{lc $key} = $ENV{$env_varname};
+        } elsif ($key =~ m{\A env_(.+)\z}ixms) {
+            $config->{remote}->{environment}->{uc $1} = $ENV{$env_varname};
+        }
+    }
     
     # manually merge in some things entered via commandline
     $config->{remote}->{hostname} = $self->app->hostname       if $self->app->has_hostname;

@@ -38,6 +38,6 @@ use ok 'Provision::DSL';
 # 
 
 # prevent error message in Provision::DSL::END{} from firing
-Provision::DSL::App->instance->is_running(1);
+# Provision::DSL::App->instance->is_running(1);
 
 done_testing;
