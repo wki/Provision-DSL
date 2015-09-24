@@ -192,6 +192,8 @@ sub run {
         return;
     }
 
+    $self->execute_optional_build_script;
+    
     # use Data::Dumper; warn Dumper $self->task;
     # die 'stop for testing';
 
@@ -235,6 +237,8 @@ sub show_info_text {
             [ hostname       => $self->config->remote->{hostname} ],
             [ name           => $self->config->name ],
             [ provision_file => $self->config->provision_file ],
+            # [ build_script   => $self->config->local->{build_script} ],
+            _key_from($self->config->local, 'build_script'),
         ),
         
         'Cache',
@@ -278,8 +282,37 @@ sub _attr_from {
         $attr_name,
         ($object->can($predicate)
             ? $object->$predicate ? $object->$attr_name : '(not set)'
-            : $object->$attr_name) || '(undef)'
+            : $object->$attr_name) // '(undef)'
     ]
+}
+
+sub _key_from {
+    my ($hashref, $key) = @_;
+    
+    return [
+        $key,
+        exists $hashref->{$key}
+            ? $hashref->{$key} // '(undef)'
+            : '(not set)'
+    ]
+    
+}
+
+sub execute_optional_build_script {
+    my $self = shift;
+    
+    my $local = $self->config->local;
+    return if !exists $local->{build_script};
+    
+    my $script_path = $local->{build_script};
+    my $build_script = $self->root_dir->subdir($script_path);
+    
+    die "Cannot execute '$script_path'" if !-x $build_script;
+    
+    $self->log('Executing build script: ', $script_path);
+    
+    system $build_script
+        and die "build script exited with status ${\($? >> 8)}";
 }
 
 1;

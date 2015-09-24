@@ -149,7 +149,7 @@ sub mux_input {
             print colored ['magenta'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
             print colored ['reverse magenta'], "$2\n";
         } else {
-            print colored ['black'], "$line\n";
+            print colored ['reset'], "$line\n";
         }
     }
 

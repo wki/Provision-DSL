@@ -1,6 +1,11 @@
 Changes for Provision::DSL
 
-0.26    2915-07-10
+0.27    2015-09-24
+        * changed default color to terminal's default instead of black
+        * added a build script that may run but must exit with code 0
+          prior to running the deployment procedure
+
+0.26    2015-07-10
         * improved config file handling
 
 0.25    2015-07-10

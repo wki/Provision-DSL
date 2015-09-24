@@ -52,6 +52,7 @@ sub _build__defaults {
             rsync_modules   => {},
             cpan_http_port  => HTTP_PORT,
             environment     => {},
+          # build_script    => 'relative_path/to/build.sh',
         },
 
         remote => {
