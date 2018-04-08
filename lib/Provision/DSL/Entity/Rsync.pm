@@ -74,6 +74,7 @@ sub _run_rsync_command {
         '--recursive',
         '--perms',
         '--delete',
+        '--links',
         @_,
         $self->_exclude_list,
         "${\$self->content}/" => "${\$self->path}/",
