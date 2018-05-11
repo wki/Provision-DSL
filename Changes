@@ -1,5 +1,8 @@
 Changes for Provision::DSL
 
+0.30    2018-05-11
+        * rsync symlink support (Thanks to Phil Soehnlein)
+
 0.29    2016-03-29
         * Dir entities also allow rsync source as content for retrieving
           their content via rsync instead of locally
