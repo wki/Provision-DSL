@@ -1,5 +1,8 @@
 Changes for Provision::DSL
 
+0.31    2018-05-11
+        * changed a URL to a http: url to fix a failing test
+
 0.30    2018-05-11
         * rsync symlink support (Thanks to Phil Soehnlein)
 
