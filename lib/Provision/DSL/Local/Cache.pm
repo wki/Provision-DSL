@@ -145,6 +145,7 @@ sub _pack_file_or_dir {
         '--checksum',
         '--recursive',
         '--perms',
+        '--links',
         '--delete',
         ( map { ('--exclude' => $_) } @exclude ),
         $source => join('/', $self->dir, $target),

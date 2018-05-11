@@ -78,6 +78,7 @@ sub pull_cache {
         '--checksum',
         '--recursive',
         '--perms',
+        '--links',
         '--delete',
         '--exclude', '"/lib/**.pod"',
         '--exclude', "/lib/perl5/$archname",

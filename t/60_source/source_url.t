@@ -11,8 +11,8 @@ my $ip = gethostbyname('www.cpan.org')
         exit;
     };
 
-my $u = Provision::DSL::Source::Url->new('http://www.cpan.org/');
-like $u->content, qr{<title>.*Comprehensive.*</title>}xms,
+my $u = Provision::DSL::Source::Url->new('http://perldoc.perl.org/');
+like $u->content, qr{<title>.*Perl.*</title>}xms,
      'html content looks good';
 
 done_testing;
