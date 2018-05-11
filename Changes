@@ -1,5 +1,9 @@
 Changes for Provision::DSL
 
+0.29    2016-03-29
+        * Dir entities also allow rsync source as content for retrieving
+          their content via rsync instead of locally
+
 0.27    2015-09-24
         * changed default color to terminal's default instead of black
         * added a build script that may run but must exit with code 0

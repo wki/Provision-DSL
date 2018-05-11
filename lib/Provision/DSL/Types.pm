@@ -20,7 +20,7 @@ our @EXPORT = qw(
     to_Str
     to_Array
     to_Channels
-    to_Dir to_ExistingDir to_File to_ExecutableFile
+    to_Dir to_ExistingDir to_RsyncSource to_File to_ExecutableFile
     to_User to_Group
     to_Permission to_PerlVersion
 );
@@ -105,6 +105,14 @@ sub to_ExistingDir {
                 ? $_[0]->path
                 : dir($_[0])
         )->absolute->resolve
+    }
+}
+
+sub to_RsyncSource {
+    return sub {
+        blessed $_[0] && $_[0]->can('path')
+            ? $_[0]->path->absolute->resolve
+            : $_[0]
     }
 }
 

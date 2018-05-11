@@ -24,3 +24,4 @@ t/x/
 t/rsyncd.conf
 t/provision/rsyncd.conf
 t/provision/log/
+.vscode/

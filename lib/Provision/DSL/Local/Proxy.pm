@@ -138,15 +138,18 @@ use Term::ANSIColor;
 sub mux_input {
     my ($package, $mux, $fh, $input) = @_;
 
+    my $columns = $ENV{COLUMNS} || 80;
+    my $width = $columns - 6;
+    
     foreach my $line (split qr/\n/xms, $$input) {
         if ($line =~ m{\A (.*\s+) (\w+\s-\sOK) \z}xms) {
-            print colored ['green'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
+            print colored ['green'], substr($1 . '.' x $columns, 0, $width - length $2) . ' ';
             print colored ['reverse green'], "$2\n";
         } elsif ($line =~ m{\A (.*\s+) (\w+\s-\scould\swork) \z}xms) {
-            print colored ['blue'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
+            print colored ['blue'], substr($1 . '.' x $columns, 0, $width - length $2) . ' ';
             print colored ['reverse blue'], "$2\n";
         } elsif ($line =~ m{\A (.*\s+) (\w+\s(?:-\swould\s\w+ | =>\s+\w+)) \z}xms) {
-            print colored ['magenta'], substr($1 . '.' x 80, 0, 74 - length $2) . ' ';
+            print colored ['magenta'], substr($1 . '.' x $columns, 0, $width - length $2) . ' ';
             print colored ['reverse magenta'], "$2\n";
         } else {
             print colored ['reset'], "$line\n";
